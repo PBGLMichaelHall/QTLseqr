@@ -5,6 +5,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // countSNPs_cpp
 NumericVector countSNPs_cpp(NumericVector POS, double windowSize);
 RcppExport SEXP _QTLseqr_countSNPs_cpp(SEXP POSSEXP, SEXP windowSizeSEXP) {

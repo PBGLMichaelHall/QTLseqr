@@ -4,8 +4,7 @@
 \alias{simulateSNPindex}
 \title{Simulates a delta SNP-index with replication}
 \usage{
-simulateSNPindex(depth, altFreq1, altFreq2, replicates = 10000,
-  filter = NULL)
+simulateSNPindex(depth, altFreq1, altFreq2, replicates = 10000, filter = NULL)
 }
 \arguments{
 \item{depth}{integer. A read depth for which to replicate SNP-index calls.}

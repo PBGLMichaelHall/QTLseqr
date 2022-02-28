@@ -4,8 +4,12 @@
 \alias{importFromGATK}
 \title{Imports SNP data from GATK VariablesToTable output}
 \usage{
-importFromGATK(file, highBulk = character(), lowBulk = character(),
-  chromList = NULL)
+importFromGATK(
+  file,
+  highBulk = character(),
+  lowBulk = character(),
+  chromList = NULL
+)
 }
 \arguments{
 \item{file}{The name of the GATK VariablesToTable output .table file which the

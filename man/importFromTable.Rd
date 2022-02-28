@@ -4,8 +4,13 @@
 \alias{importFromTable}
 \title{Import SNP data from a delimited file}
 \usage{
-importFromTable(file, highBulk = "HIGH", lowBulk = "LOW",
-  chromList = NULL, sep = ",")
+importFromTable(
+  file,
+  highBulk = "HIGH",
+  lowBulk = "LOW",
+  chromList = NULL,
+  sep = ","
+)
 }
 \arguments{
 \item{file}{The name of the file which the data are to be read from.}

@@ -4,9 +4,15 @@
 \alias{plotSimulatedThresholds}
 \title{Plots simulation data for QTLseq analysis}
 \usage{
-plotSimulatedThresholds(SNPset = NULL, popStruc = "F2", bulkSize,
-  depth = NULL, replications = 10000, filter = 0.3,
-  intervals = c(95, 99))
+plotSimulatedThresholds(
+  SNPset = NULL,
+  popStruc = "F2",
+  bulkSize,
+  depth = NULL,
+  replications = 10000,
+  filter = 0.3,
+  intervals = c(95, 99)
+)
 }
 \arguments{
 \item{SNPset}{optional. Either supply your data set to extract read depths from or supply depth vector.}

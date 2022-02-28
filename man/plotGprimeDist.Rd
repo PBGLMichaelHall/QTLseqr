@@ -4,8 +4,12 @@
 \alias{plotGprimeDist}
 \title{Plots Gprime distribution}
 \usage{
-plotGprimeDist(SNPset, outlierFilter = c("deltaSNP", "Hampel"),
-  filterThreshold = 0.1, binwidth = 0.5)
+plotGprimeDist(
+  SNPset,
+  outlierFilter = c("deltaSNP", "Hampel"),
+  filterThreshold = 0.1,
+  binwidth = 0.5
+)
 }
 \arguments{
 \item{SNPset}{a data frame with SNPs and genotype fields as imported by

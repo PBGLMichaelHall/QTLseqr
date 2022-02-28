@@ -4,8 +4,14 @@
 \alias{getQTLTable}
 \title{Export a summarized table of QTL}
 \usage{
-getQTLTable(SNPset, method = "Gprime", alpha = 0.05, interval = 99,
-  export = FALSE, fileName = "QTL.csv")
+getQTLTable(
+  SNPset,
+  method = "Gprime",
+  alpha = 0.05,
+  interval = 99,
+  export = FALSE,
+  fileName = "QTL.csv"
+)
 }
 \arguments{
 \item{SNPset}{Data frame SNP set containing previously filtered SNPs}

@@ -27,7 +27,7 @@ Suggests:
     rmarkdown,
     kableExtra,
     Yang2013data
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.2
 biocViews: Software, Sequencing, Visualization
 VignetteBuilder: knitr
 LinkingTo: Rcpp
