@@ -228,13 +228,12 @@ runGprimeAnalysis_MH <-
 #' @param filterThreshold Specify threshold filter value default is 0.1
 #' @param deg Degree of Polynomial to use for LocFit Model
 #' @param nn Nearest Neighbor component of smoothing parameter. Default value is 0.7, unless h or adpen are provided, in which case the default is 0
-#' @param h The constant component of the smoothing parameter. Default: 0.
 #' @export
 
 
 runGprimeAnalysis_GPrime_Smooth <- 
   function (SNPset, windowSize = windowSize, outlierFilter = "deltaSNP", 
-            filterThreshold = 0.1, deg = deg, nn = nn, h = h) 
+            filterThreshold = 0.1, deg = deg, nn = nn) 
   {
     message("Counting SNPs in each window...")
     SNPset <- SNPset %>% dplyr::group_by(CHROM) %>% dplyr::mutate(nSNPs = countSNPs_cpp(POS = POS, windowSize = windowSize))
@@ -251,7 +250,6 @@ runGprimeAnalysis_GPrime_Smooth <-
 #' @param windowSize Specify the WindowSize
 #' @param deg Degree of Polynomial to use for LocFit Model 
 #' @param nn Nearest Neighbor component of smoothing parameter. Default value is 0.7, unless h or adpen are provided, in which case the default is 0
-#' @param h The constant component of the smoothing parameter. Default: 0.
 #' @export
 
 
@@ -263,7 +261,7 @@ tricube_Smooth <-
     if (windowSize <= 0) 
       stop("A positive smoothing window is required")
     stats::predict(locfit::locfit(Stat ~ locfit::lp(POS, h = windowSize, 
-                                                    deg = deg, nn = nn, h = h)), POS)
+                                                    deg = deg, nn = nn)), POS)
   }
 
 
