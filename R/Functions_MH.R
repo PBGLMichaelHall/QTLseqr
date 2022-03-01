@@ -220,6 +220,54 @@ runGprimeAnalysis_MH <-
   }
 
 
+#' @title runGprimeAnalysis_GPrime_Smooth
+#' @description Runs a Gprime Analysis on Bulk segregants with additional smoothing parameters for G Prime Test Statistic
+#' @param SNPset An SNPset
+#' @param windowSize Specify the WindowSize
+#' @param outlierFilter Specify the outlierFilter 
+#' @param filterThreshold Specify threshold filter value default is 0.1
+#' @param deg Degree of Polynomial to use for LocFit Model
+#' @param nn Nearest Neighbor component of smoothing parameter. Default value is 0.7, unless h or adpen are provided, in which case the default is 0
+#' @param h The constant component of the smoothing parameter. Default: 0.
+#' @export
+
+
+runGprimeAnalysis_GPrime_Smooth <- 
+  function (SNPset, windowSize = windowSize, outlierFilter = "deltaSNP", 
+            filterThreshold = 0.1, deg = deg, nn = nn, h = h) 
+  {
+    message("Counting SNPs in each window...")
+    SNPset <- SNPset %>% dplyr::group_by(CHROM) %>% dplyr::mutate(nSNPs = countSNPs_cpp(POS = POS, windowSize = windowSize))
+    message("Calculating tricube smoothed delta SNP index...")
+    SNPset <- SNPset %>% dplyr::mutate(tricubeDeltaSNP = tricubeStat_MH(POS = POS, Stat = deltaSNP, windowSize))
+    message("Calculating G and G' statistics...")
+    SNPset <- SNPset %>% dplyr::mutate(G = getG_MH(LowRef = AD_REF.LOW, HighRef = AD_REF.HIGH, LowAlt = AD_ALT.LOW, HighAlt = AD_ALT.HIGH), Gprime = tricube_Smooth(POS = POS, Stat = G, windowSize = windowSize, deg = deg, nn = nn, h = h)) %>% dplyr::ungroup() %>% dplyr::mutate(pvalue = getPvals_MH(Gprime = Gprime, deltaSNP = deltaSNP, outlierFilter = outlierFilter, filterThreshold = filterThreshold), negLog10Pval = -log10(pvalue), qvalue = p.adjust(p = pvalue, method = "BH"))
+    return(as.data.frame(SNPset))
+  }
+#' @title tricube_Smooth
+#' @description Applies Tricube Kernel to G Test Statistic
+#' @param POS THe Position vector of where the SNPs were called
+#' @param Stat The G Statistic, however, it is the G~lp(x) for a local regression and likelihood model
+#' @param windowSize Specify the WindowSize
+#' @param deg Degree of Polynomial to use for LocFit Model 
+#' @param nn Nearest Neighbor component of smoothing parameter. Default value is 0.7, unless h or adpen are provided, in which case the default is 0
+#' @param h The constant component of the smoothing parameter. Default: 0.
+#' @export
+
+
+
+
+tricube_Smooth <- 
+  function (POS, Stat, windowSize, deg, nn, h) 
+  {
+    if (windowSize <= 0) 
+      stop("A positive smoothing window is required")
+    stats::predict(locfit::locfit(Stat ~ locfit::lp(POS, h = windowSize, 
+                                                    deg = deg, nn = nn, h = h)), POS)
+  }
+
+
+
 #' @title tricubeStat_MH
 #' @description Delivers a tricubeStat function 
 #' @param POS An SNPset
@@ -279,6 +327,7 @@ getPvals_MH <-
       
       message("Using deltaSNP-index to filter outlier regions with a threshold of ", filterThreshold)
       trimGprime <- Gprime[abs(deltaSNP) < abs(filterThreshold)]
+      #The next line is what I edited from the original getPvals
       trimGprime <- trimGprime[!is.na(trimGprime)]
     } else {
       message("Using Hampel's rule to filter outlier regions")
