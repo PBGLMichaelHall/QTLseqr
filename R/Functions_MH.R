@@ -428,7 +428,7 @@ Obs_Allele_Freq <- function(SNPSet){
   print(e)
   e1 <- ggplot(data = data, aes(x = seq(1, length(p2),1), y = p2)) + geom_point(aes(color=factor(CHROM))) + theme_bw() + labs(x = "SNP", y = "Allele Frequency",title = "High Bulk Observed High Parent Allele Frequency")
   print(e1) 
-  return(data)
+ 
 }
 
 
