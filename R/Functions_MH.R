@@ -409,4 +409,53 @@ runQTLseqAnalysis_MH <- function (SNPset, windowSize = 1e+06, popStruc = "F2", b
   as.data.frame(SNPset)
 }
 
+#' @title Obs_Allele_Freq
+#' @description Returns a 4 column data frame with Chromosome, Position, and Observed allele frequencies from the High Parent for both bulks
+#' @param  SNPSet A SNPSet generated from the function importFromTable 
+#' @export 
+
+
+Obs_Allele_Freq <- function(SNPSet){
+  frame <- SNPSet %>% dplyr::mutate(LowRef = AD_REF.LOW, HighRef = AD_REF.HIGH, LowAlt = AD_ALT.LOW, HighAlt = AD_ALT.HIGH) %>% select(LowRef, HighRef, LowAlt, HighAlt)
+  p1 <- ((frame$LowAlt)/(frame$LowRef + frame$LowAlt))
+  p2 <- ((frame$HighAlt)/(frame$HighRef + frame$HighAlt))
+  Chrom <- SNPSet %>% select(CHROM)
+  POS <- SNPSet %>% select(POS)
+  POS <- as.character(POS)
+  data <- cbind(Chrom,POS,p1,p2)
+  data <- as.data.frame(data)
+  e <- ggplot(data = data, aes(x = seq(1, length(p1),1), y = p1)) + geom_point(aes(color=factor(CHROM)))  + theme_bw()  + labs(x = "SNP", y = "Allele Frequency", title = "Low Bulk Observed High Parent Allele Frequency") 
+  print(e)
+  e1 <- ggplot(data = data, aes(x = seq(1, length(p2),1), y = p2)) + geom_point(aes(color=factor(CHROM))) + theme_bw() + labs(x = "SNP", y = "Allele Frequency",title = "High Bulk Observed High Parent Allele Frequency")
+  print(e1) 
+  return(data)
+}
+
+
+
+#' @title Obs_Allele_Freq2
+#' @description Returns a 4 column data filtering for specific Chromosome and High Bulk Observed Allele Frequencies
+#' @param SNPSet A SNPSet generated from the function importFromTable 
+#' @param ChromosomeValue Input a Specific Chromosome Value
+#' @param threshold Input a Specific Allele Frequency Threshold value from the High Bulk High Parent 
+#' @export 
+
+
+
+Obs_Allele_Freq2 <- function(SNPSet,ChromosomeValue,threshold){
+  frame <- SNPSet %>% dplyr::mutate(LowRef = AD_REF.LOW, HighRef = AD_REF.HIGH, LowAlt = AD_ALT.LOW, HighAlt = AD_ALT.HIGH) %>% select(LowRef, HighRef, LowAlt, HighAlt)
+  p1 <- ((frame$LowAlt)/(frame$LowRef + frame$LowAlt))
+  p2 <- ((frame$HighAlt)/(frame$HighRef + frame$HighAlt))
+  Chrom <- SNPSet %>% select(CHROM)
+  POS <- SNPSet %>% select(POS)
+  data <- cbind(Chrom,POS,p1,p2)
+  data <- as.data.frame(data)
+  data <- data[(as.matrix(data[1]) == ChromosomeValue),]
+  data <- data[(as.matrix(data[4]) > threshold),]
+  e <- ggplot(data = data, aes(x = seq(1, length(p1),1), y = p1)) + geom_point(aes(color=factor(CHROM))) + theme_bw()  + ggrepel::geom_label_repel(aes(label = as.character(POS))) + labs(x = "SNP", y = "Allele Frequency", title = "Low Bulk Observed High Parent Allele Frequency")
+  print(e)
+  e1 <- ggplot(data = data, aes(x = seq(1, length(p2),1), y = p2)) + geom_point(aes(color=factor(CHROM))) + ggrepel::geom_label_repel(aes(label = as.character(POS))) + theme_bw()   + labs(x = "SNP", y = "Allele Frequency", title = "High Bulk Observed High Parent Allele Frequency") 
+  print(e1)
+  return(data)
+}
 
