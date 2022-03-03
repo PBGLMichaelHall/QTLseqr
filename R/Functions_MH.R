@@ -460,7 +460,7 @@ Obs_Allele_Freq2 <- function(SNPSet,ChromosomeValue,threshold){
 }
 
 #' Plots Gprime distribution
-#'
+#' Modified by MH
 #' Plots a ggplot histogram of the distribution of Gprime with a log normal
 #' distribution overlay
 #'

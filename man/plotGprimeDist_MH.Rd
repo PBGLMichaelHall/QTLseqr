@@ -22,7 +22,8 @@ putative QTL (default = 0.1)}
 \item{binwidth}{The binwidth for the histogram. Recomended and default = 0.5}
 }
 \value{
-Modified range of G' Statistic M.H.
+Modified range of G' Statistic M.H. 
+Thank you.
 Plots a ggplot histogram of the G' value distribution. The raw data
   as well as the filtered G' values (excluding putatitve QTL) are plotted. It
   will then overlay an estimated log normal distribution with the same mean
