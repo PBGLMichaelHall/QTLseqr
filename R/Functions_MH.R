@@ -441,24 +441,45 @@ Obs_Allele_Freq <- function(SNPSet){
 #' @export 
 
 
+Obs_Allele_Freq2 <-
+  function (SNPSet, ChromosomeValue, threshold) 
+  {
+    frame <- SNPSet %>% dplyr::mutate(LowRef = AD_REF.LOW, HighRef = AD_REF.HIGH, 
+                                      LowAlt = AD_ALT.LOW, HighAlt = AD_ALT.HIGH) %>% select(LowRef, 
+                                                                                             HighRef, LowAlt, HighAlt)
+    p1 <- ((frame$LowAlt)/(frame$LowRef + frame$LowAlt))
+    p1 <- round(p1,3)
+    p2 <- ((frame$HighAlt)/(frame$HighRef + frame$HighAlt))
+    p2 <- round(p2,3)
+    Chrom <- SNPSet %>% select(CHROM)
+    POS <- SNPSet %>% select(POS)
+    AD_High1 <- data.frame(SNPSet$AD_ALT.HIGH, SNPSet$AD_ALT.LOW)
+    AD_High1$AD_High <- paste(AD_High1$SNPSet.AD_ALT.HIGH,AD_High1$SNPSet.AD_ALT.LOW,sep = ",")
+    AD_High <- subset(AD_High1,select=-c(SNPSet.AD_ALT.HIGH,SNPSet.AD_ALT.LOW))
+    AD_Low1 <- data.frame(SNPSet$AD_REF.HIGH, SNPSet$AD_REF.LOW)
+    AD_Low1$AD_Low <- paste(AD_Low1$SNPSet.AD_REF.HIGH, AD_Low1$SNPSet.AD_REF.LOW,sep=",")
+    AD_Low <- subset(AD_Low1, select=-c(SNPSet.AD_REF.HIGH,SNPSet.AD_REF.LOW))
+    Gprime <- SNPSet %>% select(Gprime)
+    Gprime <- round(Gprime, 3)
+    data <- cbind(Chrom, POS, p1, p2,AD_High,AD_Low,Gprime)
+    data <- as.data.frame(data)
+    data <- data[(as.matrix(data[1]) == ChromosomeValue), ]
+    data <- data[(as.matrix(data[4]) > threshold), ]
+    e <- ggplot(data = data, aes(x = seq(1, length(p1), 1), y = p1)) + 
+      geom_point(aes(color = factor(CHROM))) + theme_bw() + 
+      ggrepel::geom_label_repel(aes(label = as.character(POS))) + 
+      labs(x = "SNP", y = "Allele Frequency", title = "Low Bulk Observed High Parent Allele Frequency") 
+    print(e)
+    e1 <- ggplot(data = data, aes(x = seq(1, length(p2), 1), 
+                                  y = p2)) + geom_point(aes(color = factor(CHROM))) + ggrepel::geom_label_repel(aes(label = as.character(POS))) 
+    theme_bw() + labs(x = "SNP", y = "Allele Frequency", 
+                      title = "High Bulk Observed High Parent Allele Frequency")
+    print(e1)
+    return(data)
+  }
 
-Obs_Allele_Freq2 <- function(SNPSet,ChromosomeValue,threshold){
-  frame <- SNPSet %>% dplyr::mutate(LowRef = AD_REF.LOW, HighRef = AD_REF.HIGH, LowAlt = AD_ALT.LOW, HighAlt = AD_ALT.HIGH) %>% select(LowRef, HighRef, LowAlt, HighAlt)
-  p1 <- ((frame$LowAlt)/(frame$LowRef + frame$LowAlt))
-  p2 <- ((frame$HighAlt)/(frame$HighRef + frame$HighAlt))
-  Chrom <- SNPSet %>% select(CHROM)
-  POS <- SNPSet %>% select(POS)
-  data <- cbind(Chrom,POS,p1,p2)
-  data <- as.data.frame(data)
-  data <- data[(as.matrix(data[1]) == ChromosomeValue),]
-  data <- data[(as.matrix(data[4]) > threshold),]
-  e <- ggplot(data = data, aes(x = seq(1, length(p1),1), y = p1)) + geom_point(aes(color=factor(CHROM))) + theme_bw()  + ggrepel::geom_label_repel(aes(label = as.character(POS))) + labs(x = "SNP", y = "Allele Frequency", title = "Low Bulk Observed High Parent Allele Frequency")
-  print(e)
-  e1 <- ggplot(data = data, aes(x = seq(1, length(p2),1), y = p2)) + geom_point(aes(color=factor(CHROM))) + ggrepel::geom_label_repel(aes(label = as.character(POS))) + theme_bw()   + labs(x = "SNP", y = "Allele Frequency", title = "High Bulk Observed High Parent Allele Frequency") 
-  print(e1)
-  return(data)
-}
 
+#'Hello Again
 #' Plots Gprime distribution
 #' Modified by MH
 #' Plots a ggplot histogram of the distribution of Gprime with a log normal
