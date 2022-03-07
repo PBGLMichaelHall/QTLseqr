@@ -13,7 +13,7 @@ QTLParser_1_MH <- function(vcf,HighBulk,LowBulk){
   POS <- vcf$fix$POS
   REF <- vcf$fix$REF
   ALT <- vcf$fix$ALT
-  DP <- VCF_TIDY$gt$gt_DP
+  DP <- vcf$gt$gt_DP
   Samples <- vcf$gt$Indiv
   AD <- vcf$gt$gt_AD
   Data <- data.frame(AD,Samples)
@@ -36,15 +36,13 @@ QTLParser_1_MH <- function(vcf,HighBulk,LowBulk){
   Data<- Data[(as.matrix(Data[6])==HighBulk),]
   Data<-Data[,-6]
   #Data<-Data[,-5]
-  Data <- as.matrix(Data)
-  Data <- na.omit(Data)
   write.table(Data, file = paste0(HighBulk,".tsv"),row.names = FALSE,col.names = TRUE,sep="\t",quote = FALSE)
   write.table(Data, file = paste0(HighBulk,".csv"),row.names = FALSE,col.names = TRUE,sep=",",quote = FALSE)
   CHROM <- vcf$fix$ChromKey
   POS <- vcf$fix$POS
   REF <- vcf$fix$REF
   ALT <- vcf$fix$ALT
-  DP <- VCF_TIDY$gt$gt_DP
+  DP <- vcf$gt$gt_DP
   Samples <- vcf$gt$Indiv
   AD <- vcf$gt$gt_AD
   Data <- data.frame(AD,Samples)
@@ -67,8 +65,6 @@ QTLParser_1_MH <- function(vcf,HighBulk,LowBulk){
   Data<- Data[(as.matrix(Data[6])==LowBulk),]
   Data<-Data[,-6]
   #Data<-Data[,-5]
-  Data <- as.matrix(Data)
-  Data <- na.omit(Data)
   write.table(Data, file = paste0(LowBulk,".tsv"),row.names = FALSE,col.names = TRUE,sep="\t",quote = FALSE)
   write.table(Data, file = paste0(LowBulk,".csv"),row.names = FALSE,col.names = TRUE,sep=",",quote = FALSE)
 
@@ -92,6 +88,7 @@ QTLParser_1_MH <- function(vcf,HighBulk,LowBulk){
   names(df3)[9] <- paste0("AD_REF.",LowBulk)
 
   names(df3)[10] <- paste0("AD_ALT.",LowBulk)
+  df3 <- na.omit(df3,c(paste0("AD_REF.",HighBulk),paste0("AD_ALT.",HighBulk),paste0("DP.",HighBulk),paste0("DP.",LowBulk),paste0("AD_REF.",LowBulk),paste0("AD_ALT.",LowBulk)))
   write.table(df3, file = "Hall.csv",row.names = FALSE,col.names = TRUE,sep = ",")
 
 }
