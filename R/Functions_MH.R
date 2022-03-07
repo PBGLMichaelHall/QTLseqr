@@ -36,7 +36,7 @@ QTLParser_1_MH <- function(vcf,HighBulk,LowBulk){
   Data<-Data <- Data[(as.matrix(Data[6])==HighBulk),]
   Data<-Data[,-6]
   #Data<-Data[,-5]
-  Data <- Data %>% drop_na(Data)
+  Data <- na.omit(Data)
   write.table(Data, file = paste0(HighBulk,".tsv"),row.names = FALSE,col.names = TRUE,sep="\t",quote = FALSE)
   write.table(Data, file = paste0(HighBulk,".csv"),row.names = FALSE,col.names = TRUE,sep=",",quote = FALSE)
   CHROM <- vcf$fix$ChromKey
@@ -66,7 +66,7 @@ QTLParser_1_MH <- function(vcf,HighBulk,LowBulk){
   Data<-Data <- Data[(as.matrix(Data[6])==LowBulk),]
   Data<-Data[,-6]
   #Data<-Data[,-5]
-  Data <- Data %>% drop_na(Data)
+  Data <- na.omit(Data)
   write.table(Data, file = paste0(LowBulk,".tsv"),row.names = FALSE,col.names = TRUE,sep="\t",quote = FALSE)
   write.table(Data, file = paste0(LowBulk,".csv"),row.names = FALSE,col.names = TRUE,sep=",",quote = FALSE)
 
