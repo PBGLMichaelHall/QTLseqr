@@ -558,3 +558,69 @@ function (SNPset, outlierFilter = c("deltaSNP", "Hampel"), filterThreshold = 0.1
                                                                                                                                                                                             reverse = TRUE))
   return(p)
 }
+
+
+
+
+
+
+#'Hello Again
+#' Plots Gprime distribution
+#' Modified by MH
+#' Plots a ggplot histogram of the distribution of Gprime with a log normal
+#' distribution overlay
+#'
+#' @param SNPset a data frame with SNPs and genotype fields as imported by
+#' @param ChromosomeValue1 Enter a Integer for a specific chromosome i.e. 1,2,..etc.
+#' @param ChromosomeValue2 Enter a Integer for a specific chromosome i.e. 1,2,..etc.
+#' @param ChromosomeValue3 Enter a Integer for a specific chromosome i.e. 1,2,..etc.
+#' @param ChromosomeValue4 Enter a Integer for a specific chromosome i.e. 1,2,..etc.
+#' @param threshold Specify Alternate Allelic Frequency threshold
+#' @return Plots Alternate Allelic Frequency against GPrime value 
+#'   \code{\link[modeest]{mlv}} function from the package modeest. Finally, the
+#' @examples obs_MH(SNPSet = df_filt, ChromosomeValue1 = 1, ChromosomeValue2 = 2, ChromosomeValue3 = 3, ChromosomeValue4 = 4, threshold = .30)
+#' @export obs_MH
+
+
+
+
+
+obs_MH<- function(SNPSet, ChromosomeValue1,ChromosomeValue2,ChromosomeValue3,ChromosomeValue4, threshold) 
+{
+  frame <- SNPSet %>% dplyr::mutate(LowRef = AD_REF.LOW, HighRef = AD_REF.HIGH, 
+                                    LowAlt = AD_ALT.LOW, HighAlt = AD_ALT.HIGH) %>% select(LowRef, 
+                                                                                           HighRef, LowAlt, HighAlt)
+  p1 <- ((frame$LowAlt)/(frame$LowRef + frame$LowAlt))
+  p1 <- round(p1, 3)
+  p2 <- ((frame$HighAlt)/(frame$HighRef + frame$HighAlt))
+  p2 <- round(p2, 3)
+  Chrom <- SNPSet %>% select(CHROM)
+  POS <- SNPSet %>% select(POS)
+  AD_High1 <- data.frame(SNPSet$AD_ALT.HIGH, SNPSet$AD_ALT.LOW)
+  AD_High1$AD_High <- paste(AD_High1$SNPSet.AD_ALT.HIGH, AD_High1$SNPSet.AD_ALT.LOW, 
+                            sep = ",")
+  AD_High <- subset(AD_High1, select = -c(SNPSet.AD_ALT.HIGH, 
+                                          SNPSet.AD_ALT.LOW))
+  AD_Low1 <- data.frame(SNPSet$AD_REF.HIGH, SNPSet$AD_REF.LOW)
+  AD_Low1$AD_Low <- paste(AD_Low1$SNPSet.AD_REF.HIGH, AD_Low1$SNPSet.AD_REF.LOW, 
+                          sep = ",")
+  AD_Low <- subset(AD_Low1, select = -c(SNPSet.AD_REF.HIGH, 
+                                        SNPSet.AD_REF.LOW))
+  Gprime <- SNPSet %>% select(Gprime)
+  Gprime <- round(Gprime, 3)
+  data <- cbind(Chrom, POS, p1, p2, AD_High, AD_Low, Gprime)
+  data <- as.data.frame(data)
+  data <- data[(as.matrix(data[1]) == ChromosomeValue1) | (as.matrix(data[1]) == ChromosomeValue2) |  (as.matrix(data[1]) == ChromosomeValue3) |  (as.matrix(data[1]) == ChromosomeValue4), ]  
+  data <- data[(as.matrix(data[4]) > threshold), ]
+  e3<-ggscatter(data, x="p2", y="Gprime",color="CHROM",palette = "npg",ellipse = TRUE,mean.point = TRUE,star.plot = TRUE,ggtheme = theme_minimal())
+  e3 + stat_cor(method = "pearson",label.x = 1.2,label.y = -100)
+  print(e3)
+  e4 <- ggscatterhist(data, x = "p2", y = "Gprime",color = "CHROM", palette = c("#00AFBB","#E7B800","#FC4E07","#E79900"),margin.params = list(fill="CHROM",color = "black",size=0.2))
+  print(e4)
+  e5 <- ggscatter(data, x = "p2", y = "Gprime", color = "CHROM", add = "reg.line",conf.int = TRUE,add.params = list(fill="CHROM"),ggtheme = theme_minimal()) 
+  e5 <- e5 + stat_cor(method = "pearson",label.x = .5,label.y = 6)
+  print(e5)
+  return(data)
+}
+
+
