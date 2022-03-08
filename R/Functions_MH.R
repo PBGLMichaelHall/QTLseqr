@@ -564,7 +564,8 @@ function (SNPset, outlierFilter = c("deltaSNP", "Hampel"), filterThreshold = 0.1
 
 
 
-#'Hello Again
+#'Hello Again 
+#'Hello 
 #' Plots Gprime distribution
 #' Modified by MH
 #' Plots a ggplot histogram of the distribution of Gprime with a log normal
