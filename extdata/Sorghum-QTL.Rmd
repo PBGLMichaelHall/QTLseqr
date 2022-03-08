@@ -1,0 +1,194 @@
+---
+title: "QTL-Sorghum"
+author: "Michael Hall"
+date: "3/2/2022"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,comment = NA)
+```
+
+
+
+```{r libraries}
+devtools::install_github("PBGLMichaelHall/QTLseqr",force = TRUE)
+library(QTLseqr)
+library(tinytex)
+library(vcfR)
+library(tidyr)
+library(ggplot2)
+library(dplyr)
+library(ggrepel)
+library(ggpubr)
+
+```
+
+
+```{r main, warning=FALSE,message=FALSE,comment=NA}
+
+#Set Working Directory
+setwd("/home/michael/Desktop/QTLseqr/extdata")
+
+#vcf file must only contain bialleleic variants. (filter upstream, e.g., with bcftools view -m2 -M2), also the QTLseqR functions will only take SNPS, ie, length of REF and ALT== 1
+vcf <- read.vcfR(file = "freebayes_D2.filtered.vcf")
+
+#Convert to tidy data frame
+VCF_TIDY <- vcfR2tidy(vcf)
+
+#Call the Parser
+QTLParser_1_MH(vcf = VCF_TIDY, HighBulk = "D2_F2_tt",LowBulk = "D2_F2_TT")
+
+
+#Set High bulk and Low bulk sample names and parser generated file name
+
+HighBulk <- "D2_F2_tt"
+LowBulk <- "D2_F2_TT"
+file <- "Hall.csv"
+
+#Choose which chromosomes will be included in the analysis,
+#the tidy data frame makes a CHROMKEY so no need to change chromosome names
+Chroms <- 1:10
+
+
+df <-
+  importFromTable(
+    file = file,
+    highBulk = HighBulk,
+    lowBulk = LowBulk,
+    chromList = Chroms
+  ) 
+
+
+#plot histograms associated with filtering arguments to determine if cut off values are appropriate
+
+
+
+ggplot(data = df) +
+  geom_histogram(aes(x = AD_ALT.LOW + AD_ALT.HIGH)) + xlim(0,400)
+
+ggsave(filename = "AD_Histogram.png",plot = last_plot())
+ggplot(data = df) +
+  geom_histogram(aes(x = AD_REF.LOW + AD_REF.HIGH)) + xlim(0,400)
+ggsave(filename = "AD_Ref_Histogram.png",plot = last_plot())
+ggplot(data =df) +
+  geom_histogram(aes(x = DP.LOW + DP.HIGH)) + xlim(0,400)
+ggsave(filename = "Depth_Histogram.png",plot=last_plot())
+ggplot(data = df) +
+  geom_histogram(aes(x = REF_FRQ))
+ggsave(filename = "Ref_Freq_Histogram.png",plot = last_plot())
+
+
+
+
+
+
+```
+
+
+```{r Filtering, warning = FALSE}
+
+#Filter SNPs based on some criteria
+df_filt <-
+  filterSNPs(
+    SNPset = df,
+    refAlleleFreq = 0.20,
+    minTotalDepth = 100,
+    maxTotalDepth = 400,
+    minSampleDepth = 40,
+    #    minGQ = 0
+  )
+
+
+#Run G' analysis
+df_filt<-runGprimeAnalysis_MH(
+  SNPset = df_filt,
+  windowSize = 5000000,
+  outlierFilter = "deltaSNP",
+  filterThreshold = 0.1)
+
+
+```
+
+
+```{r QTLSEQ, warning = FALSE}
+
+#Run QTLseq analysis
+df_filt2 <- runQTLseqAnalysis_MH(
+  SNPset = df_filt,
+  windowSize = 5000000,
+  popStruc = "F2",
+  bulkSize = c(45, 38),
+  replications = 10000,
+  intervals = c(95, 99)
+)
+
+setwd("/home/michael/Desktop/SorghumQTL/GPrimeDistributionPlots/")
+
+#Plot G Statistic Distribution
+hist(df_filt2$G,breaks = 950,xlim = c(0,10),xlab = "G Distribution",main = "Histogram of G Values")
+
+# G' Distribution Plot
+plotGprimeDist_MH(SNPset = df_filt2, outlierFilter = "Hampel")
+ggsave(filename = "Hampel_GPrime.png",plot = last_plot())
+
+setwd("/home/michael/Desktop/SorghumQTL/DeltaSNP/")
+plotGprimeDist_MH(SNPset = df_filt2, outlierFilter = "deltaSNP",filterThreshold = 0.1)
+ggsave(filename = "DeltaSNP.png",plot = last_plot())
+
+
+setwd("/home/michael/Desktop/SorghumQTL/nSNPs/")
+
+#make the Plot
+snpnumber <- plotQTLStats(SNPset = df_filt2, var = "nSNPs")
+ggsave(filename = "nSNPs.png",plot = last_plot())
+
+setwd("/home/michael/Desktop/SorghumQTL/GPrimeDistributionPlots/")
+Gprime<-plotQTLStats(SNPset = df_filt, var = "Gprime", plotThreshold = TRUE, q = 0.01)
+ggsave(filename = "GPrime.png",plot = last_plot())
+setwd("/home/michael/Desktop/SorghumQTL/DeltaSNP/")
+deltaSNP<-plotQTLStats(SNPset = df_filt2, var = "deltaSNP", plotIntervals  = TRUE)
+ggsave(filename = "DeltaSNPInterval.png",plot = last_plot())
+setwd("/home/michael/Desktop/SorghumQTL/negLog10Pval/")
+neglog<-plotQTLStats(SNPset = df_filt2, var = "negLog10Pval",plotThreshold = TRUE,q=0.01,subset = c("1","3","4","6"))
+ggsave(filename = "negLog10Pval.png",plot = last_plot())
+Gprime2<-plotQTLStats(SNPset = df_filt2, var = "Gprime",plotThreshold = TRUE,q=0.01,subset = c("1","3","4","6"))
+#plot the plots
+snpnumber
+Gprime
+Gprime2
+deltaSNP
+neglog
+
+
+#export summary CSV
+setwd("/home/michael/Desktop/SorghumQTL/PeakSummary/")
+QTLTable <- getQTLTable(SNPset = df_filt2, alpha = 0.01, export = TRUE, fileName = "my_BSA_QTL.csv")
+write.csv(QTLTable, file = "QTLTablePeaks.csv", row.names = FALSE, col.names = TRUE)
+Table4 <- read.table(file = "QTLTablePeaks.csv",header = TRUE, sep = ",", fill=TRUE)
+```
+
+
+```{r AlleleFreq,warning=FALSE}
+#Use the function to plot allele frequencies per chromosome
+Obs_Allele_Freq(SNPSet = df_filt)
+##Use the function to investigate chromosomal region of interest
+Obs_Allele_Freq2(SNPSet = df_filt, ChromosomeValue = 4, threshold = .90)
+Obs_Allele_Freq2(SNPSet = df_filt, ChromosomeValue = 3, threshold = .50)
+Obs_Allele_Freq2(SNPSet = df_filt, ChromosomeValue = 6, threshold = .50)
+Obs_Allele_Freq2(SNPSet = df_filt, ChromosomeValue = 1, threshold = .50)
+```
+
+
+```{r Plots,warning=FALSE}
+
+obs_MH(SNPSet = df_filt2, ChromosomeValue1 = 1,ChromosomeValue2 = 2,ChromosomeValue3 = 3,ChromosomeValue4 = 4, threshold = .01)
+for(i in 1:10){
+obs_MH(SNPSet = df_filt2, ChromosomeValue1 = i,ChromosomeValue2 = i,ChromosomeValue3 = i,ChromosomeValue4 = i, threshold = .01)
+}
+
+```
