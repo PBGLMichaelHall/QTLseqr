@@ -621,7 +621,6 @@ obs_MH<- function(SNPSet, ChromosomeValue1,ChromosomeValue2,ChromosomeValue3,Chr
   e5 <- ggscatter(data, x = "p2", y = "Gprime", color = "CHROM", add = "reg.line",conf.int = TRUE,add.params = list(fill="CHROM"),ggtheme = theme_minimal()) 
   e5 <- e5 + stat_cor(method = "pearson",label.x = .5,label.y = 6)
   print(e5)
-  return(data)
 }
 
 
