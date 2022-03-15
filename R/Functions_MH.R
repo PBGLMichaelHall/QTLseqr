@@ -471,10 +471,14 @@ Obs_Allele_Freq2 <-
       ggrepel::geom_label_repel(aes(label = as.character(POS))) + 
       labs(x = "SNP", y = "Allele Frequency", title = "Low Bulk Observed High Parent Allele Frequency") 
     print(e)
-    e1 <- ggplot(data = data, aes(x = seq(from = 1, to = length(p2), by =1), 
-                                  y = p2)) + geom_point(aes(color = factor(CHROM))) + ggrepel::geom_label_repel(aes(label = as.character(POS))) 
-    theme_bw() + labs(x = "SNP", y = "Allele Frequency", 
-                      title = "High Bulk Observed High Parent Allele Frequency")
+    SNP_Observations <- seq(from = 1, to = length(p2), by = 1)
+    data <- cbind(Chrom, POS, p1, p2, AD_High, AD_Low, Gprime,SNP_Observations)
+    data <- as.data.frame(data)
+    data <- data[(as.matrix(data[1]) == 4), ]
+    data <- data[(as.matrix(data[4]) > 0.9), ]
+    e1 <- ggplot(data = data, aes(x = SNP_Observations, y = p2)) + geom_point(aes(color = factor(CHROM))) + 
+      ggrepel::geom_label_repel(aes(label = as.character(POS)))
+    theme_bw() + labs(x = "SNP", y = "Allele Frequency", title = "High Bulk Observed High Parent Allele Frequency")
     print(e1)
     return(data)
   }
