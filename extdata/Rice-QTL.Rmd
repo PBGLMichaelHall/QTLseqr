@@ -1,0 +1,177 @@
+---
+title: "Rice-QTL"
+author: "Michael Hall"
+date: "3/16/2022"
+output:
+  pdf_document: default
+  word_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment = NA)
+```
+
+
+```{r libraries}
+devtools::install_github("PBGLMichaelHall/QTLseqr",force = TRUE)
+library(QTLseqr)
+library(tinytex)
+library(vcfR)
+library(tidyr)
+library(ggplot2)
+library(dplyr)
+library(ggrepel)
+library(ggpubr)
+
+```
+
+
+```{r main, warning=FALSE,message=FALSE,comment=NA}
+
+#Set Working Directory
+setwd("/home/michael/Desktop/RiceCold2")
+
+#vcf file must only contain bialleleic variants. (filter upstream, e.g., with bcftools view -m2 -M2), also the QTLseqR functions will only take SNPS, ie, length of REF and ALT== 1
+vcf <- read.vcfR(file = "wGQ-Filt-freebayes~bwa~IRGSP-1.0~both-segregant_bulks~filtered-default.vcf.gz")
+
+#Convert to tidy data frame
+VCF_TIDY <- vcfR2tidy(vcf)
+
+#Call the Parser
+QTLParser_1_MH(vcf = VCF_TIDY, HighBulk = "ET-pool-385",LowBulk = "ES-pool-430")
+
+
+#Set High bulk and Low bulk sample names and parser generated file name
+
+HighBulk <- "ET-pool-385"
+LowBulk <- "ES-pool-430"
+file <- "Hall.csv"
+
+#Choose which chromosomes will be included in the analysis,
+#the tidy data frame makes a CHROMKEY so no need to change chromosome names
+Chroms <- 1:12
+
+
+df <-
+  importFromTable(
+    file = file,
+    highBulk = HighBulk,
+    lowBulk = LowBulk,
+    chromList = Chroms
+  ) 
+
+
+#plot histograms associated with filtering arguments to determine if cut off values are appropriate
+
+
+
+ggplot(data = df) +
+  geom_histogram(aes(x = AD_ALT.LOW + AD_ALT.HIGH)) + xlim(0,400)
+
+ggsave(filename = "AD_Histogram.png",plot = last_plot())
+ggplot(data = df) +
+  geom_histogram(aes(x = AD_REF.LOW + AD_REF.HIGH)) + xlim(0,400)
+ggsave(filename = "AD_Ref_Histogram.png",plot = last_plot())
+ggplot(data =df) +
+  geom_histogram(aes(x = DP.LOW + DP.HIGH)) + xlim(0,400)
+ggsave(filename = "Depth_Histogram.png",plot=last_plot())
+ggplot(data = df) +
+  geom_histogram(aes(x = REF_FRQ))
+ggsave(filename = "Ref_Freq_Histogram.png",plot = last_plot())
+
+
+```
+
+
+
+
+```{r Filtering, warning = FALSE}
+
+#Filter SNPs based on some criteria
+df_filt <-
+  filterSNPs(
+    SNPset = df,
+    refAlleleFreq = 0.20,
+    minTotalDepth = 100,
+    maxTotalDepth = 400,
+    minSampleDepth = 40,
+    #    minGQ = 0
+  )
+
+
+#Run G' analysis
+df_filt<-runGprimeAnalysis_MH(
+  SNPset = df_filt,
+  windowSize = 5000000,
+  outlierFilter = "deltaSNP",
+  filterThreshold = 0.1)
+
+
+```
+
+
+```{r QTLSEQ, warning = FALSE}
+
+#Run QTLseq analysis
+df_filt2 <- runQTLseqAnalysis_MH(
+  SNPset = df_filt,
+  windowSize = 5000000,
+  popStruc = "F2",
+  bulkSize = c(45, 38),
+  replications = 10000,
+  intervals = c(95, 99)
+)
+
+
+
+#Plot G Statistic Distribution
+hist(df_filt2$G,breaks = 950,xlim = c(0,10),xlab = "G Distribution",main = "Histogram of G Values")
+
+# G' Distribution Plot
+plotGprimeDist_MH(SNPset = df_filt2, outlierFilter = "Hampel")
+ggsave(filename = "Hampel_GPrime.png",plot = last_plot())
+
+
+plotGprimeDist_MH(SNPset = df_filt2, outlierFilter = "deltaSNP",filterThreshold = 0.1)
+ggsave(filename = "DeltaSNP.png",plot = last_plot())
+
+
+
+
+#make the Plot
+snpnumber <- plotQTLStats(SNPset = df_filt2, var = "nSNPs")
+ggsave(filename = "nSNPs.png",plot = last_plot())
+
+
+Gprime<-plotQTLStats(SNPset = df_filt, var = "Gprime", plotThreshold = TRUE, q = 0.01)
+ggsave(filename = "GPrime.png",plot = last_plot())
+
+deltaSNP<-plotQTLStats(SNPset = df_filt2, var = "deltaSNP", plotIntervals  = TRUE)
+ggsave(filename = "DeltaSNPInterval.png",plot = last_plot())
+
+neglog<-plotQTLStats(SNPset = df_filt2, var = "negLog10Pval",plotThreshold = TRUE,q=0.01)
+ggsave(filename = "negLog10Pval.png",plot = last_plot())
+Gprime2<-plotQTLStats(SNPset = df_filt2, var = "Gprime",plotThreshold = TRUE,q=0.01,subset = c("8"))
+#plot the plots
+snpnumber
+Gprime
+Gprime2
+deltaSNP
+neglog
+
+
+#export summary CSV
+
+QTLTable <- getQTLTable(SNPset = df_filt2, alpha = 0.01, export = TRUE, fileName = "my_BSA_QTL.csv")
+write.csv(QTLTable, file = "QTLTablePeaks.csv", row.names = FALSE, col.names = TRUE)
+Table4 <- read.table(file = "QTLTablePeaks.csv",header = TRUE, sep = ",", fill=TRUE)
+
+
+
+#Use the function to plot allele frequencies per chromosome
+Obs_Allele_Freq(SNPSet = df_filt)
+##Use the function to investigate chromosomal region of interest
+Obs_Allele_Freq2(SNPSet = df_filt, ChromosomeValue = 8, threshold = .90)
+```
