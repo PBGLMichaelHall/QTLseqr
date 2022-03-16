@@ -474,8 +474,8 @@ Obs_Allele_Freq2 <-
     SNP_Observations <- seq(from = 1, to = length(p2), by = 1)
     data <- cbind(Chrom, POS, p1, p2, AD_High, AD_Low, Gprime,SNP_Observations)
     data <- as.data.frame(data)
-    data <- data[(as.matrix(data[1]) == 4), ]
-    data <- data[(as.matrix(data[4]) > 0.9), ]
+    data <- data[(as.matrix(data[1]) == ChromosomeValue), ]
+    data <- data[(as.matrix(data[4]) > threshold), ]
     e1 <- ggplot(data = data, aes(x = SNP_Observations, y = p2)) + geom_point(aes(color = factor(CHROM))) + 
       ggrepel::geom_label_repel(aes(label = as.character(POS)))
     theme_bw() + labs(x = "SNP", y = "Allele Frequency", title = "High Bulk Observed High Parent Allele Frequency")
@@ -484,7 +484,7 @@ Obs_Allele_Freq2 <-
   }
 
 
-#'Hello Again
+#'Hello Again and Again
 #' Plots Gprime distribution
 #' Modified by MH
 #' Plots a ggplot histogram of the distribution of Gprime with a log normal
