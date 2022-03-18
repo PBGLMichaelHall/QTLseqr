@@ -11,5 +11,5 @@ ChromQual(vcf = vcf, SampleName = "S14")
 
 }
 \description{
-Generates a tsv, and a csv file of the following fields, Chromosome, Position, Reference, Alternate, Depth, and Sample Name. Also returns a data frame named data 
+Generates a tsv, and a csv file of the following fields, Chromosome, Position, Reference, Alternate, Depth, and Sample Name. Also returns a data frame named data OK.
 }

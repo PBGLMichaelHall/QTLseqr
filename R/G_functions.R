@@ -1,7 +1,7 @@
 #Functions for calculating and manipulating the G statistic
 
 #' Calculates the G statistic
-#'
+#' 
 #' The function is used by \code{\link{runGprimeAnalysis}} to calculate the G
 #' statisic G is defined by the equation: \deqn{G = 2*\sum_{i=1}^{4}
 #' n_{i}*ln\frac{obs(n_i)}{exp(n_i)}}{G = 2 * \sum n_i * ln(obs(n_i)/exp(n_i))}
