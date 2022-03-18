@@ -648,9 +648,10 @@ ChromQual <-
     POS <- vcf$fix$POS
     REF <- vcf$fix$REF
     ALT <- vcf$fix$ALT
+    Qual <- vcf$fix$QUAL
     DP <- vcf$gt$gt_DP
     Samples <- vcf$gt$Indiv
-    Data <- data.frame(CHROM, POS, REF, ALT, DP, Samples)
+    Data <- data.frame(CHROM, POS, REF, ALT, Qual, DP, Samples)
     Data <- Data[(as.matrix(Data[6]) == SampleName), ]
     write.table(Data, file = paste0(SampleName, ".tsv"), row.names = FALSE, 
                 col.names = TRUE, sep = "\t", quote = FALSE)
