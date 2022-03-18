@@ -633,3 +633,30 @@ obs_MH<- function(SNPSet, ChromosomeValue1,ChromosomeValue2,ChromosomeValue3,Chr
 }
 
 
+#' @param vcf A vcf file read by read.vcfR and converted to a tidy dataframe with vcfR2tidy
+#' @param SampleName Name of the sample in the vcf file
+#' @return A tsv, and a csv file of the following fields, Chromosome, Position, Reference, Alternate, Depth, and Sample Name. Also returns a data frame named data 
+#' @examples ChromQual(vcf = vcf, SampleName = "S14")
+#' @export ChromQual
+
+
+
+ChromQual <- 
+  function (vcf, SampleName) 
+  {
+    CHROM <- vcf$fix$ChromKey
+    POS <- vcf$fix$POS
+    REF <- vcf$fix$REF
+    ALT <- vcf$fix$ALT
+    DP <- vcf$gt$gt_DP
+    Samples <- vcf$gt$Indiv
+    Data <- data.frame(CHROM, POS, REF, ALT, DP, Samples)
+    Data <- Data[(as.matrix(Data[6]) == SampleName), ]
+    write.table(Data, file = paste0(SampleName, ".tsv"), row.names = FALSE, 
+                col.names = TRUE, sep = "\t", quote = FALSE)
+    write.table(Data, file = paste0(SampleName, ".csv"), row.names = FALSE, 
+                col.names = TRUE, sep = ",", quote = FALSE)
+    return(Data)
+  }
+
+
