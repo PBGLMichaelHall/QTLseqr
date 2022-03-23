@@ -664,9 +664,9 @@ ChromQual <-
 #' @param outlierFilter Choose outlier filter method either deltaSNP or Hampel
 #' @param filterThreshold Choose a filter threshold
 #' @param binwidth Choose binwidth size default is 0.5
-#' @return A tsv, and a csv file of the following fields, Chromosome, Position, Reference, Alternate, Depth, and Sample Name. Also returns a data frame named data 
-#' @examples ChromQual(vcf = vcf, SampleName = "S14")
-#' @export ChromQual
+#' @return A Gprime Distribution Plot 
+#' @examples 
+#' @export plotGprimeDist_Py_MH
 
 
 

@@ -15,5 +15,5 @@
   
 }
 \description{
-  Calculates G Prime Distribution in jupyter notebook
+  Calculates G Prime Distribution in jupyter notebook for you
 }
