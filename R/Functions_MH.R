@@ -660,4 +660,56 @@ ChromQual <-
     return(Data)
   }
 
+#' @param SNPset An SNPset generated from importFromTable function
+#' @param outlierFilter Choose outlier filter method either deltaSNP or Hampel
+#' @param filterThreshold Choose a filter threshold
+#' @param binwidth Choose binwidth size default is 0.5
+#' @return A tsv, and a csv file of the following fields, Chromosome, Position, Reference, Alternate, Depth, and Sample Name. Also returns a data frame named data 
+#' @examples ChromQual(vcf = vcf, SampleName = "S14")
+#' @export ChromQual
 
+
+
+
+
+plotGprimeDist_Py_MH <-
+function (SNPset, outlierFilter = c("deltaSNP", "Hampel"), filterThreshold = 0.1, 
+          binwidth = 0.5) 
+{
+  if (outlierFilter == "deltaSNP") {
+    trim_df <- SNPset[abs(SNPset$deltaSNP) < filterThreshold, 
+    ]
+    trimGprime <- trim_df$Gprime
+  }
+  else {
+    lnGprime <- log(SNPset$Gprime)
+    MAD <- median(abs(lnGprime[lnGprime <= median(lnGprime)] - 
+                        median(lnGprime)))
+    trim_df <- SNPset[lnGprime - median(lnGprime) <= 5.2 * 
+                        median(MAD), ]
+    trimGprime <- trim_df$Gprime
+  }
+  medianTrimGprime <- median(trimGprime)
+  modeTrimGprime <- modeest::mlv(x = trimGprime, bw = 0.5, 
+                                 method = "hsm")[[1]]
+  muE <- log(medianTrimGprime)
+  varE <- abs(muE - log(modeTrimGprime))
+  n <- length(trim_df$Gprime)
+  bw <- binwidth
+  p <- ggplot.ggplot(SNPset) + ggplot.xlim(0, 3 * mean(SNPset$Gprime)) + 
+    ggplot.xlab("G' value") + ggplot.geom_histogram(ggplot.aes(x = Gprime, 
+                                                               fill = "Raw Data"), binwidth = bw) + ggplot.geom_histogram(data = trim_df, 
+                                                                                                                          ggplot.aes(x = Gprime, fill = "After filtering"), binwidth = bw) + 
+    ggplot.stat_function(ggplot.aes(color = "black"), 
+                         size = 1, fun = function(x, mean, sd, n, bw) {
+                           dlnorm(x = x, mean = muE, sd = sqrt(varE)) * 
+                             n * bw
+                         }, args = c(mean = muE, sd = sqrt(varE), n = n, bw = bw)) + 
+    ggplot.scale_fill_discrete(name = "Distribution") + 
+    ggplot.scale_colour_manual(name = "Null distribution", 
+                               values = "black", labels = as.expression(bquote(~theta["G'"] ~ 
+                                                                                 " ~ lnN(" * .(round(muE, 2)) * "," * .(round(varE, 
+                                                                                                                              2)) * ")"))) + ggplot.guides(fill = ggplot.guide_legend(order = 1, 
+                                                                                                                                                                                      reverse = TRUE))
+  return(p)
+}
