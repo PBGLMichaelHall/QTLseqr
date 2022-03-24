@@ -471,6 +471,7 @@ Obs_Allele_Freq2 <-
     data <- as.data.frame(data)
     data <- data[(as.matrix(data[1]) == ChromosomeValue), ]
     data <- data[(as.matrix(data[4]) > threshold), ]
+    data <- data[order(-p2)]
     e <- ggplot(data = data, aes(x = seq(from = 1, to = length(p1), 
                                          by = 1), y = p1)) + geom_point(aes(color = factor(CHROM))) + 
       theme_bw() + ggrepel::geom_label_repel(aes(label = as.character(POS))) + 
@@ -482,6 +483,7 @@ Obs_Allele_Freq2 <-
     data <- as.data.frame(data)
     data <- data[(as.matrix(data[1]) == ChromosomeValue), ]
     data <- data[(as.matrix(data[4]) > threshold), ]
+    data <- data[order(-p2)]
     e1 <- ggplot(data = data, aes(x = SNP_Observations, y = p2)) + 
       geom_point(aes(color = factor(CHROM))) + ggrepel::geom_label_repel(aes(label = as.character(POS)))
     theme_bw() + labs(x = "SNP", y = "Allele Frequency", title = "High Bulk Observed High Parent Allele Frequency")
