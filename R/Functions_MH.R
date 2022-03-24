@@ -782,7 +782,7 @@ plotQTLStats_MH <-
       stop(paste0("The following are not true chromosome names: ", whichnot))
     }
     
-    if (!var %in% c("nSNPs", "deltaSNP", "Gprime", "negLog10Pval", "DiffObsAlleleFreq"))
+    if (!var %in% c("nSNPs", "deltaSNP", "Gprime", "negLog10Pval", "diff"))
       stop(
         "Please choose one of the following variables to plot: \"nSNPs\", \"deltaSNP\", \"Gprime\", \"negLog10Pval\", \"diff\""
       )
