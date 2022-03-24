@@ -3,6 +3,7 @@
 export(ChromQual)
 export(Obs_Allele_Freq)
 export(Obs_Allele_Freq2)
+export(Obs_Allele_Freq3)
 export(QTLParser_1_MH)
 export(QTLParser_2_MH)
 export(countSNPs_cpp)
