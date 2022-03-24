@@ -714,3 +714,193 @@ function (SNPset, outlierFilter = c("deltaSNP", "Hampel"), filterThreshold = 0.1
                                                                                                                                                                                       reverse = TRUE))
   return(p)
 }
+
+
+
+
+
+
+
+#' Plots different paramaters for QTL identification
+#'
+#' A wrapper for ggplot to plot genome wide distribution of parameters used to
+#' identify QTL.
+#'
+#' @param SNPset a data frame with SNPs and genotype fields as imported by
+#'   \code{ImportFromGATK} and after running \code{runGprimeAnalysis} or \code{runQTLseqAnalysis}
+#' @param subset a vector of chromosome names for use in quick plotting of
+#'   chromosomes of interest. Defaults to
+#'   NULL and will plot all chromosomes in the SNPset
+#' @param var character. The paramater for plotting. Must be one of: "nSNPs",
+#'   "deltaSNP", "Gprime", "negLog10Pval" "DiffObsAlleleFreq"
+#' @param scaleChroms boolean. if TRUE (default) then chromosome facets will be 
+#'   scaled to relative chromosome sizes. If FALSE all facets will be equal
+#'   sizes. This is basically a convenience argument for setting both scales and 
+#'   shape as "free_x" in ggplot2::facet_grid.
+#' @param line boolean. If TRUE will plot line graph. If FALSE will plot points.
+#'   Plotting points will take more time.
+#' @param plotThreshold boolean. Should we plot the False Discovery Rate
+#'   threshold (FDR). Only plots line if var is "Gprime" or "negLogPval". 
+#' @param plotIntervals boolean. Whether or not to plot the two-sided Takagi confidence intervals in "deltaSNP" plots.
+#' @param q numeric. The q-value to use as the FDR threshold. If too low, no
+#'   line will be drawn and a warning will be given.
+#' @param ... arguments to pass to ggplot2::geom_line or ggplot2::geom_point for
+#'   changing colors etc.
+#'
+#' @return Plots a ggplot graph for all chromosomes or those requested in
+#'   \code{subset}. By setting \code{var} to "nSNPs" the distribution of SNPs
+#'   used to calculate G' will be plotted. "deltaSNP" will plot a tri-cube
+#'   weighted delta SNP-index for each SNP. "Gprime" will plot the tri-cube
+#'   weighted G' value. Setting "negLogPval" will plot the -log10 of the p-value
+#'   at each SNP. In "Gprime" and "negLogPval" plots, a genome wide FDR threshold of
+#'   q can be drawn by setting "plotThreshold" to TRUE. The defualt is a red
+#'   line. If you would like to plot a different line we suggest setting
+#'   "plotThreshold" to FALSE and manually adding a line using
+#'   ggplot2::geom_hline.
+#'
+#' @examples p <- plotQTLstats(df_filt_6Mb, var = "Gprime", plotThreshold = TRUE, q = 0.01, subset = c("Chr3","Chr4"))
+#' @export plotQTLStats_MH
+
+
+plotQTLStats_MH <- 
+  function(SNPset,
+           subset = NULL,
+           var = "nSNPs",
+           scaleChroms = TRUE,
+           line = TRUE,
+           plotThreshold = FALSE,
+           plotIntervals = FALSE,
+           q = 0.05,
+           ...) {
+    
+    #get fdr threshold by ordering snps by pval then getting the last pval
+    #with a qval < q
+    
+    if (!all(subset %in% unique(SNPset$CHROM))) {
+      whichnot <-
+        paste(subset[base::which(!subset %in% unique(SNPset$CHROM))], collapse = ', ')
+      stop(paste0("The following are not true chromosome names: ", whichnot))
+    }
+    
+    if (!var %in% c("nSNPs", "deltaSNP", "Gprime", "negLog10Pval", "DiffObsAlleleFreq"))
+      stop(
+        "Please choose one of the following variables to plot: \"nSNPs\", \"deltaSNP\", \"Gprime\", \"negLog10Pval\", \"DiffObsAlleleFreq\""
+      )
+    
+    #don't plot threshold lines in deltaSNPprime or number of SNPs as they are not relevant
+    if ((plotThreshold == TRUE &
+         var == "deltaSNP") |
+        (plotThreshold == TRUE & var == "nSNPs")) {
+      message("FDR threshold is not plotted in deltaSNP or nSNPs plots")
+      plotThreshold <- FALSE
+    }
+    #if you need to plot threshold get the FDR, but check if there are any values that pass fdr
+    
+    GprimeT <- 0
+    logFdrT <- 0
+    
+    if (plotThreshold == TRUE) {
+      fdrT <- getFDRThreshold(SNPset$pvalue, alpha = q)
+      
+      if (is.na(fdrT)) {
+        warning("The q threshold is too low. No threshold line will be drawn")
+        plotThreshold <- FALSE
+        
+      } else {
+        logFdrT <- -log10(fdrT)
+        GprimeT <- SNPset[which(SNPset$pvalue == fdrT), "Gprime"]
+      }
+    }
+    
+    SNPset <-
+      if (is.null(subset)) {
+        SNPset
+      } else {
+        SNPset[SNPset$CHROM %in% subset,]
+      }
+    
+    p <- ggplot2::ggplot(data = SNPset) +
+      ggplot2::scale_x_continuous(breaks = seq(from = 0,to = max(SNPset$POS), by = 10^(floor(log10(max(SNPset$POS))))), labels = format_genomic(), name = "Genomic Position (Mb)") +
+      ggplot2::theme(plot.margin = ggplot2::margin(
+        b = 10,
+        l = 20,
+        r = 20,
+        unit = "pt"
+      ))
+    
+    if (var == "Gprime") {
+      threshold <- GprimeT
+      p <- p + ggplot2::ylab("G' value")
+    }
+    
+    if (var == "negLog10Pval") {
+      threshold <- logFdrT
+      p <-
+        p + ggplot2::ylab(expression("-" * log[10] * '(p-value)'))
+    }
+    
+    if (var == "nSNPs") {
+      p <- p + ggplot2::ylab("Number of SNPs in window")
+    }
+    
+    if (var == "deltaSNP") {
+      var <- "tricubeDeltaSNP"
+      p <-
+        p + ggplot2::ylab(expression(Delta * '(SNP-index)')) +
+        ggplot2::ylim(-0.55, 0.55) +
+        ggplot2::geom_hline(yintercept = 0,
+                            color = "black",
+                            alpha = 0.4)
+      if (var == "DiffObsAlleleFreq"){
+        p <- p + ggplot2::ylab("Difference Between High and Low Bulk Allele Frequencies")
+      }
+      if (plotIntervals == TRUE) {
+        
+        ints_df <-
+          dplyr::select(SNPset, CHROM, POS, dplyr::matches("CI_")) %>% tidyr::gather(key = "Interval", value = "value",-CHROM,-POS)
+        
+        p <- p + ggplot2::geom_line(data = ints_df, ggplot2::aes(x = POS, y = value, color = Interval)) +
+          ggplot2::geom_line(data = ints_df, ggplot2::aes(
+            x = POS,
+            y = -value,
+            color = Interval
+          ))
+      }
+    }
+    
+    if (line) {
+      p <-
+        p + ggplot2::geom_line(ggplot2::aes_string(x = "POS", y = var), ...)
+    }
+    
+    if (!line) {
+      p <-
+        p + ggplot2::geom_point(ggplot2::aes_string(x = "POS", y = var), ...)
+    }
+    
+    if (plotThreshold == TRUE)
+      p <-
+      p + ggplot2::geom_hline(
+        ggplot2::aes_string(yintercept = "threshold"),
+        color = "red",
+        size = 1,
+        alpha = 0.4
+      )
+    
+    if (scaleChroms == TRUE) {
+      p <- p + ggplot2::facet_grid(~ CHROM, scales = "free_x", space = "free_x")
+    } else {
+      p <- p + ggplot2::facet_grid(~ CHROM, scales = "free_x")    
+    }
+    
+    p
+    
+  }
+
+
+
+
+
+
+
+
