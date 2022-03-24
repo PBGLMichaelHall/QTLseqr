@@ -1032,7 +1032,7 @@ plotQTLStats_MH2 <-
     
     if (!line) {
       p <- p + ggplot2::geom_point(ggplot2::aes_string(x = "POS", y = var), ...)
-      p <- p + ggplot2::geom_point(ggplot2::aes(size = SNPset$nSNPs))
+      p <- p + ggplot2::geom_point(ggplot2::aes(size = nSNPs))
       p
     }
     
