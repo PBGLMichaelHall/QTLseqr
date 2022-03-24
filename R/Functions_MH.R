@@ -452,6 +452,7 @@ Obs_Allele_Freq2 <-
     p1 <- round(p1, 3)
     p2 <- ((frame$HighAlt)/(frame$HighRef + frame$HighAlt))
     p2 <- round(p2, 3)
+    diff <- p2 - p1
     Chrom <- SNPSet %>% select(CHROM)
     POS <- SNPSet %>% select(POS)
     AD_High1 <- data.frame(SNPSet$AD_ALT.HIGH, SNPSet$AD_REF.HIGH)
@@ -466,7 +467,7 @@ Obs_Allele_Freq2 <-
                                           SNPSet.AD_ALT.LOW))
     Gprime <- SNPSet %>% select(Gprime)
     Gprime <- round(Gprime, 3)
-    data <- cbind(Chrom, POS, p1, p2, AD_High, AD_Low, Gprime)
+    data <- cbind(Chrom, POS, p1, p2, diff, AD_High, AD_Low, Gprime)
     data <- as.data.frame(data)
     data <- data[(as.matrix(data[1]) == ChromosomeValue), ]
     data <- data[(as.matrix(data[4]) > threshold), ]
