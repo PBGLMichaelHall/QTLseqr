@@ -768,6 +768,7 @@ plotQTLStats_MH <-
            var = "nSNPs",
            scaleChroms = TRUE,
            line = TRUE,
+           size = TRUE,
            plotThreshold = FALSE,
            plotIntervals = FALSE,
            q = 0.05,
@@ -852,7 +853,7 @@ plotQTLStats_MH <-
                             color = "black",
                             alpha = 0.4)
       if (var == "diff"){
-        p <- p + ggplot2::ylab("Difference Between High and Low Bulk Allele Frequencies")
+        p <- p + ggplot2::ylab("Difference Between High and Low Bulk Allele Frequencies") 
       }
       if (plotIntervals == TRUE) {
         
@@ -892,7 +893,6 @@ plotQTLStats_MH <-
     } else {
       p <- p + ggplot2::facet_grid(~ CHROM, scales = "free_x")    
     }
-    
     p
     
   }
@@ -916,6 +916,7 @@ Obs_Allele_Freq3 <-
     p2 <- ((frame$HighAlt)/(frame$HighRef + frame$HighAlt))
     p2 <- round(p2, 3)
     diff <- p2 - p1
+    nSNPs <- frame$nSNPs
     Chrom <- SNPSet %>% select(CHROM)
     POS <- SNPSet %>% select(POS)
     AD_High1 <- data.frame(SNPSet$AD_ALT.HIGH, SNPSet$AD_REF.HIGH)
@@ -930,14 +931,10 @@ Obs_Allele_Freq3 <-
                                           SNPSet.AD_ALT.LOW))
     Gprime <- SNPSet %>% select(Gprime)
     Gprime <- round(Gprime, 3)
-    data <- cbind(Chrom, POS, p1, p2, diff, AD_High, AD_Low, Gprime)
+    data <- cbind(Chrom, POS, p1, p2, diff, nSNPs, AD_High, AD_Low, Gprime)
     data <- as.data.frame(data)
     return(data)
   }
-
-
-
-
 
 
 
