@@ -953,8 +953,7 @@ Obs_Allele_Freq3 <-
 #' @param subset a vector of chromosome names for use in quick plotting of
 #'   chromosomes of interest. Defaults to
 #'   NULL and will plot all chromosomes in the SNPset
-#' @param var character. The paramater for plotting. Must be one of: "nSNPs",
-#'   "deltaSNP", "Gprime", "negLog10Pval" "diff"
+#' @param var character. "diff"
 #' @param scaleChroms boolean. if TRUE (default) then chromosome facets will be 
 #'   scaled to relative chromosome sizes. If FALSE all facets will be equal
 #'   sizes. This is basically a convenience argument for setting both scales and 
@@ -987,7 +986,7 @@ Obs_Allele_Freq3 <-
 plotQTLStats_MH2 <- 
   function(SNPset,
            subset = NULL,
-           var = "nSNPs",
+           var = "diff",
            scaleChroms = TRUE,
            line = TRUE,
            ...) {
@@ -1001,35 +1000,10 @@ plotQTLStats_MH2 <-
       stop(paste0("The following are not true chromosome names: ", whichnot))
     }
     
-    if (!var %in% c("nSNPs", "deltaSNP", "Gprime", "negLog10Pval", "diff"))
+    if (!var %in% c("diff"))
       stop(
-        "Please choose one of the following variables to plot: \"nSNPs\", \"deltaSNP\", \"Gprime\", \"negLog10Pval\", \"diff\""
+        "Please choose one of the following variable to plot: \"diff\""
       )
-    
-    #don't plot threshold lines in deltaSNPprime or number of SNPs as they are not relevant
-    if ((plotThreshold == TRUE &
-         var == "deltaSNP") |
-        (plotThreshold == TRUE & var == "nSNPs")) {
-      message("FDR threshold is not plotted in deltaSNP or nSNPs plots")
-      plotThreshold <- FALSE
-    }
-    #if you need to plot threshold get the FDR, but check if there are any values that pass fdr
-    
-    GprimeT <- 0
-    logFdrT <- 0
-    
-    if (plotThreshold == TRUE) {
-      fdrT <- getFDRThreshold(SNPset$pvalue, alpha = q)
-      
-      if (is.na(fdrT)) {
-        warning("The q threshold is too low. No threshold line will be drawn")
-        plotThreshold <- FALSE
-        
-      } else {
-        logFdrT <- -log10(fdrT)
-        GprimeT <- SNPset[which(SNPset$pvalue == fdrT), "Gprime"]
-      }
-    }
     
     SNPset <-
       if (is.null(subset)) {
@@ -1047,44 +1021,8 @@ plotQTLStats_MH2 <-
         unit = "pt"
       ))
     
-    if (var == "Gprime") {
-      threshold <- GprimeT
-      p <- p + ggplot2::ylab("G' value")
-    }
-    
-    if (var == "negLog10Pval") {
-      threshold <- logFdrT
-      p <-
-        p + ggplot2::ylab(expression("-" * log[10] * '(p-value)'))
-    }
-    
-    if (var == "nSNPs") {
-      p <- p + ggplot2::ylab("Number of SNPs in window")
-    }
-    
-    if (var == "deltaSNP") {
-      var <- "tricubeDeltaSNP"
-      p <-
-        p + ggplot2::ylab(expression(Delta * '(SNP-index)')) +
-        ggplot2::ylim(-0.55, 0.55) +
-        ggplot2::geom_hline(yintercept = 0,
-                            color = "black",
-                            alpha = 0.4)
-      if (var == "diff"){
-        p <- p + ggplot2::ylab("Difference Between High and Low Bulk Allele Frequencies") 
-      }
-      if (plotIntervals == TRUE) {
-        
-        ints_df <-
-          dplyr::select(SNPset, CHROM, POS, dplyr::matches("CI_")) %>% tidyr::gather(key = "Interval", value = "value",-CHROM,-POS)
-        
-        p <- p + ggplot2::geom_line(data = ints_df, ggplot2::aes(x = POS, y = value, color = Interval)) +
-          ggplot2::geom_line(data = ints_df, ggplot2::aes(
-            x = POS,
-            y = -value,
-            color = Interval
-          ))
-      }
+    if (var == "diff"){
+      p <- p + ggplot2::ylab("Difference Between High and Low Bulk Allele Frequencies") 
     }
     
     if (line) {
@@ -1097,15 +1035,6 @@ plotQTLStats_MH2 <-
       p <- p + ggplot2::geom_point(ggplot2::aes(size = SNPset$nSNPs))
       p
     }
-    
-    if (plotThreshold == TRUE)
-      p <-
-      p + ggplot2::geom_hline(
-        ggplot2::aes_string(yintercept = "threshold"),
-        color = "red",
-        size = 1,
-        alpha = 0.4
-      )
     
     if (scaleChroms == TRUE) {
       p <- p + ggplot2::facet_grid(~ CHROM, scales = "free_x", space = "free_x")
