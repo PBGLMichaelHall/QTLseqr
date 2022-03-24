@@ -916,7 +916,7 @@ Obs_Allele_Freq3 <-
     p2 <- ((frame$HighAlt)/(frame$HighRef + frame$HighAlt))
     p2 <- round(p2, 3)
     diff <- p2 - p1
-    nSNPs <- frame$nSNPs
+    nSNPs <- SNPSet$nSNPs
     Chrom <- SNPSet %>% select(CHROM)
     POS <- SNPSet %>% select(POS)
     AD_High1 <- data.frame(SNPSet$AD_ALT.HIGH, SNPSet$AD_REF.HIGH)
