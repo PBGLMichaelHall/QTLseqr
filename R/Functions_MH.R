@@ -732,7 +732,7 @@ function (SNPset, outlierFilter = c("deltaSNP", "Hampel"), filterThreshold = 0.1
 #'   chromosomes of interest. Defaults to
 #'   NULL and will plot all chromosomes in the SNPset
 #' @param var character. The paramater for plotting. Must be one of: "nSNPs",
-#'   "deltaSNP", "Gprime", "negLog10Pval" "DiffObsAlleleFreq"
+#'   "deltaSNP", "Gprime", "negLog10Pval" "diff"
 #' @param scaleChroms boolean. if TRUE (default) then chromosome facets will be 
 #'   scaled to relative chromosome sizes. If FALSE all facets will be equal
 #'   sizes. This is basically a convenience argument for setting both scales and 
@@ -784,7 +784,7 @@ plotQTLStats_MH <-
     
     if (!var %in% c("nSNPs", "deltaSNP", "Gprime", "negLog10Pval", "DiffObsAlleleFreq"))
       stop(
-        "Please choose one of the following variables to plot: \"nSNPs\", \"deltaSNP\", \"Gprime\", \"negLog10Pval\", \"DiffObsAlleleFreq\""
+        "Please choose one of the following variables to plot: \"nSNPs\", \"deltaSNP\", \"Gprime\", \"negLog10Pval\", \"diff\""
       )
     
     #don't plot threshold lines in deltaSNPprime or number of SNPs as they are not relevant
@@ -851,7 +851,7 @@ plotQTLStats_MH <-
         ggplot2::geom_hline(yintercept = 0,
                             color = "black",
                             alpha = 0.4)
-      if (var == "DiffObsAlleleFreq"){
+      if (var == "diff"){
         p <- p + ggplot2::ylab("Difference Between High and Low Bulk Allele Frequencies")
       }
       if (plotIntervals == TRUE) {
