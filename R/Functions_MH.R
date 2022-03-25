@@ -470,8 +470,8 @@ Obs_Allele_Freq2 <-
                   Gprime)
     data <- as.data.frame(data)
     data <- data %>% arrange(desc(p2), Chrom, POS, p1, diff, AD_High, AD_Low)
-    data <- data[(as.matrix(data[1]) == 4), ]
-    data <- data[(as.matrix(data[4]) > 0.90), ]
+    data <- data[(as.matrix(data[1]) == ChromosomeValue), ]
+    data <- data[(as.matrix(data[4]) > threshold), ]
     
     e <- ggplot(data = data, aes(x = seq(from = 1, to = length(p1), 
                                          by = 1), y = p1)) + geom_point(aes(color = factor(CHROM))) + 
