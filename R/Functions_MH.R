@@ -441,37 +441,38 @@ Obs_Allele_Freq <- function(SNPSet){
 #' @param threshold Input a Specific Allele Frequency Threshold value from the High Bulk High Parent 
 #' @export 
 
-
 Obs_Allele_Freq2 <- 
-  function (SNPSet, ChromosomeValue, threshold) 
+  function (df_filt, ChromosomeValue, threshold) 
   {
-    frame <- SNPSet %>% dplyr::mutate(LowRef = AD_REF.LOW, HighRef = AD_REF.HIGH, 
-                                      LowAlt = AD_ALT.LOW, HighAlt = AD_ALT.HIGH) %>% select(LowRef, 
-                                                                                             HighRef, LowAlt, HighAlt)
+    frame <- df_filt %>% dplyr::mutate(LowRef = AD_REF.LOW, HighRef = AD_REF.HIGH, 
+                                       LowAlt = AD_ALT.LOW, HighAlt = AD_ALT.HIGH) %>% select(LowRef, 
+                                                                                              HighRef, LowAlt, HighAlt)
     p1 <- ((frame$LowAlt)/(frame$LowRef + frame$LowAlt))
     p1 <- round(p1, 3)
     p2 <- ((frame$HighAlt)/(frame$HighRef + frame$HighAlt))
     p2 <- round(p2, 3)
     diff <- p2 - p1
-    Chrom <- SNPSet %>% select(CHROM)
-    POS <- SNPSet %>% select(POS)
-    AD_High1 <- data.frame(SNPSet$AD_ALT.HIGH, SNPSet$AD_REF.HIGH)
-    AD_High1$AD_High <- paste(AD_High1$SNPSet.AD_REF.HIGH, AD_High1$SNPSet.AD_ALT.HIGH, 
+    Chrom <- df_filt %>% select(CHROM)
+    POS <- df_filt %>% select(POS)
+    AD_High1 <- data.frame(df_filt$AD_ALT.HIGH, df_filt$AD_REF.HIGH)
+    AD_High1$AD_High <- paste(AD_High1$df_filt.AD_REF.HIGH, AD_High1$df_filt.AD_ALT.HIGH, 
                               sep = ",")
-    AD_High <- subset(AD_High1, select = -c(SNPSet.AD_ALT.HIGH, 
-                                            SNPSet.AD_REF.HIGH))
-    AD_Low1 <- data.frame(SNPSet$AD_REF.LOW, SNPSet$AD_ALT.LOW)
-    AD_Low1$AD_Low <- paste(AD_Low1$SNPSet.AD_REF.LOW, AD_Low1$SNPSet.AD_ALT.LOW, 
+    AD_High <- subset(AD_High1, select = -c(df_filt.AD_ALT.HIGH, 
+                                            df_filt.AD_REF.HIGH))
+    AD_Low1 <- data.frame(df_filt$AD_REF.LOW, df_filt$AD_ALT.LOW)
+    AD_Low1$AD_Low <- paste(AD_Low1$df_filt.AD_REF.LOW, AD_Low1$df_filt.AD_ALT.LOW, 
                             sep = ",")
-    AD_Low <- subset(AD_Low1, select = -c(SNPSet.AD_REF.LOW, 
-                                          SNPSet.AD_ALT.LOW))
-    Gprime <- SNPSet %>% select(Gprime)
+    AD_Low <- subset(AD_Low1, select = -c(df_filt.AD_REF.LOW, 
+                                          df_filt.AD_ALT.LOW))
+    Gprime <- df_filt %>% select(Gprime)
     Gprime <- round(Gprime, 3)
-    data <- cbind(Chrom, POS, p1, p2, diff, AD_High, AD_Low, Gprime)
+    data <- cbind(Chrom, POS, p1, p2, diff, AD_High, AD_Low, 
+                  Gprime)
     data <- as.data.frame(data)
-    data <- data[(as.matrix(data[1]) == ChromosomeValue), ]
-    data <- data[(as.matrix(data[4]) > threshold), ]
-    data <- data[order(-p2)]
+    data <- data %>% arrange(desc(p2), Chrom, POS, p1, diff, AD_High, AD_Low)
+    data <- data[(as.matrix(data[1]) == 4), ]
+    data <- data[(as.matrix(data[4]) > 0.90), ]
+    
     e <- ggplot(data = data, aes(x = seq(from = 1, to = length(p1), 
                                          by = 1), y = p1)) + geom_point(aes(color = factor(CHROM))) + 
       theme_bw() + ggrepel::geom_label_repel(aes(label = as.character(POS))) + 
@@ -481,9 +482,9 @@ Obs_Allele_Freq2 <-
     data <- cbind(Chrom, POS, p1, p2, AD_High, AD_Low, Gprime, 
                   SNP_Observations)
     data <- as.data.frame(data)
+    data <- data %>% arrange(desc(p2), Chrom, POS, p1, diff, AD_High, AD_Low)
     data <- data[(as.matrix(data[1]) == ChromosomeValue), ]
     data <- data[(as.matrix(data[4]) > threshold), ]
-    data <- data[order(-p2)]
     e1 <- ggplot(data = data, aes(x = SNP_Observations, y = p2)) + 
       geom_point(aes(color = factor(CHROM))) + ggrepel::geom_label_repel(aes(label = as.character(POS)))
     theme_bw() + labs(x = "SNP", y = "Allele Frequency", title = "High Bulk Observed High Parent Allele Frequency")
