@@ -4,7 +4,7 @@
 \alias{QTLParser_1_MH}
 \title{QTLParser_1_MH}
 \usage{
-QTLParser_1_MH(vcf, HighBulk, LowBulk)
+QTLParser_1_MH(vcf, HighBulk, LowBulk, filename)
 }
 \arguments{
 \item{vcf}{A vcf file that is as a tidy data frame}
@@ -12,6 +12,8 @@ QTLParser_1_MH(vcf, HighBulk, LowBulk)
 \item{HighBulk}{The name of the HighBulk sample}
 
 \item{LowBulk}{The name of the LowBulk sample}
+
+\item{filename}{Provide a partiular name to identify input CSV file}
 }
 \description{
 Parses a vcf file which has been converted to a tidy data frame before running the operation
