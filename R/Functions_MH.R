@@ -5,7 +5,7 @@
 #' @param vcf A vcf file that is as a tidy data frame
 #' @param HighBulk The name of the HighBulk sample
 #' @param LowBulk The name of the LowBulk sample
-#' @param filename Provide a partiular name to identify input CSV file OK
+#' @param filename Provide a partiular name to identify input CSV file 
 #' @export QTLParser_1_MH
 
 QTLParser_1_MH<-
@@ -419,11 +419,11 @@ runQTLseqAnalysis_MH <- function (SNPset, windowSize = 1e+06, popStruc = "F2", b
 #' @export Obs_Allele_Freq
 
 Obs_Allele_Freq <- 
-  function (SNPSet) 
+  function (SNPSet,size) 
   {
     frame <- SNPSet %>% dplyr::mutate(LowRef = AD_REF.LOW, HighRef = AD_REF.HIGH, LowAlt = AD_ALT.LOW, HighAlt = AD_ALT.HIGH) %>% select(CHROM,POS,DP.LOW,DP.HIGH,LowRef, HighRef, LowAlt, HighAlt,nSNPs)
     message("Graphing GGplot")
-    e <- ggplot(frame, aes(x = POS)) + geom_line(aes(y = LowAlt/DP.LOW), color = "orange")  + geom_point(aes(y = LowAlt/DP.LOW), color = "orange", size =.001*SNPSet$nSNPs) + geom_line(aes(y = HighAlt/DP.HIGH), color = "blue") + geom_point(aes(y = HighAlt/DP.HIGH), color = "blue", size = .001*SNPSet$nSNPs) + facet_grid(rows = vars(CHROM))
+    e <- ggplot(frame, aes(x = POS)) + geom_line(aes(y = LowAlt/DP.LOW), color = "orange")  + geom_point(aes(y = LowAlt/DP.LOW), color = "orange", size = size*SNPSet$nSNPs) + geom_line(aes(y = HighAlt/DP.HIGH), color = "blue") + geom_point(aes(y = HighAlt/DP.HIGH), color = "blue", size = size*SNPSet$nSNPs) + facet_grid(rows = vars(CHROM))
     print(e)
     message("Returing Head of Data Frame")
     return(head(frame))
