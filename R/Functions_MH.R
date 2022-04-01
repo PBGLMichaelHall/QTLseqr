@@ -442,7 +442,8 @@ Obs_Allele_Freq <-
 Obs_Allele_Freq2 <- 
   function (SNPSet, ChromosomeValue, threshold) 
   {
-    frame <- SNPSet %>% dplyr::mutate(LowRef = AD_REF.LOW, HighRef = AD_REF.HIGH, LowAlt = AD_ALT.LOW, HighAlt = AD_ALT.HIGH) %>% select(LowRef,HighRef, LowAlt, HighAlt)
+    frame <- SNPSet %>% dplyr::mutate(LowRef = AD_REF.LOW, HighRef = AD_REF.HIGH, LowAlt = AD_ALT.LOW, HighAlt = AD_ALT.HIGH) %>% select(CHROM,POS,LowRef,HighRef, LowAlt, HighAlt)
+    Obs <- seq(from = 1, to = length(frame))
     p1 <- ((frame$LowAlt)/(frame$LowRef + frame$LowAlt))
     p1 <- round(p1, 3)
     p2 <- ((frame$HighAlt)/(frame$HighRef + frame$HighAlt))
@@ -461,23 +462,26 @@ Obs_Allele_Freq2 <-
     REF <- SNPSet$REF
     ALT <- SNPSet$ALT
     Subst <- paste0(REF,"____>",ALT)
-    data <- cbind(Chrom, POS, p1, p2, Subst, diff, AD_High, AD_Low, Gprime)
+    SNP_Observations <- seq(from = 1, to = length(p1), by = 1)
+    data <- cbind(Chrom, POS, p1, p2, Subst, diff, AD_High, AD_Low, Gprime,SNP_Observations)
     data <- as.data.frame(data)
-    data <- data %>% arrange(desc(p2), Chrom, POS, p1, diff, AD_High, AD_Low)
+    data <- data %>% arrange(desc(Gprime), Chrom, POS, p1,p2, diff, AD_High, AD_Low)
     data <- data[(as.matrix(data[1]) == ChromosomeValue), ]
     data <- data[(as.matrix(data[4]) > threshold), ]
-    e <- ggplot(data = data, aes(x = seq(from = 1, to = length(p1), by = 1), y = p1)) + geom_point(aes(color = factor(CHROM))) + theme_bw() + ggrepel::geom_label_repel(aes(label = as.character(POS))) + labs(x = "SNP", y = "Allele Frequency", title = "Low Bulk Observed High Parent Allele Frequency")
+    e <- ggplot(data = data, aes(x = SNP_Observations, y = p1)) + geom_point(aes(color = factor(CHROM))) + theme_bw() + ggrepel::geom_label_repel(aes(label = as.character(POS))) + labs(x = "SNP", y = "Allele Frequency", title = "Low Bulk Observed High Parent Allele Frequency")
     print(e)
     SNP_Observations <- seq(from = 1, to = length(p2), by = 1)
     data <- cbind(Chrom, POS, p1, p2, Subst, AD_High, AD_Low, Gprime,SNP_Observations)
     data <- as.data.frame(data)
-    data <- data %>% arrange(desc(p2), Chrom, POS, p1, diff, Subst, AD_High, AD_Low)
+    data <- data %>% arrange(desc(Gprime), Chrom, POS, p1, diff, Subst, AD_High, AD_Low)
     data <- data[(as.matrix(data[1]) == ChromosomeValue), ]
     data <- data[(as.matrix(data[4]) > threshold), ]
     e1 <- ggplot(data = data, aes(x = SNP_Observations, y = p2)) + geom_point(aes(color = factor(CHROM))) + ggrepel::geom_label_repel(aes(label = as.character(POS))) + theme_bw() + labs(x = "SNP", y = "Allele Frequency", title = "High Bulk Observed High Parent Allele Frequency")
     print(e1)
     return(data)
   }
+
+
 
 
 
