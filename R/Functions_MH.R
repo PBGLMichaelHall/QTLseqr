@@ -426,6 +426,7 @@ Obs_Allele_Freq <-
     message("Graphing GGplot")
     e <- ggplot(frame, aes(x = POS)) + geom_line(aes(y = LowAlt/DP.LOW), color = "orange")  + geom_point(aes(y = LowAlt/DP.LOW), color = "orange", size = size*SNPSet$nSNPs) + geom_line(aes(y = HighAlt/DP.HIGH), color = "blue") + geom_point(aes(y = HighAlt/DP.HIGH), color = "blue", size = size*SNPSet$nSNPs) + facet_grid(rows = vars(CHROM))
     print(e)
+    #Write a message
     message("Returing Head of Data Frame")
     return(head(frame))
   }
