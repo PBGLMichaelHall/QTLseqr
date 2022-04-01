@@ -417,17 +417,11 @@ runQTLseqAnalysis_MH <- function (SNPset, windowSize = 1e+06, popStruc = "F2", b
 
 Obs_Allele_Freq <- function(SNPSet){
   frame <- SNPSet %>% dplyr::mutate(LowRef = AD_REF.LOW, HighRef = AD_REF.HIGH, LowAlt = AD_ALT.LOW, HighAlt = AD_ALT.HIGH) %>% select(LowRef, HighRef, LowAlt, HighAlt)
-  p1 <- ((frame$LowAlt)/(frame$LowRef + frame$LowAlt))
-  p2 <- ((frame$HighAlt)/(frame$HighRef + frame$HighAlt))
-  Chrom <- SNPSet %>% select(CHROM)
-  POS <- SNPSet %>% select(POS)
-  POS <- as.character(POS)
-  data <- cbind(Chrom,POS,p1,p2)
-  data <- as.data.frame(data)
-  e <- ggplot(data = data, aes(x = seq(1, length(p1),1), y = p1)) + geom_point(aes(color=factor(CHROM)))  + theme_bw()  + labs(x = "SNP", y = "Allele Frequency", title = "Low Bulk Observed High Parent Allele Frequency") 
-  print(e)
-  e1 <- ggplot(data = data, aes(x = seq(1, length(p2),1), y = p2)) + geom_point(aes(color=factor(CHROM))) + theme_bw() + labs(x = "SNP", y = "Allele Frequency",title = "High Bulk Observed High Parent Allele Frequency")
-  print(e1) 
+  ggplot(frame, aes(x=POS)) + 
+    geom_line(aes(y = AD_ALT.LOW/DP.LOW), color = "orange") + geom_point(aes(y = AD_ALT.LOW/DP.LOW), color = "orange", size=0.001*df_filt$nSNPs) +
+    geom_line(aes(y = AD_ALT.HIGH/DP.HIGH), color = "blue") + geom_point(aes(y = AD_ALT.HIGH/DP.HIGH), color = "blue", size=0.5) +
+    facet_grid(rows=vars(CHROM))
+  
  
 }
 
