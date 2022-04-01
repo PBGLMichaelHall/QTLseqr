@@ -486,7 +486,7 @@ Obs_Allele_Freq2 <-
 
 
 
-#'Hello Again and Again
+#'Hello Again and Again and Again
 #' Plots Gprime distribution
 #' Modified by MH
 #' Plots a ggplot histogram of the distribution of Gprime with a log normal
