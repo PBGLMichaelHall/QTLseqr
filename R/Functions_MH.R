@@ -5,7 +5,7 @@
 #' @param vcf A vcf file that is as a tidy data frame
 #' @param HighBulk The name of the HighBulk sample
 #' @param LowBulk The name of the LowBulk sample
-#' @param filename Provide a partiular name to identify input CSV file
+#' @param filename Provide a partiular name to identify input CSV file OK
 #' @export QTLParser_1_MH
 
 QTLParser_1_MH<-
@@ -100,7 +100,8 @@ QTLParser_1_MH<-
 #' @param HighBulk The name of the HighBulk sample
 #' @param LowBulk The name of the LowBulk sample
 #' @param RootDirectory The name of the Root Directory
-#' @export
+#' @export QTLParser_2_MH
+
 QTLParser_2_MH <- function(vcf,HighBulk,LowBulk,RootDirectory){
   #vcf is a vcf file converted to a tidy data frame
   CHROM <- vcf$fix$ChromKey
@@ -196,7 +197,7 @@ QTLParser_2_MH <- function(vcf,HighBulk,LowBulk,RootDirectory){
 #' @param windowSize Specify the WindowSize
 #' @param outlierFilter Specify the outlierFilter 
 #' @param filterThreshold Specify threshold filter value default is 0.1
-#' @export
+#' @export runGprimeAnalysis_MH
 
 runGprimeAnalysis_MH <-
   function (SNPset, windowSize = 1e+06, outlierFilter = "deltaSNP",
@@ -228,7 +229,7 @@ runGprimeAnalysis_MH <-
 #' @param filterThreshold Specify threshold filter value default is 0.1
 #' @param deg Degree of Polynomial to use for LocFit Model
 #' @param nn Nearest Neighbor component of smoothing parameter. Default value is 0.7, unless h or adpen are provided, in which case the default is 0
-#' @export
+#' @export runGprimeAnalysis_GPrime_Smooth
 
 
 runGprimeAnalysis_GPrime_Smooth <- 
@@ -250,7 +251,7 @@ runGprimeAnalysis_GPrime_Smooth <-
 #' @param windowSize Specify the WindowSize
 #' @param deg Degree of Polynomial to use for LocFit Model 
 #' @param nn Nearest Neighbor component of smoothing parameter. Default value is 0.7, unless h or adpen are provided, in which case the default is 0
-#' @export
+#' @export tricube_Smooth
 
 
 
@@ -271,7 +272,8 @@ tricube_Smooth <-
 #' @param POS An SNPset
 #' @param Stat Specify the WindowSize
 #' @param windowSize Specify the outlierFilter 
-#' @export
+#' @export tricubeStat_MH
+
 tricubeStat_MH <- function(POS, Stat, windowSize = 2e6, ...)
 {
   if (windowSize <= 0)
@@ -286,7 +288,8 @@ tricubeStat_MH <- function(POS, Stat, windowSize = 2e6, ...)
 #' @param HighRef HighReference Allele
 #' @param LowAlt LowAlternate Allele 
 #' @param HighAlt HighAlternate Allele
-#' @export 
+#' @export getG_MH
+
 getG_MH <- function(LowRef, HighRef, LowAlt, HighAlt)
 {
   exp <- c(
@@ -309,7 +312,8 @@ getG_MH <- function(LowRef, HighRef, LowAlt, HighAlt)
 #' @param deltaSNP Default is NULL
 #' @param outlierFilter Choose outlier filtering method Either deltaSNP or Hampel 
 #' @param filterThreshold Choose filter threshold value should be less than 0.5
-#' @export 
+#' @export getPvals_MH
+
 getPvals_MH <-
   function(Gprime,
            deltaSNP = NULL,
@@ -370,7 +374,7 @@ getPvals_MH <-
 #' @param replications Choose the number of replications default is 10000
 #' @param filter Choose specific filtering value default is 0.3
 #' @param intervals Choose appropriate confidence intervals default is 95% - 99%
-#' @export 
+#' @export runQTLseqAnalysis_MH
 
 
 
@@ -412,19 +416,18 @@ runQTLseqAnalysis_MH <- function (SNPset, windowSize = 1e+06, popStruc = "F2", b
 #' @title Obs_Allele_Freq
 #' @description Returns a 4 column data frame with Chromosome, Position, and Observed allele frequencies from the High Parent for both bulks
 #' @param  SNPSet A SNPSet generated from the function importFromTable 
-#' @export 
+#' @export Obs_Allele_Freq
 
-
-Obs_Allele_Freq <- function(SNPSet){
-  frame <- SNPSet %>% dplyr::mutate(LowRef = AD_REF.LOW, HighRef = AD_REF.HIGH, LowAlt = AD_ALT.LOW, HighAlt = AD_ALT.HIGH) %>% select(LowRef, HighRef, LowAlt, HighAlt)
-  ggplot(frame, aes(x=POS)) + 
-    geom_line(aes(y = AD_ALT.LOW/DP.LOW), color = "orange") + geom_point(aes(y = AD_ALT.LOW/DP.LOW), color = "orange", size=0.001*df_filt$nSNPs) +
-    geom_line(aes(y = AD_ALT.HIGH/DP.HIGH), color = "blue") + geom_point(aes(y = AD_ALT.HIGH/DP.HIGH), color = "blue", size=0.5) +
-    facet_grid(rows=vars(CHROM))
-  
- 
-}
-
+Obs_Allele_Freq <- 
+  function (SNPSet) 
+  {
+    frame <- SNPSet %>% dplyr::mutate(LowRef = AD_REF.LOW, HighRef = AD_REF.HIGH, LowAlt = AD_ALT.LOW, HighAlt = AD_ALT.HIGH) %>% select(CHROM,POS,DP.LOW,DP.HIGH,LowRef, HighRef, LowAlt, HighAlt,nSNPs)
+    message("Graphing GGplot")
+    e <- ggplot(frame, aes(x = POS)) + geom_line(aes(y = LowAlt/DP.LOW), color = "orange")  + geom_point(aes(y = LowAlt/DP.LOW), color = "orange", size =.001*SNPSet$nSNPs) + geom_line(aes(y = HighAlt/DP.HIGH), color = "blue") + geom_point(aes(y = HighAlt/DP.HIGH), color = "blue", size = .001*SNPSet$nSNPs) + facet_grid(rows = vars(CHROM))
+    print(e)
+    message("Returing Head of Data Frame")
+    return(head(frame))
+  }
 
 
 #' @title Obs_Allele_Freq2
@@ -889,7 +892,7 @@ plotQTLStats_MH <-
 #' @title Obs_Allele_Freq3
 #' @description Returns a 4 column data filtering for specific Chromosome and High Bulk Observed Allele Frequencies
 #' @param SNPSet A SNPSet generated from the function importFromTable 
-#' @export 
+#' @export Obs_Allele_Freq3
 
 
 Obs_Allele_Freq3 <- 

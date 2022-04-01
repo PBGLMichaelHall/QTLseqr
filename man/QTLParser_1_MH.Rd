@@ -13,7 +13,7 @@ QTLParser_1_MH(vcf, HighBulk, LowBulk, filename)
 
 \item{LowBulk}{The name of the LowBulk sample}
 
-\item{filename}{Provide a partiular name to identify input CSV file}
+\item{filename}{Provide a partiular name to identify input CSV file OK}
 }
 \description{
 Parses a vcf file which has been converted to a tidy data frame before running the operation
