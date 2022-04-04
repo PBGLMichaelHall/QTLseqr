@@ -630,32 +630,62 @@ obs_MH<- function(SNPSet, ChromosomeValue1,ChromosomeValue2,ChromosomeValue3,Chr
 }
 
 
-#' @param vcf A vcf file read by read.vcfR and converted to a tidy dataframe with vcfR2tidy
-#' @param SampleName Name of the sample in the vcf file
-#' @return A tsv, and a csv file of the following fields, Chromosome, Position, Reference, Alternate, Depth, and Sample Name. Also returns a data frame named data 
-#' @examples ChromQual(vcf = vcf, SampleName = "S14")
+#' @param vcf A vcf file 
+#' @param chromlist A vector specifying particular chromosomes
+#' @param windowSize Specify window size to calculate number of SNPs
+#' @param scalar Specify a scalar quantity > 0 to apply on Quality Scores
+#' @param ncol An Integer Value Specifying the number of columns in ggplot facet_grid which corresponds to exact number of chromosomes in chromlist
+#' @return Several ggplots
+#' @examples ChromQual(file = "General.vcf", chromlist = c("Chr1", "Chr2")), windowSize = 1e+06, scalar = 0.1, ncol = 2)
 #' @export ChromQual
 
 
 
-ChromQual <- 
-  function (vcf, SampleName) 
-  {
-    CHROM <- vcf$fix$ChromKey
-    POS <- vcf$fix$POS
-    REF <- vcf$fix$REF
-    ALT <- vcf$fix$ALT
-    Qual <- vcf$fix$QUAL
-    DP <- vcf$gt$gt_DP
-    Samples <- vcf$gt$Indiv
-    Data <- data.frame(CHROM, POS, REF, ALT, Qual, DP, Samples)
-    Data <- Data[(as.matrix(Data[7]) == SampleName), ]
-    write.table(Data, file = paste0(SampleName, ".tsv"), row.names = FALSE, 
-                col.names = TRUE, sep = "\t", quote = FALSE)
-    write.table(Data, file = paste0(SampleName, ".csv"), row.names = FALSE, 
-                col.names = TRUE, sep = ",", quote = FALSE)
-    return(Data)
+ChromQual <- function (file, chromlist = NULL,windowSize = 1e+06,scalar=NULL,ncol=NULL) 
+{
+  #Read VCF file in
+  vcf <- read.vcfR(file = file)
+  #Convert to tidy data frame
+  vcf <- vcfR2tidy(vcf)
+  message("Extracting unique Chromosome or Contig names reverse compatible to VCF file")
+  print(unique(vcf$fix$CHROM))
+  #Change name to SNPset
+  SNPset <- vcf
+  SNPset <- Map(as.data.frame, SNPset)
+  SNPset <- rbindlist(SNPset, fill = TRUE)
+  
+  if (!is.null(chromlist)) {
+    message("Preparing Data for Quality Control Plotting: ", paste(unique(SNPset$CHROM)[!unique(SNPset$CHROM) %in% chromlist], collapse = ", "))
+    SNPset <- SNPset[SNPset$CHROM %in% chromlist]
   }
+  SNPset$CHROM <- factor(SNPset$CHROM, levels = gtools::mixedsort(unique(SNPset$CHROM)))
+  SNPset <- SNPset %>% select(CHROM, POS, QUAL,DP) 
+  SNPset <- SNPset %>% dplyr::group_by(CHROM) %>% dplyr::mutate(nSNPs = countSNPs_cpp(POS = POS, windowSize = windowSize))
+  
+  
+  
+  par(mfrow=c(2,1))
+  breaks <- seq(round(min(SNPset$QUAL)-1,0),round(max(SNPset$QUAL)+100,0),100)
+  hist(x = SNPset$QUAL, breaks = breaks, col="green",frequency = TRUE,xlab = "Quality Scores", main = "Histogram of SNP Quality Scores")
+  
+  breaks <- seq(round(min(SNPset$nSNPs)-1,0),round(max(SNPset$nSNPs)+100,0),1)
+  hist(x = SNPset$nSNPs, breaks = breaks, col = "blue", frequency = TRUE, xlab = "Number of SNPs called in specified window size", main = paste0("Histogram of Number of SNPs called in",windowSize,"window size"))
+  
+  
+  t <- ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y=QUAL), color = "lightgreen") + facet_wrap(~CHROM,ncol=ncol) + geom_smooth(aes(y=QUAL,se=TRUE))
+  print(t)
+  
+  par(mar=c(1,1,1,1))
+  t1 <- ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y=nSNPs), color = "lightgreen") + facet_wrap(~CHROM,ncol=ncol) + geom_smooth(aes(y=scalar*QUAL,se=TRUE)) + theme_bw() + labs(x = "Position on Chromosome", y = "Counts of nSNPs and Scaled Quality Scores",color = "Legend") + scale_color_manual(values = colors)
+  print(t1)
+  
+  
+  t2 <- ggplot(data = SNPset, aes(x = nSNPs)) + geom_histogram(bins = 10,show.legend = TRUE) + facet_wrap(~CHROM,ncol=ncol) + title(main = paste0("Number of SNPs in a window of size",windowSize)) + theme_classic()
+  print(t2)
+  return(as.data.frame(SNPset))
+}
+
+
 
 #' @param SNPset An SNPset generated from importFromTable function
 #' @param outlierFilter Choose outlier filter method either deltaSNP or Hampel

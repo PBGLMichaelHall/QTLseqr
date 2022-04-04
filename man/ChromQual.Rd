@@ -2,14 +2,17 @@
 \alias{ChromQual}
 \title{ChromQual}
 \usage{
-ChromQual(vcf = vcf, SampleName = "S14") 
+ChromQual(file = "General.vcf", chromlist = c("Chr1", "Chr2")), windowSize = 1e+06, scalar = 0.1, ncol = 2)
 }
 \arguments{
-\item{vcf}{A vcf file read by read.vcfR and converted to a tidy dataframe with vcfR2tidy}
-\item{SampleName}{Name of the sample in the vcf file}
+\item{file}{A vcf file}
+\item{chromlist}{A vector of chromosomes or contigs}
+\item{windowSize}{Specify a sliding window size to calculate Number of SNPs}
+\item{scalar}{Specify scalar quantity to apply on Quality Scores}
+\item{ncol}{Specify number of columns in ggplot facet_grid which corresponds to exact number of chromosomes or contigs listed in chromlist}
 }
 
 }
 \description{
-Generates a tsv, and a csv file of the following fields, Chromosome, Position, Reference, Alternate, Depth, and Sample Name. Also returns a data frame named data OK.......
+Generates several ggplots
 }
