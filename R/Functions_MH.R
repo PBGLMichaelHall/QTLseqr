@@ -567,7 +567,7 @@ ChromQual <- function (file, chromlist = NULL,windowSize = 1e+06,scalar=NULL,nco
   
   
   
- 
+  par(mfrow=c(2,1))
   p1 <- p1
   if (p1 == TRUE){
   breaks <- seq(round(min(SNPset$QUAL)-1,0),round(max(SNPset$QUAL)+100,0),binwidth)
