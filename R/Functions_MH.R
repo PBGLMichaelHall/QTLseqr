@@ -537,14 +537,20 @@ obs_MH<- function(SNPSet, ChromosomeValue1,ChromosomeValue2,ChromosomeValue3,Chr
 #' @param windowSize Specify window size to calculate number of SNPs
 #' @param scalar Specify a scalar quantity > 0 to apply on Quality Scores
 #' @param ncol An Integer Value Specifying the number of columns in ggplot facet_grid which corresponds to exact number of chromosomes in chromlist
-#' @param bindwidth Specify binwidth for histogram plots
+#' @param bindwidth1 Specify binwidth for Quality score histogram plot
+#' @param bindwidth2 Specify binwidth for Number of SNPs histogram plot
+#' @param p1 TRUE or FALSE to plot or not to plot
+#' @param p2 TRUE or FALSE to plot or not to plot
+#' @param p3 TRUE or FALSE to plot or not to plot
+#' @param p4 TRUE or FALSE to plot or not to plot
+#' @param p5 TRUE or FALSE to plot or not to plot
 #' @return Several ggplots
-#' @examples ChromQual(file = "General.vcf", chromlist = c("Chr1", "Chr2")), windowSize = 1e+06, scalar = 0.1, ncol = 2)
+#' @examples ChromQual(file = "General.vcf", chromlist = c("Chr1", "Chr2")), windowSize = 1e+06, scalar = 0.1, ncol = 2,binwidth1 = 100, binwidth2 =1,p1=TRUE,p2=FALSE,p3=TRUE,p4=TRUE,p5=FALSE)
 #' @export ChromQual
 
 
 
-ChromQual <- function (file, chromlist = NULL,windowSize = 1e+06,scalar=NULL,ncol=NULL,binwidth=NULL,p1=NULL,p2=NULL,p3=NULL,p4=NULL,p5=NULL) 
+ChromQual <- function (file, chromlist = NULL,windowSize = 1e+06,scalar=NULL,ncol=NULL,binwidth1=NULL,binwidth2=NULL,p1=NULL,p2=NULL,p3=NULL,p4=NULL,p5=NULL) 
 {
   #Read VCF file in
   vcf <- read.vcfR(file = file)
@@ -570,14 +576,14 @@ ChromQual <- function (file, chromlist = NULL,windowSize = 1e+06,scalar=NULL,nco
   par(mfrow=c(2,1))
   p1 <- p1
   if (p1 == TRUE){
-  breaks <- seq(round(min(SNPset$QUAL)-1,0),round(max(SNPset$QUAL)+100,0),binwidth)
+  breaks <- seq(round(min(SNPset$QUAL)-1,0),round(max(SNPset$QUAL)+100,0),binwidth1)
   hist(x = SNPset$QUAL, breaks = breaks, col="green",frequency = TRUE,xlab = "Quality Scores", main = "Histogram of SNP Quality Scores")
   }else if (p1 == FALSE){
     print("Do not plot Histogram of Quality Score")
   }
   p2 <- p2
   if (p2 == TRUE){
-  breaks <- seq(round(min(SNPset$nSNPs)-1,0),round(max(SNPset$nSNPs)+100,0),binwidth)
+  breaks <- seq(round(min(SNPset$nSNPs)-1,0),round(max(SNPset$nSNPs)+100,0),binwidth2)
   hist(x = SNPset$nSNPs, breaks = breaks, col = "blue", frequency = TRUE, xlab = "Number of SNPs called in specified window size", main = paste0("Histogram of Number of SNPs called in",windowSize,"window size"))
   }else if (p2 == FALSE){
     print("Do not plot Histogram of Number of SNPs")
