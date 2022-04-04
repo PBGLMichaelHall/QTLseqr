@@ -577,7 +577,7 @@ ChromQual <- function (file, chromlist = NULL,windowSize = 1e+06,HighLimQuality=
   
   
   message("Plotting Quality Scores")
-  par(mfrow=c(2,1))
+  par(mfrow=c(1,1))
   p1 <- p1
   if (p1 == TRUE){
   breaks <- seq(round(min(SNPset$QUAL)-1,0),round(max(SNPset$QUAL)+100,0),binwidth1)
