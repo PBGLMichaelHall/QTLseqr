@@ -537,13 +537,14 @@ obs_MH<- function(SNPSet, ChromosomeValue1,ChromosomeValue2,ChromosomeValue3,Chr
 #' @param windowSize Specify window size to calculate number of SNPs
 #' @param scalar Specify a scalar quantity > 0 to apply on Quality Scores
 #' @param ncol An Integer Value Specifying the number of columns in ggplot facet_grid which corresponds to exact number of chromosomes in chromlist
+#' @param bindwidth Specify binwidth for histogram plots
 #' @return Several ggplots
 #' @examples ChromQual(file = "General.vcf", chromlist = c("Chr1", "Chr2")), windowSize = 1e+06, scalar = 0.1, ncol = 2)
 #' @export ChromQual
 
 
 
-ChromQual <- function (file, chromlist = NULL,windowSize = 1e+06,scalar=NULL,ncol=NULL) 
+ChromQual <- function (file, chromlist = NULL,windowSize = 1e+06,scalar=NULL,ncol=NULL,binwidth=NULL,p1=NULL,p2=NULL,p3=NULL,p4=NULL,p5=NULL) 
 {
   #Read VCF file in
   vcf <- read.vcfR(file = file)
@@ -567,23 +568,46 @@ ChromQual <- function (file, chromlist = NULL,windowSize = 1e+06,scalar=NULL,nco
   
   
   par(mfrow=c(2,1))
-  breaks <- seq(round(min(SNPset$QUAL)-1,0),round(max(SNPset$QUAL)+100,0),100)
+  p1 <- p1
+  if (p1 == TRUE){
+  breaks <- seq(round(min(SNPset$QUAL)-1,0),round(max(SNPset$QUAL)+100,0),binwidth)
   hist(x = SNPset$QUAL, breaks = breaks, col="green",frequency = TRUE,xlab = "Quality Scores", main = "Histogram of SNP Quality Scores")
-  
-  breaks <- seq(round(min(SNPset$nSNPs)-1,0),round(max(SNPset$nSNPs)+100,0),1)
+  }else if (p1 == FALSE){
+    print("Do not plot Histogram of Quality Score")
+  }
+  p2 <- p2
+  if (p2 == TRUE){
+  breaks <- seq(round(min(SNPset$nSNPs)-1,0),round(max(SNPset$nSNPs)+100,0),binwidth)
   hist(x = SNPset$nSNPs, breaks = breaks, col = "blue", frequency = TRUE, xlab = "Number of SNPs called in specified window size", main = paste0("Histogram of Number of SNPs called in",windowSize,"window size"))
+  }else if (p2 == FALSE){
+    print("Do not plot Histogram of Number of SNPs")
+  }
   
-  
+  p3 <- p3
+  if (p3 == TRUE){
   t <- ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y=QUAL), color = "lightgreen") + facet_wrap(~CHROM,ncol=ncol) + geom_smooth(aes(y=QUAL,se=TRUE))
   print(t)
+  }else if (p2 == FALSE){
+    print("Do not plot Quality Scores with Loess Curve")
+  }
   
+  p4 <- p4
+  if (p4 == TRUE){
   par(mar=c(1,1,1,1))
   t1 <- ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y=nSNPs), color = "lightgreen") + facet_wrap(~CHROM,ncol=ncol) + geom_smooth(aes(y=scalar*QUAL,se=TRUE)) + theme_bw() + labs(x = "Position on Chromosome", y = "Counts of nSNPs and Scaled Quality Scores",color = "Legend") + scale_color_manual(values = colors)
   print(t1)
+  }else if (p4 == FALSE){
+    print("Do not plot Superpostion of Quality Scores and Number of SNPs")
+  }
   
-  
+  p5 <- p5
+  if (p5 == TRUE){
   t2 <- ggplot(data = SNPset, aes(x = nSNPs)) + geom_histogram(bins = 10,show.legend = TRUE) + facet_wrap(~CHROM,ncol=ncol) + title(main = paste0("Number of SNPs in a window of size",windowSize)) + theme_classic()
   print(t2)
+  }else if (p5 == FALSE){
+    print("Do not plot Hisotogram of Number of SNPs per Chromosome")
+  }
+  
   return(as.data.frame(SNPset))
 }
 
