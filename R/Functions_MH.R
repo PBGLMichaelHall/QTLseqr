@@ -565,7 +565,7 @@ ChromQual <- function (file, chromlist = NULL,windowSize = 1e+06,scalar=NULL,nco
   
   if (!is.null(chromlist)) {
     message("Preparing Data for Quality Control Plotting: ", paste(unique(SNPset$CHROM)[!unique(SNPset$CHROM) %in% chromlist], collapse = ", "))
-    SNPset <- SNPset[SNPset$CHROM %in% chromlist]
+    SNPset <- SNPset[SNPset$CHROM %in% chromlist,]
     message("Finishing Chromosome Subset")
   }
   message("Factoring Chromosome Variable According to Unique Specification")
