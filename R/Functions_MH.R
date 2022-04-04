@@ -576,7 +576,7 @@ ChromQual <- function (file, chromlist = NULL,windowSize = 1e+06,scalar=NULL,nco
   SNPset <- SNPset %>% dplyr::group_by(CHROM) %>% dplyr::mutate(nSNPs = countSNPs_cpp(POS = POS, windowSize = windowSize))
   
   
-  
+  message("Plotting Quality Scores")
   par(mfrow=c(2,1))
   p1 <- p1
   if (p1 == TRUE){
@@ -585,6 +585,7 @@ ChromQual <- function (file, chromlist = NULL,windowSize = 1e+06,scalar=NULL,nco
   }else if (p1 == FALSE){
     print("Do not plot Histogram of Quality Score")
   }
+  message("Plotting Number of SNPs")
   p2 <- p2
   if (p2 == TRUE){
   breaks <- seq(round(min(SNPset$nSNPs)-1,0),round(max(SNPset$nSNPs)+100,0),binwidth2)
@@ -592,7 +593,7 @@ ChromQual <- function (file, chromlist = NULL,windowSize = 1e+06,scalar=NULL,nco
   }else if (p2 == FALSE){
     print("Do not plot Histogram of Number of SNPs")
   }
-  
+  message("Plotting Quality Scores with Superimposed loess smoothing curve")
   p3 <- p3
   if (p3 == TRUE){
   t <- ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y=QUAL), color = "lightgreen") + facet_wrap(~CHROM,ncol=ncol) + geom_smooth(aes(y=QUAL,se=TRUE))
@@ -600,7 +601,7 @@ ChromQual <- function (file, chromlist = NULL,windowSize = 1e+06,scalar=NULL,nco
   }else if (p2 == FALSE){
     print("Do not plot Quality Scores with Loess Curve")
   }
-  
+  message("Plotting Number of SNPs per Chromosome with loess smoothing curve")
   p4 <- p4
   if (p4 == TRUE){
   par(mar=c(1,1,1,1))
@@ -609,7 +610,7 @@ ChromQual <- function (file, chromlist = NULL,windowSize = 1e+06,scalar=NULL,nco
   }else if (p4 == FALSE){
     print("Do not plot Superpostion of Quality Scores and Number of SNPs")
   }
-  
+  message("Ploting histogram of SNPs per Chromosome")
   p5 <- p5
   if (p5 == TRUE){
   t2 <- ggplot(data = SNPset, aes(x = nSNPs)) + geom_histogram(bins = 10,show.legend = TRUE) + facet_wrap(~CHROM,ncol=ncol) + title(main = paste0("Number of SNPs in a window of size",windowSize)) + theme_classic()
@@ -617,7 +618,7 @@ ChromQual <- function (file, chromlist = NULL,windowSize = 1e+06,scalar=NULL,nco
   }else if (p5 == FALSE){
     print("Do not plot Hisotogram of Number of SNPs per Chromosome")
   }
-  
+  message("Returning completed Data frame as a SNPSet")
   return(as.data.frame(SNPset))
 }
 
