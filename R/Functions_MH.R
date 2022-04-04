@@ -550,7 +550,7 @@ obs_MH<- function(SNPSet, ChromosomeValue1,ChromosomeValue2,ChromosomeValue3,Chr
 
 
 
-ChromQual <- function (file, chromlist = NULL,windowSize = 1e+06,scalar=NULL,ncol=NULL,binwidth1=NULL,binwidth2=NULL,p1=NULL,p2=NULL,p3=NULL,p4=NULL,p5=NULL) 
+ChromQual <- function (file, chromlist = NULL,windowSize = 1e+06,HighLimQuality=NULL,scalar=NULL,ncol=NULL,binwidth1=NULL,binwidth2=NULL,p1=NULL,p2=NULL,p3=NULL,p4=NULL,p5=NULL) 
 {
   #Read VCF file in
   vcf <- read.vcfR(file = file)
@@ -573,7 +573,7 @@ ChromQual <- function (file, chromlist = NULL,windowSize = 1e+06,scalar=NULL,nco
   message("Selecting Variable Subset")
   SNPset <- SNPset %>% select(CHROM, POS, QUAL,DP)
   message("Mutating SNPS set creating nSNPs variable")
-  SNPset <- SNPset %>% dplyr::group_by(CHROM) %>% dplyr::mutate(nSNPs = countSNPs_cpp(POS = POS, windowSize = windowSize))
+  SNPset <- SNPset %>% dplyr::group_by(CHROM) %>% dplyr::mutate(nSNPs = countSNPs_cpp(POS = POS, windowSize = windowSize)) %>% filter(QUAL <= HighLimQuality)
   
   
   message("Plotting Quality Scores")
