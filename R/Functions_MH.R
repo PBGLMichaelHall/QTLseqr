@@ -553,8 +553,10 @@ obs_MH<- function(SNPSet, ChromosomeValue1,ChromosomeValue2,ChromosomeValue3,Chr
 ChromQual <- function (file, chromlist = NULL,windowSize = 1e+06,HighLimQuality=NULL,scalar=NULL,ncol=NULL,binwidth1=NULL,binwidth2=NULL,p1=NULL,p2=NULL,p3=NULL,p4=NULL,p5=NULL) 
 {
   #Read VCF file in
+  message("Reading vcf file in with read.vcfR")
   vcf <- read.vcfR(file = file)
   #Convert to tidy data frame
+  message("Converting vcf object to tidy data frame with vcfR2tidy")
   vcf <- vcfR2tidy(vcf)
   message("Extracting unique Chromosome or Contig names reverse compatible to VCF file")
   print(unique(vcf$fix$CHROM))
