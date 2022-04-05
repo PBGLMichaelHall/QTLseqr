@@ -1008,3 +1008,80 @@ plotQTLStats_MH2 <-
     p
     
   }
+
+
+
+#' @title Correlation
+#' @description Returns a Correlation Matrix for info fields AC, DP, DPB, QA, RO, AO and most importantly QUAL
+#' @param file A vcf file
+#' @param chromlist A vector of chromosomes/contigs as specified in VCF file
+#' @param p1 A boolean Value either TRUE of FALSE for plotting Correlation matrix and Corrleation Tables 
+#' @param p2 A boolean Value either TRUE of FALSE for plotting Correlation matrix and Corrleation Tables  
+#' @param p3 A boolean Value either TRUE of FALSE for plotting Correlation matrix and Corrleation Tables 
+#' @param p4 A boolean Value either TRUE of FALSE for plotting Correlation matrix and Corrleation Tables 
+#' @export Correlation
+
+
+Correlation <- 
+  function (file, chromlist = NULL,p1 = NULL, p2 = NULL, p3 = NULL, p4 = NULL,p5=TRUE) 
+  {
+vcf <- read.vcfR(file = file)
+vcf <- vcfR2tidy(vcf)
+message("Extracting unique Chromosome or Contig names reverse compatible to VCF file")
+print(unique(vcf$fix$CHROM))
+SNPset <- vcf
+SNPset <- Map(as.data.frame, SNPset)
+SNPset <- rbindlist(SNPset, fill = TRUE)
+    if (!is.null(chromlist)) {
+      message("Preparing Data for Quality Control Plotting: ", 
+              paste(unique(SNPset$CHROM)[!unique(SNPset$CHROM) %in% 
+                                           chromlist], collapse = ", "))
+      SNPset <- SNPset[SNPset$CHROM %in% chromlist,]
+      message("Finishing Chromosome Subset")
+}
+    
+message("Factoring Chromosome Variable According to Unique Specification")
+SNPset$CHROM <- factor(SNPset$CHROM, levels = gtools::mixedsort(unique(SNPset$CHROM)))
+    
+message("Selecting Variable Subset")
+SNPset <- SNPset %>% select(QUAL,AC,DP,DPB,QA,RO,AO)
+SNPset <- as.data.frame(sapply(SNPset, as.numeric))
+message("Mutating SNPS set creating nSNPs variable")                                                                                     
+p1 <- p1
+  if (p1 == TRUE){
+    t2 <- cor(SNPset)
+      round(t2,2)
+}else if (p1 == FALSE){
+        print("Do not plot cor(SNPset)")
+}
+p2 <- p2 
+  if (p2 == TRUE){
+    t3 <- rcorr(as.matrix(SNPset))
+      print(t3)
+}else if (p2 == FALSE){
+  print("Do not plot rcorr(as.matrix(SNPset))")
+}
+p3 <- p3
+  if (p3 == TRUE){
+    t4 <- corrplot(cor(SNPset))
+      print(t4)
+}else if (p3 == FALSE){
+  print("Do not plot corrplot(cor(SNPset))")
+}
+p4 <- p4
+  if (p4 == TRUE){
+    t5 <- chart.Correlation(SNPset,histogram=TRUE,pch=19)
+      print(t5)
+}else if (p4 == FALSE){
+  print("Do not plot chart.Correlation(SNPset,histogram=TRUE,pch=19)")
+}
+p5 <- p5
+  if (p5 == TRUE){
+    col <- colorRampPalette(c("blue","white","red","purple"))(20)
+    t6 <- heatmap(t2,col=col,symm=TRUE)
+}else if (p5 == FALSE){
+  print("Do not plot heatmap")
+}  
+    message("Returning completed Data frame as a SNPSet")
+    return(as.data.frame(SNPset))
+}
