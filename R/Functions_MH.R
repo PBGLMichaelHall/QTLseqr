@@ -552,7 +552,7 @@ ChromQual <- function (vcf = NULL, chromlist = NULL,windowSize = 1e+06,scalar=NU
 {
   #Read VCF file in
   message("Reading vcf file in with read.vcfR")
-  vcf <- read.vcfR(file = vcf)
+  vcf <- read.vcfR(vcf = vcf)
   #Convert to tidy data frame
   message("Converting vcf object to tidy data frame with vcfR2tidy")
   vcf <- vcfR2tidy(vcf)
