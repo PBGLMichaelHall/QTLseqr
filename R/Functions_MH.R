@@ -548,86 +548,119 @@ obs_MH<- function(SNPSet, ChromosomeValue1,ChromosomeValue2,ChromosomeValue3,Chr
 #' @export ChromQual
 
 
-ChromQual <- function (vcf, chromlist = NULL,windowSize = 1e+06,scalar=NULL,ncol = NULL, HighLimQuality=NULL,binwidth1=NULL,binwidth2=NULL,DPBINS=10,p1=NULL,p2=NULL,p3=NULL,p4=NULL,p5=NULL,p6=NULL) 
-{
-  #Read VCF file in
-  message("Reading vcf file in with read.vcfR")
-  vcf <- read.vcfR(file = vcf)
-  #Convert to tidy data frame
-  message("Converting vcf object to tidy data frame with vcfR2tidy")
-  vcf <- vcfR2tidy(vcf)
-  message("Extracting unique Chromosome or Contig names reverse compatible to VCF file")
-  print(unique(vcf$fix$CHROM))
-  #Change name to SNPset
-  SNPset <- vcf
-  SNPset <- Map(as.data.frame, SNPset)
-  SNPset <- rbindlist(SNPset, fill = TRUE)
-  
-  if (!is.null(chromlist)) {
-    message("Preparing Data for Quality Control Plotting and removing the following Chromosomes/Contigs: ", paste(unique(SNPset$CHROM)[!unique(SNPset$CHROM) %in% chromlist], collapse = ", "))
-    SNPset <- SNPset[SNPset$CHROM %in% chromlist,]
-    message("Finishing Chromosome Subset")
+ChromQual <- 
+  function (vcf, chromlist = NULL, windowSize = 1e+06, scalar = NULL, 
+            ncol = NULL, HighLimQuality = NULL, Chromname= NULL,binwidth1 = NULL, binwidth2 = NULL, 
+            DPBINS = 10, p1 = NULL, p2 = NULL, p3 = NULL, p4 = NULL, 
+            p5 = NULL, p6 = NULL) 
+  {
+    message("Reading vcf file in with read.vcfR")
+    vcf <- read.vcfR(file = file)
+    message("Converting vcf object to tidy data frame with vcfR2tidy")
+    vcf <- vcfR2tidy(vcf)
+    message("Extracting unique Chromosome or Contig names reverse compatible to VCF file")
+    print(unique(vcf$fix$CHROM))
+    SNPset <- vcf
+    SNPset <- Map(as.data.frame, SNPset)
+    SNPset <- rbindlist(SNPset, fill = TRUE)
+    if (!is.null(chromlist)) {
+      message("Preparing Data for Quality Control Plotting and removing the following Chromosomes/Contigs: ", 
+              paste(unique(SNPset$CHROM)[!unique(SNPset$CHROM) %in% 
+                                           chromlist], collapse = ", "))
+      SNPset <- SNPset[SNPset$CHROM %in% chromlist, ]
+      message("Finishing Chromosome Subset")
+    }
+    message("Factoring Chromosome Variable According to Unique Specification")
+    SNPset$CHROM <- factor(SNPset$CHROM, levels = gtools::mixedsort(unique(SNPset$CHROM)))
+    message("Selecting Variable Subset")
+    SNPset <- SNPset %>% select(CHROM, POS, QUAL, DP)
+    message("Mutating SNPS set creating nSNPs variable")
+    SNPset <- SNPset %>% dplyr::group_by(CHROM) %>% dplyr::mutate(nSNPs = countSNPs_cpp(POS = POS, 
+                                                                                        windowSize = windowSize)) %>% filter(QUAL <= HighLimQuality)
+    message("Plotting Quality Scores")
+    par(mfrow = c(1, 1))
+    p1 <- p1
+    if (p1 == TRUE) {
+      breaks <- seq(round(min(SNPset$QUAL) - 1, 0), round(max(SNPset$QUAL) + 
+                                                            100, 0), binwidth1)
+      jpeg(file="plot1.jpeg")
+      hist(x = SNPset$QUAL, breaks = breaks, col = "green", 
+           frequency = TRUE, xlab = "Quality Scores", main = "Histogram of SNP Quality Scores")
+      dev.off()
+    }
+    else if (p1 == FALSE) {
+      print("Do not plot Histogram of Quality Score")
+    }
+    message("Plotting Number of SNPs")
+    p2 <- p2
+    if (p2 == TRUE) {
+      breaks <- seq(round(min(SNPset$nSNPs) - 1, 0), round(max(SNPset$nSNPs) + 
+                                                             100, 0), binwidth2)
+      jpeg(file="plot2.jpeg")
+      hist(x = SNPset$nSNPs, breaks = breaks, col = "blue", 
+           frequency = TRUE, xlab = "Number of SNPs called in specified window size", 
+           main = paste0("Histogram of Number of SNPs called in", 
+                         windowSize, "window size"))
+      dev.off()
+    }
+    else if (p2 == FALSE) {
+      print("Do not plot Histogram of Number of SNPs")
+    }
+    message("Plotting Quality Scores with Superimposed loess smoothing curve")
+    p3 <- p3
+    if (p3 == TRUE) {
+      jpeg(file="plot3.jpeg")
+      SNPset <- as.data.frame(SNPset)
+      SNPset <- SNPset %>% filter(CHROM == Chromname)
+      loessMod10 <- loess(QUAL ~ index, data = SNPset, span=0.10)
+      loessMod25 <- loess(QUAL ~ index, data = SNPset, span=0.25)
+      loessMod50 <- loess(QUAL ~ index, data = SNPset, span=0.50)
+      smoothed10 <- predict(loessMod10)
+      smoothed25 <- predict(loessMod25)
+      smoothed50 <- predict(loessMod50)
+      plot(SNPset$index,SNPset$QUAL,type="l",main="Loess Smoothing and Prediction",xlab="SNPObs",ylab="Quality Score")
+      lines(SNPset$index,smoothed10,col="red")
+      lines(SNPset$index,smoothed25,col="green")
+      lines(SNPset$index,smoothed50,col="blue")
+      dev.off()
+      
+    }
+    else if (p3 == FALSE) {
+      print("Do not plot Quality Scores with Loess Curve")
+    }
+    message("Plotting Number of SNPs per Chromosome with loess smoothing curve")
+    p4 <- p4
+    if (p4 == TRUE) {
+      jpeg(file="plot4.jpeg")
+      ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = nSNPs), color = "lightgreen") + facet_wrap(~CHROM, ncol = ncol) + geom_smooth(aes(y = scalar * QUAL)) + theme_bw() + labs(x = "Position on Chromosome", y = "Counts of nSNPs and Scaled Quality Scores", color = "Legend") + scale_color_manual(values = colors)
+      dev.off()
+    }
+    else if (p4 == FALSE) {
+      print("Do not plot Superpostion of Quality Scores and Number of SNPs")
+    }
+    message("Ploting histogram of SNPs per Chromosome")
+    p5 <- p5
+    if (p5 == TRUE) {
+      jpeg(file="plot5.jpeg")
+      ggplot(data = SNPset, aes(x = nSNPs)) + geom_histogram(bins = 10, show.legend = TRUE) + facet_wrap(~CHROM, ncol = ncol) + theme_classic()
+      dev.off()
+    }
+    else if (p5 == FALSE) {
+      print("Do not plot Hisotogram of Number of SNPs per Chromosome")
+    }
+    p6 <- p6
+    if (p6 == TRUE) {
+      jpeg(file="plot6.jpeg")
+      ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y=DP),color = "lightblue") + facet_wrap(~CHROM, ncol = ncol) + theme_classic()
+      dev.off()
+    }
+    else if (p6 == FALSE) {
+      print("Do not plot Histogram of Depth Reads")
+    }
+    message("Returning completed Data frame as a SNPSet")
+    return(as.data.frame(SNPset))
   }
-  message("Factoring Chromosome Variable According to Unique Specification")
-  SNPset$CHROM <- factor(SNPset$CHROM, levels = gtools::mixedsort(unique(SNPset$CHROM)))
-  message("Selecting Variable Subset")
-  SNPset <- SNPset %>% select(CHROM, POS, QUAL,DP)
-  message("Mutating SNPS set creating nSNPs variable")
-  SNPset <- SNPset %>% dplyr::group_by(CHROM) %>% dplyr::mutate(nSNPs = countSNPs_cpp(POS = POS, windowSize = windowSize)) %>% filter(QUAL <= HighLimQuality)
-  
-  
-  message("Plotting Quality Scores")
-  par(mfrow=c(1,1))
-  p1 <- p1
-  if (p1 == TRUE){
-  breaks <- seq(round(min(SNPset$QUAL)-1,0),round(max(SNPset$QUAL)+100,0),binwidth1)
-  hist(x = SNPset$QUAL, breaks = breaks, col="green",frequency = TRUE,xlab = "Quality Scores", main = "Histogram of SNP Quality Scores")
-  }else if (p1 == FALSE){
-    print("Do not plot Histogram of Quality Score")
-  }
-  message("Plotting Number of SNPs")
-  p2 <- p2
-  if (p2 == TRUE){
-  breaks <- seq(round(min(SNPset$nSNPs)-1,0),round(max(SNPset$nSNPs)+100,0),binwidth2)
-  hist(x = SNPset$nSNPs, breaks = breaks, col = "blue", frequency = TRUE, xlab = "Number of SNPs called in specified window size", main = paste0("Histogram of Number of SNPs called in",windowSize,"window size"))
-  }else if (p2 == FALSE){
-    print("Do not plot Histogram of Number of SNPs")
-  }
-  message("Plotting Quality Scores with Superimposed loess smoothing curve")
-  p3 <- p3
-  if (p3 == TRUE){
-  t <- ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y=QUAL), color = "lightgreen") + facet_wrap(~CHROM,ncol=ncol) + geom_smooth(aes(y=QUAL,se=TRUE))
-  print(t)
-  }else if (p2 == FALSE){
-    print("Do not plot Quality Scores with Loess Curve")
-  }
-  message("Plotting Number of SNPs per Chromosome with loess smoothing curve")
-  p4 <- p4
-  if (p4 == TRUE){
-  par(mar=c(1,1,1,1))
-  t1 <- ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y=nSNPs), color = "lightgreen") + facet_wrap(~CHROM,ncol=ncol) + geom_smooth(aes(y=scalar*QUAL,se=TRUE)) + theme_bw() + labs(x = "Position on Chromosome", y = "Counts of nSNPs and Scaled Quality Scores",color = "Legend") + scale_color_manual(values = colors)
-  print(t1)
-  }else if (p4 == FALSE){
-    print("Do not plot Superpostion of Quality Scores and Number of SNPs")
-  }
-  message("Ploting histogram of SNPs per Chromosome")
-  p5 <- p5
-  if (p5 == TRUE){
-  t2 <- ggplot(data = SNPset, aes(x = nSNPs)) + geom_histogram(bins = 10,show.legend = TRUE) + facet_wrap(~CHROM,ncol=ncol) + title(main = paste0("Number of SNPs in a window of size",windowSize)) + theme_classic()
-  print(t2)
-  }else if (p5 == FALSE){
-    print("Do not plot Hisotogram of Number of SNPs per Chromosome")
-  }
-  p6 <- p6
-  if (p6 == TRUE){
-    t3 <- ggplot(data = SNPset, aes(x = DP)) + geom_histogram(bins = DPBINS, show.legend = TRUE) + facet_wrap(~CHROM, ncol=ncol) + title(main = "Raw Allelic Read Depths") + theme_classic()
-    print(t3)
-  }else if (p6 == FALSE){
-    print("Do not plot Histogram of Depth Reads")
-  }
-  message("Returning completed Data frame as a SNPSet")
-  return(as.data.frame(SNPset))
-}
+
 
 
 #' @title plotGprimeDist_Py_MH

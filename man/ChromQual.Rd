@@ -11,6 +11,7 @@ ChromQual(
   scalar = NULL,
   ncol = NULL,
   HighLimQuality = NULL,
+  Chromname = NULL,
   binwidth1 = NULL,
   binwidth2 = NULL,
   DPBINS = 10,
