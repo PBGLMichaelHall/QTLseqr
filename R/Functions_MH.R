@@ -576,7 +576,7 @@ ChromQual <-
     SNPset <- SNPset %>% select(CHROM, POS, QUAL, DP)
     message("Mutating SNPS set creating nSNPs variable")
     SNPset <- SNPset %>% dplyr::group_by(CHROM) %>% dplyr::mutate(nSNPs = countSNPs_cpp(POS = POS, 
-                                                                                        windowSize = windowSize)) %>% filter(QUAL <= HighLimQuality)
+                                                                                        windowSize = windowSize)) %>% filter(QUAL >= HighLimQuality)
    
     par(mfrow = c(1, 1))
     p1 <- p1
