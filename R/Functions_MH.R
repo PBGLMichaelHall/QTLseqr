@@ -547,7 +547,7 @@ obs_MH<- function(SNPSet, ChromosomeValue1,ChromosomeValue2,ChromosomeValue3,Chr
 #' @param p5 TRUE or FALSE to plot or not to plot
 #' @param p6 TRUE or FALSE Boolean Argument, to plot or not to plot that is the question
 #' @return Several ggplots
-#' @examples ChromQual(file = "General.vcf", chromlist = c("Chr1", "Chr2")), windowSize = 1e+06, scalar = 0.1, ncol = 2,binwidth1 = 100, binwidth2 =1,DPBINS=10,p1=TRUE,p2=FALSE,p3=TRUE,p4=TRUE,p5=FALSE,p6=TRUE)
+#' @examples ChromQual(file = "General.vcf", chromlist = c("Chr1", "Chr2")), windowSize = 1e+06, scalar = 0.1, ncol = 2, binwidth1 = 100, binwidth2 =1, DPBINS=10, p1=TRUE, p2=FALSE, p3=TRUE, p4=TRUE, p5=FALSE, p6=TRUE)
 #' @export ChromQual
 
 
@@ -625,8 +625,7 @@ ChromQual <- function (file, chromlist = NULL,windowSize = 1e+06,HighLimQuality=
   p6 <- p6
   if (p6 == TRUE){
     t3 <- ggplot(data = SNPset, aes(x = DP)) + geom_histogram(bins = DPBINS, show.legend = TRUE) + facet_wrap(~CHROM, ncol=ncol) + title(main = "Raw Allelic Read Depths") + theme_classic()
-  }
-  else if (p6 == FALSE){
+  }else if (p6 == FALSE){
     print("Do not plot Histogram of Depth Reads")
   }
   message("Returning completed Data frame as a SNPSet")
