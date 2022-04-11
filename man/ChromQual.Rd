@@ -5,7 +5,7 @@
 \title{ChromQual}
 \usage{
 ChromQual(
-  vcf = NULL,
+  vcf,
   chromlist = NULL,
   windowSize = 1e+06,
   scalar = NULL,

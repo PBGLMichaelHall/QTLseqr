@@ -548,11 +548,11 @@ obs_MH<- function(SNPSet, ChromosomeValue1,ChromosomeValue2,ChromosomeValue3,Chr
 #' @export ChromQual
 
 
-ChromQual <- function (vcf = NULL, chromlist = NULL,windowSize = 1e+06,scalar=NULL,ncol = NULL, HighLimQuality=NULL,binwidth1=NULL,binwidth2=NULL,DPBINS=10,p1=NULL,p2=NULL,p3=NULL,p4=NULL,p5=NULL,p6=NULL) 
+ChromQual <- function (vcf, chromlist = NULL,windowSize = 1e+06,scalar=NULL,ncol = NULL, HighLimQuality=NULL,binwidth1=NULL,binwidth2=NULL,DPBINS=10,p1=NULL,p2=NULL,p3=NULL,p4=NULL,p5=NULL,p6=NULL) 
 {
   #Read VCF file in
   message("Reading vcf file in with read.vcfR")
-  vcf <- read.vcfR(vcf = vcf)
+  vcf <- read.vcfR(file = vcf)
   #Convert to tidy data frame
   message("Converting vcf object to tidy data frame with vcfR2tidy")
   vcf <- vcfR2tidy(vcf)
