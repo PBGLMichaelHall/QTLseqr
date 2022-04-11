@@ -1016,7 +1016,7 @@ plotQTLStats_MH2 <-
 
 #' @title Correlation
 #' @description Returns a Correlation Matrix for info fields AC, DP, DPB, QA, RO, AO and most importantly QUAL
-#' @param file A vcf file
+#' @param vcffile A vcf file
 #' @param chromlist A vector of chromosomes/contigs as specified in VCF file
 #' @param p1 A boolean Value either TRUE or FALSE for plotting Correlation matrix and Correlation Tables 
 #' @param p2 A boolean Value either TRUE or FALSE for plotting Correlation matrix and Correlation Tables  
@@ -1027,7 +1027,7 @@ plotQTLStats_MH2 <-
 
 
 Correlation <- 
-  function (file = NULL, chromlist = NULL,p1 = NULL, p2 = NULL, p3 = NULL, p4 = NULL,p5=TRUE) 
+  function (vcffile = NULL, chromlist = NULL,p1 = NULL, p2 = NULL, p3 = NULL, p4 = NULL,p5=TRUE) 
   {
 vcf <- read.vcfR(file = file)
 vcf <- vcfR2tidy(vcf)
