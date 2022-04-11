@@ -531,12 +531,13 @@ obs_MH<- function(SNPSet, ChromosomeValue1,ChromosomeValue2,ChromosomeValue3,Chr
   print(e5)
 }
 
-
+#' @title ChromQual
 #' @param vcf A vcf file 
 #' @param chromlist A vector specifying particular chromosomes
 #' @param windowSize Specify window size to calculate number of SNPs
 #' @param scalar Specify a scalar quantity > 0 to apply on Quality Scores
 #' @param ncol An Integer Value Specifying the number of columns in ggplot facet_grid which corresponds to exact number of chromosomes in chromlist
+#' @param HighLimQuality Set Upper Limit for Quality 
 #' @param bindwidth1 Specify binwidth for Quality score histogram plot
 #' @param bindwidth2 Specify binwidth for Number of SNPs histogram plot
 #' @param DPBINS Specify number of bins for p6 histogram
@@ -547,12 +548,12 @@ obs_MH<- function(SNPSet, ChromosomeValue1,ChromosomeValue2,ChromosomeValue3,Chr
 #' @param p5 TRUE or FALSE to plot or not to plot
 #' @param p6 TRUE or FALSE Boolean Argument, to plot or not to plot that is the question
 #' @return Several ggplots
-#' @examples ChromQual(file = "General.vcf", chromlist = c("Chr1", "Chr2")), windowSize = 1e+06, scalar = 0.1, ncol = 2, binwidth1 = 100, binwidth2 =1, DPBINS=10, p1=TRUE, p2=FALSE, p3=TRUE, p4=TRUE, p5=FALSE, p6=TRUE)
+#' @examples ChromQuality(vcf = "General.vcf", chromlist = c("Chr1", "Chr2")), windowSize = 1e+06, scalar = 0.1, ncol = 2,HighLimQuality = 6000,  binwidth1 = 100, binwidth2 =1, DPBINS=10, p1=TRUE, p2=FALSE, p3=TRUE, p4=TRUE, p5=FALSE, p6=TRUE)
 #' @export ChromQual
 
 
 
-ChromQual <- function (file, chromlist = NULL,windowSize = 1e+06,HighLimQuality=NULL,scalar=NULL,ncol=NULL,binwidth1=NULL,binwidth2=NULL,p1=NULL,p2=NULL,p3=NULL,p4=NULL,p5=NULL) 
+ChromQual <- function (vcf = NULL, chromlist = NULL,windowSize = 1e+06,scalar=NULL,ncol = NULL, HighLimQuality=NULL,binwidth1=NULL,binwidth2=NULL,DPBINS=10,p1=NULL,p2=NULL,p3=NULL,p4=NULL,p5=NULL,p6=NULL) 
 {
   #Read VCF file in
   message("Reading vcf file in with read.vcfR")
@@ -633,7 +634,7 @@ ChromQual <- function (file, chromlist = NULL,windowSize = 1e+06,HighLimQuality=
 }
 
 
-
+#' @title plotGprimeDist_Py_MH
 #' @param SNPset An SNPset generated from importFromTable function
 #' @param outlierFilter Choose outlier filter method either deltaSNP or Hampel
 #' @param filterThreshold Choose a filter threshold
@@ -881,9 +882,7 @@ plotQTLStats_MH <-
 Obs_Allele_Freq3 <- 
   function (SNPSet) 
   {
-    frame <- SNPSet %>% dplyr::mutate(LowRef = AD_REF.LOW, HighRef = AD_REF.HIGH, 
-                                      LowAlt = AD_ALT.LOW, HighAlt = AD_ALT.HIGH) %>% select(LowRef, 
-                                                                                             HighRef, LowAlt, HighAlt)
+    frame <- SNPSet %>% dplyr::mutate(LowRef = AD_REF.LOW, HighRef = AD_REF.HIGH, LowAlt = AD_ALT.LOW, HighAlt = AD_ALT.HIGH) %>% select(LowRef, HighRef, LowAlt, HighAlt)
     p1 <- ((frame$LowAlt)/(frame$LowRef + frame$LowAlt))
     p1 <- round(p1, 3)
     p2 <- ((frame$HighAlt)/(frame$HighRef + frame$HighAlt))
@@ -893,15 +892,11 @@ Obs_Allele_Freq3 <-
     Chrom <- SNPSet %>% select(CHROM)
     POS <- SNPSet %>% select(POS)
     AD_High1 <- data.frame(SNPSet$AD_ALT.HIGH, SNPSet$AD_REF.HIGH)
-    AD_High1$AD_High <- paste(AD_High1$SNPSet.AD_REF.HIGH, AD_High1$SNPSet.AD_ALT.HIGH, 
-                              sep = ",")
-    AD_High <- subset(AD_High1, select = -c(SNPSet.AD_ALT.HIGH, 
-                                            SNPSet.AD_REF.HIGH))
+    AD_High1$AD_High <- paste(AD_High1$SNPSet.AD_REF.HIGH, AD_High1$SNPSet.AD_ALT.HIGH, sep = ",")
+    AD_High <- subset(AD_High1, select = -c(SNPSet.AD_ALT.HIGH, SNPSet.AD_REF.HIGH))
     AD_Low1 <- data.frame(SNPSet$AD_REF.LOW, SNPSet$AD_ALT.LOW)
-    AD_Low1$AD_Low <- paste(AD_Low1$SNPSet.AD_REF.LOW, AD_Low1$SNPSet.AD_ALT.LOW, 
-                            sep = ",")
-    AD_Low <- subset(AD_Low1, select = -c(SNPSet.AD_REF.LOW, 
-                                          SNPSet.AD_ALT.LOW))
+    AD_Low1$AD_Low <- paste(AD_Low1$SNPSet.AD_REF.LOW, AD_Low1$SNPSet.AD_ALT.LOW, sep = ",")
+    AD_Low <- subset(AD_Low1, select = -c(SNPSet.AD_REF.LOW, SNPSet.AD_ALT.LOW))
     Gprime <- SNPSet %>% select(Gprime)
     Gprime <- round(Gprime, 3)
     data <- cbind(Chrom, POS, p1, p2, diff, nSNPs, AD_High, AD_Low, Gprime)
@@ -1023,15 +1018,16 @@ plotQTLStats_MH2 <-
 #' @description Returns a Correlation Matrix for info fields AC, DP, DPB, QA, RO, AO and most importantly QUAL
 #' @param file A vcf file
 #' @param chromlist A vector of chromosomes/contigs as specified in VCF file
-#' @param p1 A boolean Value either TRUE of FALSE for plotting Correlation matrix and Corrleation Tables 
-#' @param p2 A boolean Value either TRUE of FALSE for plotting Correlation matrix and Corrleation Tables  
-#' @param p3 A boolean Value either TRUE of FALSE for plotting Correlation matrix and Corrleation Tables 
-#' @param p4 A boolean Value either TRUE of FALSE for plotting Correlation matrix and Corrleation Tables 
+#' @param p1 A boolean Value either TRUE or FALSE for plotting Correlation matrix and Correlation Tables 
+#' @param p2 A boolean Value either TRUE or FALSE for plotting Correlation matrix and Correlation Tables  
+#' @param p3 A boolean Value either TRUE or FALSE for plotting Correlation matrix and Correlation Tables 
+#' @param p4 A boolean Value either TRUE or FALSE for plotting Correlation matrix and Correlation Tables 
+#' @param p5 A boolean Value either TRUE or FALSE 
 #' @export Correlation
 
 
 Correlation <- 
-  function (file, chromlist = NULL,p1 = NULL, p2 = NULL, p3 = NULL, p4 = NULL,p5=TRUE) 
+  function (file = NULL, chromlist = NULL,p1 = NULL, p2 = NULL, p3 = NULL, p4 = NULL,p5=TRUE) 
   {
 vcf <- read.vcfR(file = file)
 vcf <- vcfR2tidy(vcf)
