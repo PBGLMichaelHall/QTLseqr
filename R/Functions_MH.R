@@ -555,7 +555,7 @@ ChromQual <-
             p5 = NULL, p6 = NULL) 
   {
     message("Reading vcf file in with read.vcfR")
-    vcf <- read.vcfR(file = file)
+    vcf <- read.vcfR(file = vcf)
     message("Converting vcf object to tidy data frame with vcfR2tidy")
     vcf <- vcfR2tidy(vcf)
     message("Extracting unique Chromosome or Contig names reverse compatible to VCF file")
