@@ -625,6 +625,7 @@ ChromQual <- function (vcf = NULL, chromlist = NULL,windowSize = 1e+06,scalar=NU
   p6 <- p6
   if (p6 == TRUE){
     t3 <- ggplot(data = SNPset, aes(x = DP)) + geom_histogram(bins = DPBINS, show.legend = TRUE) + facet_wrap(~CHROM, ncol=ncol) + title(main = "Raw Allelic Read Depths") + theme_classic()
+    print(t3)
   }else if (p6 == FALSE){
     print("Do not plot Histogram of Depth Reads")
   }
