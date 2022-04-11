@@ -269,8 +269,9 @@ getPvals_MH <-
   }
 
 #' @title runQTLseqAnalysis_MH
-#' @description Calculates/Returns SNPset 
-#' @param  windowSize Specify Window Size
+#' @description Calculates Returns a SNPset 
+#' @param SNPset A SNPset
+#' @param windowSize Specify Window Size
 #' @param popStruc population Structure of the Segregant Bulks "F2" is default
 #' @param bulkSize Choose appropriate parameters for bulk size in each BSA group 
 #' @param depth Default is NULL
@@ -388,7 +389,7 @@ Obs_Allele_Freq2 <-
 
 
 
-#'Hello Again and Again and Again
+
 #' Plots Gprime distribution
 #' Modified by MH
 #' Plots a ggplot histogram of the distribution of Gprime with a log normal
@@ -472,13 +473,7 @@ function (SNPset, outlierFilter = c("deltaSNP", "Hampel"), filterThreshold = 0.1
 
 
 
-#'Hello Again 
-#'Hello Again...
-#' Plots Gprime distribution
-#' Modified by MH
-#' Plots a ggplot histogram of the distribution of Gprime with a log normal
-#' distribution overlay
-#'
+#' @title obs_MH
 #' @param SNPset a data frame with SNPs and genotype fields as imported by
 #' @param ChromosomeValue1 Enter a Integer for a specific chromosome i.e. 1,2,..etc.
 #' @param ChromosomeValue2 Enter a Integer for a specific chromosome i.e. 1,2,..etc.
@@ -531,7 +526,7 @@ obs_MH<- function(SNPSet, ChromosomeValue1,ChromosomeValue2,ChromosomeValue3,Chr
   print(e5)
 }
 
-#' Hello
+
 #' @title ChromQual
 #' @param vcf A vcf file 
 #' @param chromlist A vector specifying particular chromosomes
@@ -641,7 +636,6 @@ ChromQual <- function (vcf = NULL, chromlist = NULL,windowSize = 1e+06,scalar=NU
 #' @param filterThreshold Choose a filter threshold
 #' @param binwidth Choose binwidth size default is 0.5
 #' @return A Gprime Distribution Plot 
-#' @examples 
 #' @export plotGprimeDist_Py_MH
 
 
