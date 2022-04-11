@@ -539,11 +539,13 @@ obs_MH<- function(SNPSet, ChromosomeValue1,ChromosomeValue2,ChromosomeValue3,Chr
 #' @param ncol An Integer Value Specifying the number of columns in ggplot facet_grid which corresponds to exact number of chromosomes in chromlist
 #' @param bindwidth1 Specify binwidth for Quality score histogram plot
 #' @param bindwidth2 Specify binwidth for Number of SNPs histogram plot
+#' @param DPBINS Specify number of bins for p6 histogram
 #' @param p1 TRUE or FALSE to plot or not to plot
 #' @param p2 TRUE or FALSE to plot or not to plot
 #' @param p3 TRUE or FALSE to plot or not to plot
 #' @param p4 TRUE or FALSE to plot or not to plot
 #' @param p5 TRUE or FALSE to plot or not to plot
+#' @param p6 TRUE or FALSE Boolean Argument, to plot or not to plot that is the question
 #' @return Several ggplots
 #' @examples ChromQual(file = "General.vcf", chromlist = c("Chr1", "Chr2")), windowSize = 1e+06, scalar = 0.1, ncol = 2,binwidth1 = 100, binwidth2 =1,p1=TRUE,p2=FALSE,p3=TRUE,p4=TRUE,p5=FALSE)
 #' @export ChromQual
@@ -619,6 +621,13 @@ ChromQual <- function (file, chromlist = NULL,windowSize = 1e+06,HighLimQuality=
   print(t2)
   }else if (p5 == FALSE){
     print("Do not plot Hisotogram of Number of SNPs per Chromosome")
+  }
+  p6 <- p6
+  if (p6 == TRUE){
+    t3 <- ggplot(data = SNPset, aes(x = DP)) + geom_histogram(bins = DPBINS, show.legend = TRUE) + facet_wrap(~CHROM, ncol=ncol) + title(main = "Raw Allelic Read Depths") + theme_classic()
+  }
+  else if (p6 == FALSE){
+    print("Do not plot Histogram of Depth Reads")
   }
   message("Returning completed Data frame as a SNPSet")
   return(as.data.frame(SNPset))
