@@ -110,7 +110,7 @@ runGprimeAnalysis_MH <-
     SNPset <- SNPset %>% dplyr::group_by(CHROM) %>% dplyr::mutate(nSNPs = countSNPs_cpp(POS = POS,
                                                                                         windowSize = windowSize))
     message("Calculating tricube smoothed delta SNP index...")
-    SNPset <- SNPset %>% dplyr::mutate(tricubeDeltaSNP = tricubeStat(POS = POS,
+    SNPset <- SNPset %>% dplyr::mutate(tricubeDeltaSNP = tricubeStat_MH(POS = POS,
                                                                      Stat = deltaSNP, windowSize))
     message("Calculating G and G' statistics...")
     SNPset <- SNPset %>% dplyr::mutate(G = getG_MH(LowRef = AD_REF.LOW,
@@ -576,12 +576,11 @@ ChromQual <-
     SNPset <- SNPset %>% select(CHROM, POS, QUAL, DP)
     message("Mutating SNPS set creating nSNPs variable")
     SNPset <- SNPset %>% dplyr::group_by(CHROM) %>% dplyr::mutate(nSNPs = countSNPs_cpp(POS = POS, 
-                                                                                        windowSize = windowSize)) %>% filter(QUAL >= HighLimQuality)
-   
+                                                                                        windowSize = windowSize)) %>% filter(QUAL <= HighLimQuality)
+    message("Plotting Quality Scores")
     par(mfrow = c(1, 1))
     p1 <- p1
     if (p1 == TRUE) {
-      message("Plotting Quality Scores")
       breaks <- seq(round(min(SNPset$QUAL) - 1, 0), round(max(SNPset$QUAL) + 
                                                             100, 0), binwidth1)
       jpeg(file="plot1.jpeg")
@@ -592,10 +591,9 @@ ChromQual <-
     else if (p1 == FALSE) {
       print("Do not plot Histogram of Quality Score")
     }
-  
+    message("Plotting Number of SNPs")
     p2 <- p2
     if (p2 == TRUE) {
-      message("Plotting Number of SNPs")
       breaks <- seq(round(min(SNPset$nSNPs) - 1, 0), round(max(SNPset$nSNPs) + 
                                                              100, 0), binwidth2)
       jpeg(file="plot2.jpeg")
@@ -608,10 +606,10 @@ ChromQual <-
     else if (p2 == FALSE) {
       print("Do not plot Histogram of Number of SNPs")
     }
-    
+    message("Plotting Quality Scores with Superimposed loess smoothing curve")
     p3 <- p3
     if (p3 == TRUE) {
-      message("Plotting Quality Scores with Superimposed loess smoothing curve")
+      print("Do not plot Quality Scores with Loess Curve")
       jpeg(file="plot3.jpeg")
       SNPset <- as.data.frame(SNPset)
       SNPset <- SNPset %>% filter(CHROM == Chromname)
@@ -629,12 +627,12 @@ ChromQual <-
       
     }
     else if (p3 == FALSE) {
-      print("Do not plot Quality Scores with Loess Curve")
+    
     }
-   
+    message("Plotting Number of SNPs per Chromosome with loess smoothing curve")
     p4 <- p4
     if (p4 == TRUE) {
-      message("Plotting Number of SNPs per Chromosome with loess smoothing curve")
+      message("Ploting histogram of SNPs per Chromosome")
       jpeg(file="plot4.jpeg")
       ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = nSNPs), color = "lightgreen") + facet_wrap(~CHROM, ncol = ncol) + geom_smooth(aes(y = scalar * QUAL)) + theme_bw() + labs(x = "Position on Chromosome", y = "Counts of nSNPs and Scaled Quality Scores", color = "Legend") + scale_color_manual(values = colors)
       dev.off()
@@ -645,7 +643,6 @@ ChromQual <-
    
     p5 <- p5
     if (p5 == TRUE) {
-      message("Ploting histogram of SNPs per Chromosome")
       jpeg(file="plot5.jpeg")
       ggplot(data = SNPset, aes(x = nSNPs)) + geom_histogram(bins = 10, show.legend = TRUE) + facet_wrap(~CHROM, ncol = ncol) + theme_classic()
       dev.off()
@@ -655,7 +652,6 @@ ChromQual <-
     }
     p6 <- p6
     if (p6 == TRUE) {
-      message("Plotting Depth")
       jpeg(file="plot6.jpeg")
       ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y=DP),color = "lightblue") + facet_wrap(~CHROM, ncol = ncol) + theme_classic()
       dev.off()
