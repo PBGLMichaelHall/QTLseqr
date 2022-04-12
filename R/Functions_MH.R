@@ -96,7 +96,7 @@ QTLParser_1_MH<-
 
 #' @title runGprimeAnalysis_MH
 #' @description Runs a Gprime Analysis on Bulk segregants 
-#' @param SNPset An SNPset
+#' @param SNPset An SNPset Please
 #' @param windowSize Specify the WindowSize
 #' @param outlierFilter Specify the outlierFilter 
 #' @param filterThreshold Specify threshold filter value default is 0.1
