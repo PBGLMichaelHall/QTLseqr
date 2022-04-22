@@ -1,0 +1,691 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>QTLSorghum &#8212; QTL_BSA-Sorghum 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="qtlsorghum">
+<h1>QTLSorghum<a class="headerlink" href="#qtlsorghum" title="Permalink to this headline">¶</a></h1>
+<p>QTLseqr is an R package for QTL mapping using NGS Bulk Segregant
+Analysis.</p>
+<p>QTLseqr is still under development and is offered with out any
+guarantee.</p>
+<section id="for-more-detailed-instructions-please-read-the-vignette-here">
+<h2><strong>For more detailed instructions please read the vignette <a class="reference external" href="https://github.com/bmansfeld/QTLseqr/raw/master/vignettes/QTLseqr.pdf">here</a></strong><a class="headerlink" href="#for-more-detailed-instructions-please-read-the-vignette-here" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="for-updates-read-the-news-md">
+<h2>For updates read the <a class="reference external" href="https://github.com/bmansfeld/QTLseqr/blob/master/NEWS.md">NEWS.md</a><a class="headerlink" href="#for-updates-read-the-news-md" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+<section id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<!-- You can install and update QTLseqr by using our [drat](http://dirk.eddelbuettel.com/code/drat.html) repository hosted on our github page: -->
+<!-- ```{r drat-install, eval = FALSE} -->
+<!-- install.packages("QTLseqr", repos = "http://bmansfeld.github.io/drat") -->
+<!-- ``` -->
+<!-- OR You can install QTLseqr from github with: -->
+<p>You can install QTLseqr from github with:</p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1"># install devtools first to download packages from github</span>
+<span class="nf">install.packages</span><span class="p">(</span><span class="s">&quot;devtools&quot;</span><span class="p">)</span>
+
+<span class="c1"># use devtools to install QTLseqr</span>
+<span class="n">devtools</span><span class="o">::</span><span class="nf">install_github</span><span class="p">(</span><span class="s">&quot;PBGLMichaelHall/QTLseqr&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Note:</strong> Apart from regular package dependencies, there are some
+Bioconductor tools that we use as well, as such you will be prompted to
+install support for Bioconductor, if you haven’t already. QTLseqr makes
+use of C++ to make some tasks significantly faster (like counting SNPs).
+Because of this, in order to install QTLseqr from github you will be
+required to install some compiling tools (Rtools and Xcode, for Windows
+and Mac, respectively).</p>
+<p><strong>If you use QTLseqr in published research, please cite:</strong></p>
+<blockquote>
+<div><p>Mansfeld B.N. and Grumet R, QTLseqr: An R package for bulk segregant
+analysis with next-generation sequencing <em>The Plant Genome</em>
+<a class="reference external" href="https://dl.sciencesocieties.org/publications/tpg/abstracts/11/2/180006">doi:10.3835/plantgenome2018.01.0006</a></p>
+</div></blockquote>
+<p>We also recommend citing the paper for the corresponding method you work
+with.</p>
+<p>QTL-seq method:</p>
+<blockquote>
+<div><p>Takagi, H., Abe, A., Yoshida, K., Kosugi, S., Natsume, S., Mitsuoka,
+C., Uemura, A., Utsushi, H., Tamiru, M., Takuno, S., Innan, H., Cano,
+L. M., Kamoun, S. and Terauchi, R. (2013), QTL-seq: rapid mapping of
+quantitative trait loci in rice by whole genome resequencing of DNA
+from two bulked populations. <em>Plant J</em>, 74: 174–183.
+<a class="reference external" href="https://onlinelibrary.wiley.com/doi/full/10.1111/tpj.12105">doi:10.1111/tpj.12105</a></p>
+</div></blockquote>
+<p>G prime method:</p>
+<blockquote>
+<div><p>Magwene PM, Willis JH, Kelly JK (2011) The Statistics of Bulk
+Segregant Analysis Using Next Generation Sequencing. <em>PLOS
+Computational Biology</em> 7(11): e1002255.
+<a class="reference external" href="http://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1002255">doi.org/10.1371/journal.pcbi.1002255</a></p>
+</div></blockquote>
+<section id="abstract">
+<h2>Abstract<a class="headerlink" href="#abstract" title="Permalink to this headline">¶</a></h2>
+<p>Next Generation Sequencing Bulk Segregant Analysis (NGS-BSA) is
+efficient in detecting quantitative trait loci (QTL). Despite the
+popularity of NGS-BSA and the R statistical platform, no R packages are
+currently available for NGS-BSA. We present QTLseqr, an R package for
+NGS-BSA that identifies QTL using two statistical approaches: QTL-seq
+and G’. These approaches use a simulation method and a tricube smoothed
+G statistic, respectively, to identify and assess statistical
+significance of QTL. QTLseqr, can import and filter SNP data, calculate
+SNP distributions, relative allele frequencies, G’ values, and
+log10(p-values), enabling identification and plotting of QTL.</p>
+</section>
+</section>
+<section id="examples">
+<h1>Examples:<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
+</section>
+<section id="load-install-libraries">
+<h1>Load/install libraries<a class="headerlink" href="#load-install-libraries" title="Permalink to this headline">¶</a></h1>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1"># install.packages(&quot;tinytex&quot;)</span>
+<span class="c1"># install.packages(&quot;vcfR&quot;)</span>
+<span class="c1"># install.packages(&quot;tidyr&quot;)</span>
+<span class="c1"># install.packages(&quot;ggplot2&quot;)</span>
+<span class="n">devtools</span><span class="o">::</span><span class="nf">install_github</span><span class="p">(</span><span class="s">&quot;PBGLMichaelHall/QTLseqr&quot;</span><span class="p">,</span><span class="n">force</span> <span class="o">=</span> <span class="kc">TRUE</span><span class="p">)</span>
+<span class="nf">library</span><span class="p">(</span><span class="n">QTLseqr</span><span class="p">)</span>
+<span class="nf">library</span><span class="p">(</span><span class="n">tinytex</span><span class="p">)</span>
+<span class="nf">library</span><span class="p">(</span><span class="n">vcfR</span><span class="p">)</span>
+<span class="nf">library</span><span class="p">(</span><span class="n">tidyr</span><span class="p">)</span>
+<span class="nf">library</span><span class="p">(</span><span class="n">ggplot2</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="set-the-working-directory-to-where-vcf-file-is-stored-in-file-system">
+<h1>Set the Working Directory to where VCF file is stored in file system<a class="headerlink" href="#set-the-working-directory-to-where-vcf-file-is-stored-in-file-system" title="Permalink to this headline">¶</a></h1>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">setwd</span><span class="p">(</span><span class="s">&quot;/home/michael/Desktop/QTLseqr/extdata&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="vcf-file-must-only-contain-bialleleic-variants-filter-upstream-e-g-with-bcftools-view-m2-m2-also-the-qtlseqr-functions-will-only-take-snps-ie-length-of-ref-and-alt-1">
+<h1>Vcf file must only contain bialleleic variants. (filter upstream, e.g., with bcftools view -m2 -M2), also the QTLseqR functions will only take SNPS, ie, length of REF and ALT== 1<a class="headerlink" href="#vcf-file-must-only-contain-bialleleic-variants-filter-upstream-e-g-with-bcftools-view-m2-m2-also-the-qtlseqr-functions-will-only-take-snps-ie-length-of-ref-and-alt-1" title="Permalink to this headline">¶</a></h1>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">vcf</span> <span class="o">&lt;-</span> <span class="nf">read.vcfR</span><span class="p">(</span><span class="n">file</span> <span class="o">=</span> <span class="s">&quot;freebayes_D2.filtered.vcf&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><img alt="Screenshot from 2022-03-30 15-12-19" src="https://user-images.githubusercontent.com/93121277/160842876-d35bcbdf-c487-42ad-ac92-01f98f436eea.png" /></p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1">#Convert to tidy data frame</span>
+<span class="n">VCF_TIDY</span> <span class="o">&lt;-</span> <span class="nf">vcfR2tidy</span><span class="p">(</span><span class="n">vcf</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><img alt="Screenshot from 2022-03-30 15-18-37" src="https://user-images.githubusercontent.com/93121277/160843944-e37e77e9-acb4-401f-95eb-f75f894e953f.png" /></p>
+</section>
+<section id="call-the-parser">
+<h1>Call the Parser<a class="headerlink" href="#call-the-parser" title="Permalink to this headline">¶</a></h1>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">QTLParser_1_MH</span><span class="p">(</span><span class="n">vcf</span> <span class="o">=</span> <span class="n">VCF_TIDY</span><span class="p">,</span> <span class="n">HighBulk</span> <span class="o">=</span> <span class="s">&quot;D2_F2_tt&quot;</span><span class="p">,</span><span class="n">LowBulk</span> <span class="o">=</span> <span class="s">&quot;D2_F2_TT&quot;</span><span class="p">,</span> <span class="n">filename</span> <span class="o">=</span> <span class="n">Hall</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><img alt="Screenshot from 2022-03-30 15-10-38" src="https://user-images.githubusercontent.com/93121277/160842389-5d1d3915-c652-4fa4-a0a4-2829d04ad9a0.png" /></p>
+</section>
+<section id="preview-the-csv-file">
+<h1>Preview the CSV file<a class="headerlink" href="#preview-the-csv-file" title="Permalink to this headline">¶</a></h1>
+<p><img alt="mcsv" src="https://user-images.githubusercontent.com/93121277/158783968-db377510-7852-4359-a48f-afb34b8efb5a.png" /></p>
+</section>
+<section id="invoke-unique-command-to-extract-sample-names-reverse-comapatible-to-the-vcf">
+<h1>Invoke unique command to extract Sample names reverse comapatible to the VCF<a class="headerlink" href="#invoke-unique-command-to-extract-sample-names-reverse-comapatible-to-the-vcf" title="Permalink to this headline">¶</a></h1>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">unique</span><span class="p">(</span><span class="n">VCF_TIDY</span><span class="o">$</span><span class="n">gt</span><span class="o">$</span><span class="n">Indiv</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><img alt="Screenshot from 2022-03-30 15-33-29" src="https://user-images.githubusercontent.com/93121277/160846874-b44284ed-9eb5-44a7-9ef0-65a5819e182e.png" /></p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1">#Set High bulk and Low bulk sample names and parser generated file name</span>
+<span class="c1">#The file name is generated from the QTLParser_1_MH function in line 119</span>
+
+<span class="n">HighBulk</span> <span class="o">&lt;-</span> <span class="s">&quot;D2_F2_tt&quot;</span>
+<span class="n">LowBulk</span> <span class="o">&lt;-</span> <span class="s">&quot;D2_F2_TT&quot;</span>
+<span class="n">file</span> <span class="o">&lt;-</span> <span class="s">&quot;Hall.csv&quot;</span>
+
+<span class="c1">#Choose which chromosomes/contigs will be included in the analysis,</span>
+
+<span class="n">Chroms</span> <span class="o">&lt;-</span> <span class="nf">c</span><span class="p">(</span><span class="s">&quot;Chr01&quot;</span><span class="p">,</span><span class="s">&quot;Chr02&quot;</span><span class="p">,</span><span class="s">&quot;Chr03&quot;</span><span class="p">,</span><span class="s">&quot;Chr04&quot;</span><span class="p">,</span><span class="s">&quot;Chr05&quot;</span><span class="p">,</span><span class="s">&quot;Chr06&quot;</span><span class="p">,</span><span class="s">&quot;Chr07&quot;</span><span class="p">,</span><span class="s">&quot;Chr08&quot;</span><span class="p">,</span><span class="s">&quot;Chr09&quot;</span><span class="p">,</span><span class="s">&quot;Chr10&quot;</span><span class="p">)</span>
+
+<span class="n">df</span> <span class="o">&lt;-</span>
+  <span class="nf">importFromTable</span><span class="p">(</span>
+    <span class="n">file</span> <span class="o">=</span> <span class="n">file</span><span class="p">,</span>
+    <span class="n">highBulk</span> <span class="o">=</span> <span class="n">HighBulk</span><span class="p">,</span>
+    <span class="n">lowBulk</span> <span class="o">=</span> <span class="n">LowBulk</span><span class="p">,</span>
+    <span class="n">chromList</span> <span class="o">=</span> <span class="n">Chroms</span>
+  <span class="p">)</span> 
+</pre></div>
+</div>
+<p><img alt="Screenshot from 2022-03-30 15-38-14" src="https://user-images.githubusercontent.com/93121277/160847939-5d0feb2d-8d54-4d59-949d-be1939df8de2.png" /></p>
+</section>
+<section id="inspect-the-head-of-the-df-object">
+<h1>Inspect the head of the df object<a class="headerlink" href="#inspect-the-head-of-the-df-object" title="Permalink to this headline">¶</a></h1>
+<p><img alt="Screenshot from 2022-03-30 15-41-45" src="https://user-images.githubusercontent.com/93121277/160848653-41ab84f1-1d37-49aa-9bd4-ea1319704c8f.png" /></p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1">#plot histograms associated with filtering arguments such as mamximum and minumum Total Depths and reference Allele Frequency to determine cut off values </span>
+
+<span class="nf">ggplot</span><span class="p">(</span><span class="n">data</span> <span class="o">=</span><span class="n">df</span><span class="p">)</span> <span class="o">+</span> <span class="nf">geom_histogram</span><span class="p">(</span><span class="nf">aes</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">DP.LOW</span> <span class="o">+</span> <span class="n">DP.HIGH</span><span class="p">))</span> <span class="o">+</span> <span class="nf">xlim</span><span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">400</span><span class="p">)</span>
+
+<span class="nf">ggsave</span><span class="p">(</span><span class="n">filename</span> <span class="o">=</span> <span class="s">&quot;Depth_Histogram.png&quot;</span><span class="p">,</span><span class="n">plot</span><span class="o">=</span><span class="nf">last_plot</span><span class="p">())</span>
+</pre></div>
+</div>
+<p><img alt="hist34" src="https://user-images.githubusercontent.com/93121277/156784666-7abcc556-e0ef-4b4b-b981-c97074fccb0c.png" /></p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">ggplot</span><span class="p">(</span><span class="n">data</span> <span class="o">=</span> <span class="n">df</span><span class="p">)</span> <span class="o">+</span> <span class="nf">geom_histogram</span><span class="p">(</span><span class="nf">aes</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">REF_FRQ</span><span class="p">))</span>
+
+<span class="nf">ggsave</span><span class="p">(</span><span class="n">filename</span> <span class="o">=</span> <span class="s">&quot;Ref_Freq_Histogram.png&quot;</span><span class="p">,</span><span class="n">plot</span> <span class="o">=</span> <span class="nf">last_plot</span><span class="p">())</span>
+</pre></div>
+</div>
+<p><img alt="hist4" src="https://user-images.githubusercontent.com/93121277/156784371-a96fcac0-fe21-43de-ad6c-568c69e3d25a.png" /></p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1">#Filter SNPs based on some criteria</span>
+<span class="n">df_filt</span> <span class="o">&lt;-</span>
+  <span class="nf">filterSNPs</span><span class="p">(</span>
+    <span class="n">SNPset</span> <span class="o">=</span> <span class="n">df</span><span class="p">,</span>
+    <span class="n">refAlleleFreq</span> <span class="o">=</span> <span class="m">0.20</span><span class="p">,</span>
+    <span class="n">minTotalDepth</span> <span class="o">=</span> <span class="m">100</span><span class="p">,</span>
+    <span class="n">maxTotalDepth</span> <span class="o">=</span> <span class="m">400</span><span class="p">,</span>
+    <span class="n">minSampleDepth</span> <span class="o">=</span> <span class="m">40</span><span class="p">,</span>
+    <span class="c1">#    minGQ = 0</span>
+  <span class="p">)</span>
+</pre></div>
+</div>
+<p><img alt="Screenshot from 2022-04-01 08-29-37" src="https://user-images.githubusercontent.com/93121277/161207708-a50c7061-94ce-4729-b764-417bdb488d32.png" /></p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1">#Run G&#39; analysis</span>
+<span class="n">df_filt</span><span class="o">&lt;-</span><span class="nf">runGprimeAnalysis_MH</span><span class="p">(</span>
+  <span class="n">SNPset</span> <span class="o">=</span> <span class="n">df_filt</span><span class="p">,</span>
+  <span class="n">windowSize</span> <span class="o">=</span> <span class="m">5000000</span><span class="p">,</span>
+  <span class="n">outlierFilter</span> <span class="o">=</span> <span class="s">&quot;deltaSNP&quot;</span><span class="p">,</span>
+  <span class="n">filterThreshold</span> <span class="o">=</span> <span class="m">0.1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><img alt="Screenshot from 2022-04-01 08-31-03" src="https://user-images.githubusercontent.com/93121277/161207885-45119458-fa34-4259-80be-a8cd2f30fb3c.png" /></p>
+</section>
+<section id="g-distribution-plot">
+<h1>G’ Distribution Plot<a class="headerlink" href="#g-distribution-plot" title="Permalink to this headline">¶</a></h1>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1">#The plot reveals a skewed G Prime statistic with a really small variance. Perhaps it is due to the small number of variants called.</span>
+<span class="c1">#In addition, Hampels outlier filter in the second argument, can also be changed to &quot;deltaSNP&quot;</span>
+<span class="nf">plotGprimeDist</span><span class="p">(</span><span class="n">SNPset</span> <span class="o">=</span> <span class="n">df_filt</span><span class="p">,</span> <span class="n">outlierFilter</span> <span class="o">=</span> <span class="s">&quot;Hampel&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><img alt="Screenshot from 2022-04-01 08-53-51" src="https://user-images.githubusercontent.com/93121277/161211346-780ed554-5fa6-4d22-bada-d446714c06aa.png" /></p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1">#We can see raw data before and after our filtering step</span>
+<span class="nf">plotGprimeDist_MH</span><span class="p">(</span><span class="n">SNPset</span> <span class="o">=</span> <span class="n">df_filt</span><span class="p">,</span> <span class="n">outlierFilter</span> <span class="o">=</span> <span class="s">&quot;deltaSNP&quot;</span><span class="p">,</span><span class="n">filterThreshold</span> <span class="o">=</span> <span class="m">0.1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><img alt="Screenshot from 2022-04-01 08-59-04" src="https://user-images.githubusercontent.com/93121277/161212125-9daf552a-ddb1-4a50-8603-08adbf21a869.png" /></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+
+
+
+``` r {r QTLSEQ, warning = FALSE}
+
+#Run QTLseq analysis
+df_filt2 &lt;- runQTLseqAnalysis_MH(
+  SNPset = df_filt,
+  windowSize = 5000000,
+  popStruc = &quot;F2&quot;,
+  bulkSize = c(45, 38),
+  replications = 10000,
+  intervals = c(95, 99)
+)
+
+</pre></div>
+</div>
+<p><img alt="Screenshot from 2022-04-01 08-39-28" src="https://user-images.githubusercontent.com/93121277/161209279-3bd76a3c-97d4-44f0-801d-c5c3e7ba1942.png" /></p>
+</section>
+<section id="plot-g-statistic-distribution">
+<h1>Plot G Statistic Distribution<a class="headerlink" href="#plot-g-statistic-distribution" title="Permalink to this headline">¶</a></h1>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">hist</span><span class="p">(</span><span class="n">df_filt2</span><span class="o">$</span><span class="n">G</span><span class="p">,</span><span class="n">breaks</span> <span class="o">=</span> <span class="m">950</span><span class="p">,</span><span class="n">xlim</span> <span class="o">=</span> <span class="nf">c</span><span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">10</span><span class="p">),</span><span class="n">xlab</span> <span class="o">=</span> <span class="s">&quot;G Distribution&quot;</span><span class="p">,</span><span class="n">main</span> <span class="o">=</span> <span class="s">&quot;Histogram of G Values&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><img alt="Screenshot from 2022-04-01 08-44-38" src="https://user-images.githubusercontent.com/93121277/161209927-59cd31d5-5663-4d0b-9d7d-ae6ee64a180d.png" /></p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1">#Plot Snps as a function of chromosome and position values</span>
+<span class="nf">plotQTLStats</span><span class="p">(</span><span class="n">SNPset</span> <span class="o">=</span> <span class="n">df_filt2</span><span class="p">,</span> <span class="n">var</span> <span class="o">=</span> <span class="s">&quot;nSNPs&quot;</span><span class="p">)</span>
+<span class="nf">ggsave</span><span class="p">(</span><span class="n">filename</span> <span class="o">=</span> <span class="s">&quot;nSNPs.png&quot;</span><span class="p">,</span><span class="n">plot</span> <span class="o">=</span> <span class="nf">last_plot</span><span class="p">())</span>
+</pre></div>
+</div>
+<p><img alt="Screenshot from 2022-04-01 15-20-34" src="https://user-images.githubusercontent.com/93121277/161271810-6709f553-1361-4f4d-a6f4-3f11eca4a8c9.png" /></p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1">#Using QTLStats funciton plot Gprime Statistic with False Discovery Rate Threhshold as a third argument boolean operator as TRUE. The q value is used as FDR threshold null value is 0.05%.</span>
+<span class="nf">plotQTLStats</span><span class="p">(</span><span class="n">SNPset</span> <span class="o">=</span> <span class="n">df_filt</span><span class="p">,</span> <span class="n">var</span> <span class="o">=</span> <span class="s">&quot;Gprime&quot;</span><span class="p">,</span> <span class="n">plotThreshold</span> <span class="o">=</span> <span class="kc">TRUE</span><span class="p">,</span> <span class="n">q</span> <span class="o">=</span> <span class="m">0.01</span><span class="p">)</span>
+<span class="nf">ggsave</span><span class="p">(</span><span class="n">filename</span> <span class="o">=</span> <span class="s">&quot;GPrime.png&quot;</span><span class="p">,</span><span class="n">plot</span> <span class="o">=</span> <span class="nf">last_plot</span><span class="p">())</span>
+</pre></div>
+</div>
+<p><img alt="Screenshot from 2022-04-01 15-21-27" src="https://user-images.githubusercontent.com/93121277/161271924-e1e6319b-be94-440f-8898-76849c583edd.png" /></p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1">#Again using plotQTLStats change second argument varaible to deltaSNP and plot.</span>
+<span class="nf">plotQTLStats</span><span class="p">(</span><span class="n">SNPset</span> <span class="o">=</span> <span class="n">df_filt2</span><span class="p">,</span> <span class="n">var</span> <span class="o">=</span> <span class="s">&quot;deltaSNP&quot;</span><span class="p">,</span> <span class="n">plotIntervals</span>  <span class="o">=</span> <span class="kc">TRUE</span><span class="p">)</span>
+<span class="nf">ggsave</span><span class="p">(</span><span class="n">filename</span> <span class="o">=</span> <span class="s">&quot;DeltaSNPInterval.png&quot;</span><span class="p">,</span><span class="n">plot</span> <span class="o">=</span> <span class="nf">last_plot</span><span class="p">())</span>
+</pre></div>
+</div>
+<p><img alt="Screenshot from 2022-04-01 15-22-05" src="https://user-images.githubusercontent.com/93121277/161272031-d384dad1-c471-43bf-96d5-2e6cc05d2cfd.png" /></p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1">#Finally with plotQTLStats plot negLog10Pval</span>
+<span class="nf">plotQTLStats</span><span class="p">(</span><span class="n">SNPset</span> <span class="o">=</span> <span class="n">df_filt2</span><span class="p">,</span> <span class="n">var</span> <span class="o">=</span> <span class="s">&quot;negLog10Pval&quot;</span><span class="p">,</span><span class="n">plotThreshold</span> <span class="o">=</span> <span class="kc">TRUE</span><span class="p">,</span><span class="n">q</span><span class="o">=</span><span class="m">0.01</span><span class="p">)</span>
+<span class="nf">ggsave</span><span class="p">(</span><span class="n">filename</span> <span class="o">=</span> <span class="s">&quot;negLog10Pval.png&quot;</span><span class="p">,</span><span class="n">plot</span> <span class="o">=</span> <span class="nf">last_plot</span><span class="p">())</span>
+</pre></div>
+</div>
+<p><img alt="Screenshot from 2022-04-01 15-22-41" src="https://user-images.githubusercontent.com/93121277/161272116-144fb1c9-78a1-4c7c-9a7c-96b1a1e0b664.png" /></p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1">#Add subset argument to focus on particular chromosomes one, three, four, and six.</span>
+<span class="c1">#The reason is due to signficant QTL regions</span>
+<span class="nf">plotQTLStats</span><span class="p">(</span><span class="n">SNPset</span> <span class="o">=</span> <span class="n">df_filt2</span><span class="p">,</span> <span class="n">var</span> <span class="o">=</span> <span class="s">&quot;Gprime&quot;</span><span class="p">,</span><span class="n">plotThreshold</span> <span class="o">=</span> <span class="kc">TRUE</span><span class="p">,</span><span class="n">q</span><span class="o">=</span><span class="m">0.01</span><span class="p">,</span><span class="n">subset</span> <span class="o">=</span> <span class="nf">c</span><span class="p">(</span><span class="s">&quot;Chr01&quot;</span><span class="p">,</span><span class="s">&quot;Chr03&quot;</span><span class="p">,</span><span class="s">&quot;Chr04&quot;</span><span class="p">,</span><span class="s">&quot;Chr06&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p><img alt="Screenshot from 2022-04-01 15-24-01" src="https://user-images.githubusercontent.com/93121277/161272349-3c9bcf3e-553c-43a5-af5d-6b1e80e99658.png" /></p>
+</section>
+<section id="use-rmvp-package-to-view-snps-on-chromosomes-contigs">
+<h1>Use RMVP package to view SNPs on chromosomes/contigs<a class="headerlink" href="#use-rmvp-package-to-view-snps-on-chromosomes-contigs" title="Permalink to this headline">¶</a></h1>
+<p><img alt="Screenshot from 2022-04-13 09-07-31" src="https://user-images.githubusercontent.com/93121277/163119749-97a84175-a79b-4366-8d21-0d8a3aa7d1a3.png" /></p>
+</section>
+<section id="export-summary-csv">
+<h1>Export summary CSV<a class="headerlink" href="#export-summary-csv" title="Permalink to this headline">¶</a></h1>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">QTLTable</span><span class="p">(</span><span class="n">SNPset</span> <span class="o">=</span> <span class="n">df_filt</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">=</span> <span class="m">0.01</span><span class="p">,</span> <span class="n">export</span> <span class="o">=</span> <span class="kc">TRUE</span><span class="p">,</span> <span class="n">fileName</span> <span class="o">=</span> <span class="s">&quot;my_BSA_QTL.csv&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="preview-the-summary-qtl">
+<h1>Preview the Summary QTL<a class="headerlink" href="#preview-the-summary-qtl" title="Permalink to this headline">¶</a></h1>
+<p><img alt="Screenshot from 2022-04-01 09-18-54" src="https://user-images.githubusercontent.com/93121277/161214771-b0ded302-846c-43c9-a8a4-a87b97423f63.png" /></p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1">#Use the function to plot allele frequencies per chromosome</span>
+<span class="c1">#Second argument size specifes size of scalar factor on nSNPs and if you have a relatively small SNP set .001 is a good startin point otherwise set to 1</span>
+<span class="nf">Obs_Allele_Freq</span><span class="p">(</span><span class="n">SNPSet</span> <span class="o">=</span> <span class="n">df_filt</span><span class="p">,</span> <span class="n">size</span> <span class="o">=</span> <span class="n">.</span><span class="m">001</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><img alt="Screenshot from 2022-04-01 12-38-33" src="https://user-images.githubusercontent.com/93121277/161247921-2fab6d12-6b11-433a-af3b-a5c969aabc8a.png" /></p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1">##Use the function to investigate chromosomal region of interest</span>
+<span class="nf">Obs_Allele_Freq2</span><span class="p">(</span><span class="n">SNPSet</span> <span class="o">=</span> <span class="n">df_filt</span><span class="p">,</span> <span class="n">ChromosomeValue</span> <span class="o">=</span> <span class="s">&quot;Chr04&quot;</span><span class="p">,</span> <span class="n">threshold</span> <span class="o">=</span> <span class="n">.</span><span class="m">90</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><img alt="Screenshot from 2022-04-01 15-45-06" src="https://user-images.githubusercontent.com/93121277/161276197-a4378a1e-7437-40c9-8180-5619bedd2abe.png" /></p>
+<p><img alt="Screenshot from 2022-04-01 15-44-36" src="https://user-images.githubusercontent.com/93121277/161276189-686eadae-e152-472e-9c6d-034bb58b25f7.png" /></p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">setwd</span><span class="p">(</span><span class="s">&quot;/home/michael/Desktop/QTLseqr/extdata&quot;</span><span class="p">)</span>
+<span class="c1"># Theory and Analytical Framework of Sampling from BSA</span>
+<span class="nf">par</span><span class="p">(</span><span class="n">mfrow</span><span class="o">=</span><span class="nf">c</span><span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="m">1</span><span class="p">))</span>
+<span class="c1"># Define Ranges of Success</span>
+<span class="n">success</span> <span class="o">&lt;-</span> <span class="m">0</span><span class="o">:</span><span class="m">90</span>
+<span class="c1"># The Difference between realized and Expected Frequencies </span>
+<span class="c1"># ns : Sample Size taken from Low Bulk</span>
+<span class="c1"># 2(ns)p1_star ~ Binomial(2(ns),p1)</span>
+<span class="c1"># p1 Expected Frequencies</span>
+<span class="c1"># Expected Frequencies:</span>
+<span class="c1"># E(n1) = E(n2) = E(n3) = E(n4) = C/2 = 110</span>
+<span class="c1"># We prefer for accuracy to have ns &gt;&gt; C &gt;&gt; 1</span>
+<span class="nf">plot</span><span class="p">(</span><span class="n">success</span><span class="p">,</span> <span class="nf">dbinom</span><span class="p">(</span><span class="n">success</span><span class="p">,</span> <span class="n">size</span> <span class="o">=</span> <span class="m">90</span><span class="p">,</span> <span class="n">prob</span> <span class="o">=</span> <span class="n">.</span><span class="m">50</span><span class="p">),</span> <span class="n">type</span> <span class="o">=</span> <span class="s">&quot;h&quot;</span><span class="p">,</span><span class="n">main</span><span class="o">=</span><span class="s">&quot;Binomial Sampling from Diploid Orgainism from High Bulk&quot;</span><span class="p">,</span><span class="n">xlab</span><span class="o">=</span><span class="s">&quot;2(ns)(p1_STAR)&quot;</span><span class="p">,</span><span class="n">ylab</span><span class="o">=</span><span class="s">&quot;Density&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><img alt="Screenshot from 2022-04-12 13-59-19" src="https://user-images.githubusercontent.com/93121277/162958721-9ef36567-ce74-40d9-939f-4e8d32aaa6a4.png" /></p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1"># ns : Sample Size from High Bulk</span>
+<span class="c1"># 2(ns)p2_star ~ Binomial(2(ns),p2)</span>
+<span class="c1"># p2 Expected Frequencies</span>
+<span class="n">success</span> <span class="o">&lt;-</span> <span class="m">0</span><span class="o">:</span><span class="m">76</span>
+<span class="nf">plot</span><span class="p">(</span><span class="n">success</span><span class="p">,</span> <span class="nf">dbinom</span><span class="p">(</span><span class="n">success</span><span class="p">,</span> <span class="n">size</span> <span class="o">=</span> <span class="m">76</span><span class="p">,</span> <span class="n">prob</span> <span class="o">=</span> <span class="m">0.5</span><span class="p">),</span> <span class="n">type</span> <span class="o">=</span> <span class="s">&quot;h&quot;</span><span class="p">,</span><span class="n">main</span><span class="o">=</span><span class="s">&quot;Binomial Sampling from Diploid Organism from Low Bulk&quot;</span><span class="p">,</span><span class="n">xlab</span><span class="o">=</span><span class="s">&quot;2(n2)(p2_STAR)&quot;</span><span class="p">,</span><span class="n">ylab</span><span class="o">=</span><span class="s">&quot;Density&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><img alt="Screenshot from 2022-04-12 14-00-01" src="https://user-images.githubusercontent.com/93121277/162958735-eb1213dd-c642-4aa0-8d71-aace95750693.png" /></p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1"># Read in the csv file from High bulk tt</span>
+<span class="n">tt</span><span class="o">&lt;-</span><span class="nf">read.table</span><span class="p">(</span><span class="n">file</span> <span class="o">=</span> <span class="s">&quot;D2_F2_tt.csv&quot;</span><span class="p">,</span><span class="n">header</span> <span class="o">=</span> <span class="kc">TRUE</span><span class="p">,</span><span class="n">sep</span> <span class="o">=</span> <span class="s">&quot;,&quot;</span><span class="p">)</span>
+<span class="c1"># Calculate average Coverage per SNP site</span>
+<span class="nf">mean</span><span class="p">(</span><span class="n">tt</span><span class="o">$</span><span class="n">DP</span><span class="p">)</span>
+<span class="c1"># Find REalized frequencies</span>
+<span class="n">p1_STAR</span> <span class="o">&lt;-</span> <span class="nf">sum</span><span class="p">(</span><span class="n">tt</span><span class="o">$</span><span class="n">AD_ALT.</span><span class="p">)</span> <span class="o">/</span> <span class="nf">sum</span><span class="p">(</span><span class="n">tt</span><span class="o">$</span><span class="n">DP</span><span class="p">)</span>
+
+<span class="c1"># Read in the csv file from Low Bulk TT</span>
+<span class="n">TT</span><span class="o">&lt;-</span><span class="nf">read.table</span><span class="p">(</span><span class="n">file</span> <span class="o">=</span><span class="s">&quot;D2_F2_TT.csv&quot;</span><span class="p">,</span><span class="n">header</span> <span class="o">=</span> <span class="kc">TRUE</span><span class="p">,</span><span class="n">sep</span><span class="o">=</span><span class="s">&quot;,&quot;</span><span class="p">)</span>
+<span class="c1"># Calculate average Coverage per SNP sit</span>
+<span class="nf">mean</span><span class="p">(</span><span class="n">TT</span><span class="o">$</span><span class="n">DP</span><span class="p">)</span>
+<span class="c1"># Find Realized frequencies</span>
+<span class="n">p2_STAR</span> <span class="o">&lt;-</span> <span class="nf">sum</span><span class="p">(</span><span class="n">TT</span><span class="o">$</span><span class="n">AD_ALT.</span><span class="p">)</span> <span class="o">/</span> <span class="nf">sum</span><span class="p">(</span><span class="n">TT</span><span class="o">$</span><span class="n">DP</span><span class="p">)</span>
+<span class="c1"># Take the average of the Averages</span>
+<span class="n">C</span> <span class="o">&lt;-</span><span class="p">(</span><span class="nf">mean</span><span class="p">(</span><span class="n">tt</span><span class="o">$</span><span class="n">DP</span><span class="p">)</span><span class="o">+</span><span class="nf">mean</span><span class="p">(</span><span class="n">TT</span><span class="o">$</span><span class="n">DP</span><span class="p">))</span><span class="o">/</span><span class="m">2</span>
+<span class="n">C</span><span class="o">&lt;-</span><span class="nf">round</span><span class="p">(</span><span class="n">C</span><span class="p">,</span><span class="m">0</span><span class="p">)</span>
+<span class="c1"># Find realized frequencies</span>
+
+<span class="nf">par</span><span class="p">(</span><span class="n">mfrow</span><span class="o">=</span><span class="nf">c</span><span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="m">1</span><span class="p">))</span>
+<span class="c1">#Define Ranges of Success (Allele Frequencies High and Low)</span>
+<span class="n">success</span> <span class="o">&lt;-</span> <span class="m">0</span><span class="o">:</span><span class="m">100</span>
+<span class="c1">#n1|p1_star ~ Poisson(lambda)</span>
+<span class="nf">plot</span><span class="p">(</span><span class="n">success</span><span class="p">,</span> <span class="nf">dpois</span><span class="p">(</span><span class="n">success</span><span class="p">,</span> <span class="n">lambda</span> <span class="o">=</span> <span class="n">C</span><span class="o">*</span><span class="p">(</span><span class="m">1</span><span class="o">-</span><span class="n">p1_STAR</span><span class="p">)),</span> <span class="n">type</span> <span class="o">=</span> <span class="s">&#39;h&#39;</span><span class="p">,</span><span class="n">main</span><span class="o">=</span><span class="s">&quot;n1|p1_STAR ~ Poisson(C[1-p1_STAR])&quot;</span><span class="p">,</span><span class="n">xlab</span><span class="o">=</span><span class="s">&quot;n1|(n3/n1+n3)&quot;</span><span class="p">,</span><span class="n">ylab</span><span class="o">=</span><span class="s">&quot;Prob&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><img alt="Screenshot from 2022-04-12 14-00-53" src="https://user-images.githubusercontent.com/93121277/162958765-f401723a-8206-4f08-b8c5-9803692a0730.png" /></p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">hist</span><span class="p">(</span><span class="n">TT</span><span class="o">$</span><span class="n">AD_REF.</span><span class="p">,</span> <span class="n">probability</span> <span class="o">=</span> <span class="kc">TRUE</span><span class="p">,</span><span class="n">main</span><span class="o">=</span><span class="s">&quot;Histogram of Actually Realized n1 Values&quot;</span><span class="p">,</span><span class="n">xlab</span><span class="o">=</span><span class="s">&quot;n1&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><img alt="Screenshot from 2022-04-12 14-01-21" src="https://user-images.githubusercontent.com/93121277/162958788-3270f67f-9188-4b53-a5c2-c7d54a42c2c7.png" /></p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1">#n2|p2_star ~ Poisson(lambda)</span>
+<span class="nf">plot</span><span class="p">(</span><span class="n">success</span><span class="p">,</span> <span class="nf">dpois</span><span class="p">(</span><span class="n">success</span><span class="p">,</span> <span class="n">lambda</span> <span class="o">=</span> <span class="n">C</span><span class="o">*</span><span class="p">(</span><span class="m">1</span><span class="o">-</span><span class="n">p2_STAR</span><span class="p">)),</span> <span class="n">type</span><span class="o">=</span><span class="s">&#39;h&#39;</span><span class="p">,</span> <span class="n">main</span><span class="o">=</span><span class="s">&quot;n2|p2_STAR ~ Poisson(C[[1-p2_STAR])&quot;</span><span class="p">,</span><span class="n">xlab</span><span class="o">=</span><span class="s">&quot;n2|(n4/n2+n4)&quot;</span><span class="p">,</span><span class="n">ylab</span><span class="o">=</span><span class="s">&quot;Prob&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><img alt="Screenshot from 2022-04-12 14-01-49" src="https://user-images.githubusercontent.com/93121277/162958802-90370961-fd00-4edb-8c32-1653513e4964.png" /></p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">hist</span><span class="p">(</span><span class="n">tt</span><span class="o">$</span><span class="n">AD_REF.</span><span class="p">,</span> <span class="n">probability</span> <span class="o">=</span> <span class="kc">TRUE</span><span class="p">,</span> <span class="n">main</span> <span class="o">=</span> <span class="s">&quot;Histogram of Actually Realized n2 Values&quot;</span><span class="p">,</span><span class="n">xlab</span><span class="o">=</span><span class="s">&quot;n2&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><img alt="Screenshot from 2022-04-12 14-02-17" src="https://user-images.githubusercontent.com/93121277/162958812-55bd09e6-312e-48ce-941a-00aa8ae5bb0b.png" /></p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1">#n3|p1_star ~ Poisson(lambda)</span>
+<span class="nf">plot</span><span class="p">(</span><span class="n">success</span><span class="p">,</span> <span class="nf">dpois</span><span class="p">(</span><span class="n">success</span><span class="p">,</span> <span class="n">lambda</span> <span class="o">=</span> <span class="n">C</span><span class="o">*</span><span class="n">p1_STAR</span><span class="p">),</span><span class="n">type</span><span class="o">=</span><span class="s">&#39;h&#39;</span><span class="p">,</span><span class="n">main</span><span class="o">=</span><span class="s">&quot;n3|p1_STAR ~ Poisson(C[1-p1_STAR])&quot;</span><span class="p">,</span><span class="n">xlab</span><span class="o">=</span><span class="s">&quot;n3|(n3/n1+n3)&quot;</span><span class="p">,</span><span class="n">ylab</span><span class="o">=</span><span class="s">&quot;Prob&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><img alt="Screenshot from 2022-04-12 14-02-47" src="https://user-images.githubusercontent.com/93121277/162958869-7590934e-c56c-4de1-9a68-f673208a4c4f.png" /></p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">hist</span><span class="p">(</span><span class="n">TT</span><span class="o">$</span><span class="n">AD_ALT.</span><span class="p">,</span> <span class="n">probability</span> <span class="o">=</span> <span class="kc">TRUE</span><span class="p">,</span> <span class="n">main</span><span class="o">=</span><span class="s">&quot;Histogram of Acutally Realized n3 Values&quot;</span><span class="p">,</span><span class="n">xlab</span><span class="o">=</span><span class="s">&quot;n3&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><img alt="Screenshot from 2022-04-12 14-03-11" src="https://user-images.githubusercontent.com/93121277/162958878-62c6147c-f8f0-4262-badd-f1020798d18c.png" /></p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1">#n4|p2_star ~ Poisson(lambda)</span>
+<span class="nf">plot</span><span class="p">(</span><span class="n">success</span><span class="p">,</span> <span class="nf">dpois</span><span class="p">(</span><span class="n">success</span><span class="p">,</span> <span class="n">lambda</span> <span class="o">=</span> <span class="n">C</span><span class="o">*</span><span class="n">p2_STAR</span><span class="p">),</span> <span class="n">type</span> <span class="o">=</span> <span class="s">&#39;h&#39;</span><span class="p">,</span><span class="n">main</span><span class="o">=</span><span class="s">&quot;n4|p2_STAR ~ Poisson(C[1-p2_STAR])&quot;</span><span class="p">,</span><span class="n">xlab</span><span class="o">=</span><span class="s">&quot;n4|n4/(n2+n4)&quot;</span><span class="p">,</span><span class="n">ylab</span><span class="o">=</span><span class="s">&quot;Prob&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><img alt="Screenshot from 2022-04-12 14-03-41" src="https://user-images.githubusercontent.com/93121277/162958898-87ac503a-8def-4194-a74b-9bb28c3c21b1.png" /></p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">hist</span><span class="p">(</span><span class="n">tt</span><span class="o">$</span><span class="n">AD_ALT.</span><span class="p">,</span> <span class="n">probability</span> <span class="o">=</span> <span class="kc">TRUE</span><span class="p">,</span> <span class="n">main</span><span class="o">=</span><span class="s">&quot;Histogram of Acutally Realized n4 Values&quot;</span><span class="p">,</span><span class="n">xlab</span><span class="o">=</span><span class="s">&quot;n4&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><img alt="Screenshot from 2022-04-12 14-04-02" src="https://user-images.githubusercontent.com/93121277/162958908-03550b8f-4772-4d05-ac23-205e9dc30b3e.png" /></p>
+<p>#Assuming average sequencing coverage expected values for n1,n2,n3,n4
+C/2</p>
+</section>
+<section id="p2-p1-qtl-is-present">
+<h1>p2 &gt;&gt; p1 QTL is present<a class="headerlink" href="#p2-p1-qtl-is-present" title="Permalink to this headline">¶</a></h1>
+</section>
+<section id="however-ns-c-1-is-not-true">
+<h1>However, ns &gt;&gt; C &gt;&gt; 1 is NOT TRUE<a class="headerlink" href="#however-ns-c-1-is-not-true" title="Permalink to this headline">¶</a></h1>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+
+
+
+
+################################################################################################################################################
+
+# Rice QTL Analysis: High Bulk sample size of 430 Tolerant to cold environments and Low Bulk sample size of 385 Suseptilble to cold environments
+```r
+
+
+#Set Working Directory
+setwd(&quot;/home/michael/Desktop/RiceCold2&quot;)
+
+#vcf file must only contain bialleleic variants. (filter upstream, e.g., with bcftools view -m2 -M2), also the QTL-Rice-Cold functions will only take SNPS, ie, length of REF and ALT== 1
+vcf &lt;- read.vcfR(file = &quot;wGQ-Filt-freebayes~bwa~IRGSP-1.0~both-segregant_bulks~filtered-default.vcf.gz&quot;)
+
+</pre></div>
+</div>
+<p><img alt="Screenshot from 2022-04-01 09-27-24" src="https://user-images.githubusercontent.com/93121277/161215916-c3328eaf-721b-4778-940a-e356fe60e9ca.png" /></p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1">#Convert to tidy data frame</span>
+<span class="n">VCF_TIDY</span> <span class="o">&lt;-</span> <span class="nf">vcfR2tidy</span><span class="p">(</span><span class="n">vcf</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><img alt="Screenshot from 2022-04-01 09-37-35" src="https://user-images.githubusercontent.com/93121277/161217479-f8a99317-1dec-4b7b-a7de-04d488abbdf0.png" /></p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1">#Call the Parser</span>
+<span class="nf">QTLParser_1_MH</span><span class="p">(</span><span class="n">vcf</span> <span class="o">=</span> <span class="n">VCF_TIDY</span><span class="p">,</span> <span class="n">HighBulk</span> <span class="o">=</span> <span class="s">&quot;ET-pool-385&quot;</span><span class="p">,</span><span class="n">LowBulk</span> <span class="o">=</span> <span class="s">&quot;ES-pool-430&quot;</span><span class="p">,</span> <span class="n">filename</span> <span class="o">=</span> <span class="s">&quot;Hall&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="standard-parser-output-makes-a-list-of-chromosome-as-named-in-vcf-file">
+<h1>Standard Parser Output makes a list of Chromosome as named in VCF file<a class="headerlink" href="#standard-parser-output-makes-a-list-of-chromosome-as-named-in-vcf-file" title="Permalink to this headline">¶</a></h1>
+<p><img alt="Screenshot from 2022-04-01 09-41-00" src="https://user-images.githubusercontent.com/93121277/161218164-169207c9-7039-4857-9066-f59f07c206b7.png" /></p>
+</section>
+<section id="also-find-unique-sample-names-reverse-compatible-with-vcf-file">
+<h1>Also find unique sample names reverse compatible with VCF file<a class="headerlink" href="#also-find-unique-sample-names-reverse-compatible-with-vcf-file" title="Permalink to this headline">¶</a></h1>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">unique</span><span class="p">(</span><span class="n">VCF_TIDY</span><span class="o">$</span><span class="n">gt</span><span class="o">$</span><span class="n">Indiv</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><img alt="Screenshot from 2022-04-01 09-42-58" src="https://user-images.githubusercontent.com/93121277/161218336-79ca6524-e2ba-47fd-bbd8-68125bdd966b.png" /></p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1">#Set High bulk and Low bulk sample names and parser generated file name</span>
+
+<span class="n">HighBulk</span> <span class="o">&lt;-</span> <span class="s">&quot;ET-pool-385&quot;</span>
+<span class="n">LowBulk</span> <span class="o">&lt;-</span> <span class="s">&quot;ES-pool-430&quot;</span>
+<span class="n">file</span> <span class="o">&lt;-</span> <span class="s">&quot;Hall.csv&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="id1">
+<h1>Preview the CSV file<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<p><img alt="Screenshot from 2022-04-01 10-33-41" src="https://user-images.githubusercontent.com/93121277/161226740-5b648928-97bd-40e4-8622-e8f845bbe271.png" /></p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1">#Input chromosomes values which will be included in the analysis,</span>
+<span class="n">Chroms</span> <span class="o">&lt;-</span> <span class="nf">c</span><span class="p">(</span><span class="s">&quot;NC_029256.1&quot;</span><span class="p">,</span><span class="s">&quot;NC_029257.1&quot;</span><span class="p">,</span><span class="s">&quot;NC_029258.1&quot;</span><span class="p">,</span><span class="s">&quot;NC_029259.1&quot;</span><span class="p">,</span><span class="s">&quot;NC_029260.1&quot;</span><span class="p">,</span><span class="s">&quot;NC_029261.1&quot;</span><span class="p">,</span><span class="s">&quot;NC_029262.1&quot;</span><span class="p">,</span><span class="s">&quot;NC_029263.1&quot;</span><span class="p">,</span><span class="s">&quot;NC_029264.1&quot;</span><span class="p">,</span><span class="s">&quot;NC_029265.1&quot;</span><span class="p">,</span><span class="s">&quot;NC_029266.1&quot;</span><span class="p">,</span><span class="s">&quot;NC_029267.1&quot;</span><span class="p">)</span>
+
+
+
+<span class="n">df</span> <span class="o">&lt;-</span>
+  <span class="nf">importFromTable</span><span class="p">(</span>
+    <span class="n">file</span> <span class="o">=</span> <span class="n">file</span><span class="p">,</span>
+    <span class="n">highBulk</span> <span class="o">=</span> <span class="n">HighBulk</span><span class="p">,</span>
+    <span class="n">lowBulk</span> <span class="o">=</span> <span class="n">LowBulk</span><span class="p">,</span>
+    <span class="n">chromList</span> <span class="o">=</span> <span class="n">Chroms</span>
+  <span class="p">)</span> 
+</pre></div>
+</div>
+<p><img alt="Screenshot from 2022-04-01 10-35-10" src="https://user-images.githubusercontent.com/93121277/161226938-8f50aa1b-27b4-4fe1-9b77-b06d14ec8b31.png" /></p>
+</section>
+<section id="plot-histograms-associated-with-filtering-arguments-to-determine-if-cut-off-values-are-appropriate">
+<h1>Plot histograms associated with filtering arguments to determine if cut off values are appropriate<a class="headerlink" href="#plot-histograms-associated-with-filtering-arguments-to-determine-if-cut-off-values-are-appropriate" title="Permalink to this headline">¶</a></h1>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">ggplot</span><span class="p">(</span><span class="n">data</span> <span class="o">=</span><span class="n">df</span><span class="p">)</span> <span class="o">+</span><span class="nf">geom_histogram</span><span class="p">(</span><span class="nf">aes</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">DP.LOW</span> <span class="o">+</span> <span class="n">DP.HIGH</span><span class="p">))</span> <span class="o">+</span> <span class="nf">xlim</span><span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">400</span><span class="p">)</span>
+<span class="nf">ggsave</span><span class="p">(</span><span class="n">filename</span> <span class="o">=</span> <span class="s">&quot;Depth_Histogram.png&quot;</span><span class="p">,</span><span class="n">plot</span><span class="o">=</span><span class="nf">last_plot</span><span class="p">())</span>
+</pre></div>
+</div>
+<p><img alt="dplowhigh" src="https://user-images.githubusercontent.com/93121277/158780363-0939b60a-4a19-4104-b435-e352d715f5df.png" /></p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">ggplot</span><span class="p">(</span><span class="n">data</span> <span class="o">=</span> <span class="n">df</span><span class="p">)</span> <span class="o">+</span><span class="nf">geom_histogram</span><span class="p">(</span><span class="nf">aes</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">REF_FRQ</span><span class="p">))</span>
+<span class="nf">ggsave</span><span class="p">(</span><span class="n">filename</span> <span class="o">=</span> <span class="s">&quot;Ref_Freq_Histogram.png&quot;</span><span class="p">,</span><span class="n">plot</span> <span class="o">=</span> <span class="nf">last_plot</span><span class="p">())</span>
+</pre></div>
+</div>
+<p><img alt="reffreq" src="https://user-images.githubusercontent.com/93121277/158780481-24a6992e-e239-41d4-9868-3b6da831e757.png" /></p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1">#Filter SNPs based on some criteria</span>
+<span class="n">df_filt</span> <span class="o">&lt;-</span>
+  <span class="nf">filterSNPs</span><span class="p">(</span>
+    <span class="n">SNPset</span> <span class="o">=</span> <span class="n">df</span><span class="p">,</span>
+    <span class="n">refAlleleFreq</span> <span class="o">=</span> <span class="m">0.20</span><span class="p">,</span>
+    <span class="n">minTotalDepth</span> <span class="o">=</span> <span class="m">100</span><span class="p">,</span>
+    <span class="n">maxTotalDepth</span> <span class="o">=</span> <span class="m">400</span><span class="p">,</span>
+    <span class="n">minSampleDepth</span> <span class="o">=</span> <span class="m">40</span><span class="p">,</span>
+    <span class="c1">#    minGQ = 0</span>
+  <span class="p">)</span>
+  
+</pre></div>
+</div>
+<p><img alt="Screenshot from 2022-04-01 09-54-07" src="https://user-images.githubusercontent.com/93121277/161220139-0c079197-99db-4292-949a-cd23d0e2e7c7.png" /></p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1">#Run G&#39; analysis</span>
+<span class="n">df_filt</span><span class="o">&lt;-</span><span class="nf">runGprimeAnalysis_MH</span><span class="p">(</span>
+  <span class="n">SNPset</span> <span class="o">=</span> <span class="n">df_filt</span><span class="p">,</span>
+  <span class="n">windowSize</span> <span class="o">=</span> <span class="m">1e6</span><span class="p">,</span>
+  <span class="n">outlierFilter</span> <span class="o">=</span> <span class="s">&quot;deltaSNP&quot;</span><span class="p">,</span>
+  <span class="n">filterThreshold</span> <span class="o">=</span> <span class="m">0.1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><img alt="Screenshot from 2022-04-01 09-54-50" src="https://user-images.githubusercontent.com/93121277/161220373-00be3d7e-b67d-44ca-a1af-5c4670751f39.png" /></p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1">#Run QTLseq analysis</span>
+<span class="n">df_filt2</span> <span class="o">&lt;-</span> <span class="nf">runQTLseqAnalysis_MH</span><span class="p">(</span>
+  <span class="n">SNPset</span> <span class="o">=</span> <span class="n">df_filt</span><span class="p">,</span>
+  <span class="n">windowSize</span> <span class="o">=</span> <span class="m">1e6</span><span class="p">,</span>
+  <span class="n">popStruc</span> <span class="o">=</span> <span class="s">&quot;F2&quot;</span><span class="p">,</span>
+  <span class="n">bulkSize</span> <span class="o">=</span> <span class="nf">c</span><span class="p">(</span><span class="m">430</span><span class="p">,</span> <span class="m">385</span><span class="p">),</span>
+  <span class="n">replications</span> <span class="o">=</span> <span class="m">10000</span><span class="p">,</span>
+  <span class="n">intervals</span> <span class="o">=</span> <span class="nf">c</span><span class="p">(</span><span class="m">95</span><span class="p">,</span> <span class="m">99</span><span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><img alt="Screenshot from 2022-04-01 09-56-09" src="https://user-images.githubusercontent.com/93121277/161220504-ba5f8e90-126f-4ee7-9a1d-06d5e09e6a94.png" /></p>
+</section>
+<section id="id2">
+<h1>Plot G Statistic Distribution<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h1>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">hist</span><span class="p">(</span><span class="n">df_filt2</span><span class="o">$</span><span class="n">G</span><span class="p">,</span><span class="n">breaks</span> <span class="o">=</span> <span class="m">950</span><span class="p">,</span><span class="n">xlim</span> <span class="o">=</span> <span class="nf">c</span><span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">10</span><span class="p">),</span><span class="n">xlab</span> <span class="o">=</span> <span class="s">&quot;G Distribution&quot;</span><span class="p">,</span><span class="n">main</span> <span class="o">=</span> <span class="s">&quot;Histogram of G Values&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><img alt="gstat" src="https://user-images.githubusercontent.com/93121277/158780626-0dd9efaa-8c2b-448e-8e22-ce94a1ff6fbf.png" /></p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1"># G&#39; Distribution Plot</span>
+<span class="nf">plotGprimeDist_MH</span><span class="p">(</span><span class="n">SNPset</span> <span class="o">=</span> <span class="n">df_filt2</span><span class="p">,</span> <span class="n">outlierFilter</span> <span class="o">=</span> <span class="s">&quot;Hampel&quot;</span><span class="p">)</span>
+<span class="nf">ggsave</span><span class="p">(</span><span class="n">filename</span> <span class="o">=</span> <span class="s">&quot;Hampel_GPrime.png&quot;</span><span class="p">,</span><span class="n">plot</span> <span class="o">=</span> <span class="nf">last_plot</span><span class="p">())</span>
+</pre></div>
+</div>
+<p><img alt="gprime" src="https://user-images.githubusercontent.com/93121277/158780745-ce684a8b-5267-42f2-aab1-9038b66490a5.png" /></p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">plotGprimeDist_MH</span><span class="p">(</span><span class="n">SNPset</span> <span class="o">=</span> <span class="n">df_filt2</span><span class="p">,</span> <span class="n">outlierFilter</span> <span class="o">=</span> <span class="s">&quot;deltaSNP&quot;</span><span class="p">,</span><span class="n">filterThreshold</span> <span class="o">=</span> <span class="m">0.1</span><span class="p">)</span>
+<span class="nf">ggsave</span><span class="p">(</span><span class="n">filename</span> <span class="o">=</span> <span class="s">&quot;DeltaSNP.png&quot;</span><span class="p">,</span><span class="n">plot</span> <span class="o">=</span> <span class="nf">last_plot</span><span class="p">())</span>
+</pre></div>
+</div>
+<p><img alt="deltaSNP" src="https://user-images.githubusercontent.com/93121277/158780846-58095997-5814-4440-8594-e2c560412eee.png" /></p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1">#make the Plot</span>
+<span class="nf">plotQTLStats</span><span class="p">(</span><span class="n">SNPset</span> <span class="o">=</span> <span class="n">df_filt2</span><span class="p">,</span> <span class="n">var</span> <span class="o">=</span> <span class="s">&quot;nSNPs&quot;</span><span class="p">)</span>
+<span class="nf">ggsave</span><span class="p">(</span><span class="n">filename</span> <span class="o">=</span> <span class="s">&quot;nSNPs.png&quot;</span><span class="p">,</span><span class="n">plot</span> <span class="o">=</span> <span class="nf">last_plot</span><span class="p">())</span>
+</pre></div>
+</div>
+<p><img alt="Screenshot from 2022-04-01 10-36-37" src="https://user-images.githubusercontent.com/93121277/161227187-9a3d3138-e996-4965-9659-6a879d0be70a.png" /></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+
+```r
+plotQTLStats(SNPset = df_filt, var = &quot;Gprime&quot;, plotThreshold = TRUE, q = 0.01)
+ggsave(filename = &quot;GPrime.png&quot;,plot = last_plot())
+
+</pre></div>
+</div>
+<p><img alt="Screenshot from 2022-04-01 10-37-50" src="https://user-images.githubusercontent.com/93121277/161227403-aa546c4a-c6f0-4c3c-8c25-485bae654739.png" /></p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">plotQTLStats</span><span class="p">(</span><span class="n">SNPset</span> <span class="o">=</span> <span class="n">df_filt2</span><span class="p">,</span> <span class="n">var</span> <span class="o">=</span> <span class="s">&quot;deltaSNP&quot;</span><span class="p">,</span> <span class="n">plotIntervals</span>  <span class="o">=</span> <span class="kc">TRUE</span><span class="p">)</span>
+<span class="nf">ggsave</span><span class="p">(</span><span class="n">filename</span> <span class="o">=</span> <span class="s">&quot;DeltaSNPInterval.png&quot;</span><span class="p">,</span><span class="n">plot</span> <span class="o">=</span> <span class="nf">last_plot</span><span class="p">())</span>
+</pre></div>
+</div>
+<p><img alt="Screenshot from 2022-04-01 10-39-24" src="https://user-images.githubusercontent.com/93121277/161227673-447d11f9-1245-4042-affd-56ca43c39799.png" /></p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">plotQTLStats</span><span class="p">(</span><span class="n">SNPset</span> <span class="o">=</span> <span class="n">df_filt2</span><span class="p">,</span> <span class="n">var</span> <span class="o">=</span> <span class="s">&quot;negLog10Pval&quot;</span><span class="p">,</span><span class="n">plotThreshold</span> <span class="o">=</span> <span class="kc">TRUE</span><span class="p">,</span><span class="n">q</span><span class="o">=</span><span class="m">0.01</span><span class="p">,</span><span class="n">subset</span> <span class="o">=</span> <span class="nf">c</span><span class="p">(</span><span class="s">&quot;NC_029256.1&quot;</span><span class="p">,</span><span class="s">&quot;NC_029257.1&quot;</span><span class="p">,</span><span class="s">&quot;NC_029263.1&quot;</span><span class="p">,</span><span class="s">&quot;NC_029265.1&quot;</span><span class="p">))</span>
+<span class="nf">ggsave</span><span class="p">(</span><span class="n">filename</span> <span class="o">=</span> <span class="s">&quot;negLog10Pval.png&quot;</span><span class="p">,</span><span class="n">plot</span> <span class="o">=</span> <span class="nf">last_plot</span><span class="p">())</span>
+</pre></div>
+</div>
+<p><img alt="Screenshot from 2022-04-01 10-05-35" src="https://user-images.githubusercontent.com/93121277/161222325-69f4ad58-8fb8-4eb7-bc91-fc900be47416.png" /></p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">plotQTLStats</span><span class="p">(</span><span class="n">SNPset</span> <span class="o">=</span> <span class="n">df_filt2</span><span class="p">,</span> <span class="n">var</span> <span class="o">=</span> <span class="s">&quot;Gprime&quot;</span><span class="p">,</span><span class="n">plotThreshold</span> <span class="o">=</span> <span class="kc">TRUE</span><span class="p">,</span><span class="n">q</span><span class="o">=</span><span class="m">0.01</span><span class="p">,</span><span class="n">subset</span> <span class="o">=</span> <span class="nf">c</span><span class="p">(</span><span class="s">&quot;NC_029256.1&quot;</span><span class="p">,</span><span class="s">&quot;NC_029257.1&quot;</span><span class="p">,</span><span class="s">&quot;NC_029263.1&quot;</span><span class="p">,</span><span class="s">&quot;NC_029265.1&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p><img alt="Screenshot from 2022-04-01 10-06-19" src="https://user-images.githubusercontent.com/93121277/161222339-dbbafc12-0631-4d22-b477-5f038256ee6e.png" /></p>
+</section>
+<section id="lets-take-a-look-at-snps-per-chromosome-using-rmvp-package">
+<h1>Lets take a look at SNPs per chromosome using rMVP Package<a class="headerlink" href="#lets-take-a-look-at-snps-per-chromosome-using-rmvp-package" title="Permalink to this headline">¶</a></h1>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="n">sample</span><span class="o">&lt;-</span><span class="s">&quot;RiceColdTolerance&quot;</span>
+<span class="n">pathtosample</span> <span class="o">&lt;-</span> <span class="s">&quot;/home/michael/Desktop/RiceCold2/wGQ-Filt-freebayes~bwa~IRGSP-1.0~both-segregant_bulks~filtered-default.vcf&quot;</span>
+<span class="n">out</span><span class="o">&lt;-</span> <span class="nf">paste0</span><span class="p">(</span><span class="s">&quot;mvp.&quot;</span><span class="p">,</span><span class="n">sample</span><span class="p">,</span><span class="s">&quot;.vcf&quot;</span><span class="p">)</span>
+<span class="n">memo</span><span class="o">&lt;-</span><span class="nf">paste0</span><span class="p">(</span><span class="n">sample</span><span class="p">)</span>
+<span class="n">dffile</span><span class="o">&lt;-</span><span class="nf">paste0</span><span class="p">(</span><span class="s">&quot;mvp.&quot;</span><span class="p">,</span><span class="n">sample</span><span class="p">,</span><span class="s">&quot;.vcf.geno.map&quot;</span><span class="p">)</span>
+
+<span class="nf">message</span><span class="p">(</span><span class="s">&quot;Making MVP data S1&quot;</span><span class="p">)</span>
+<span class="nf">MVP.Data</span><span class="p">(</span><span class="n">fileVCF</span><span class="o">=</span><span class="n">pathtosample</span><span class="p">,</span>
+         <span class="c1">#filePhe=&quot;Phenotype.txt&quot;,</span>
+         <span class="n">fileKin</span><span class="o">=</span><span class="kc">FALSE</span><span class="p">,</span>
+         <span class="n">filePC</span><span class="o">=</span><span class="kc">FALSE</span><span class="p">,</span>
+         <span class="n">out</span><span class="o">=</span><span class="n">out</span>
+<span class="p">)</span>
+<span class="nf">message</span><span class="p">(</span><span class="s">&quot;Reading MVP Data S1&quot;</span><span class="p">)</span>
+<span class="n">df</span> <span class="o">&lt;-</span> <span class="nf">read.table</span><span class="p">(</span><span class="n">file</span> <span class="o">=</span> <span class="n">dffile</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span>
+<span class="nf">message</span><span class="p">(</span><span class="s">&quot;Making SNP Density Plots&quot;</span><span class="p">)</span>
+<span class="nf">MVP.Report.Density</span><span class="p">(</span><span class="n">df</span><span class="p">[,</span><span class="nf">c</span><span class="p">(</span><span class="m">1</span><span class="o">:</span><span class="m">3</span><span class="p">)],</span> <span class="n">bin.size</span> <span class="o">=</span> <span class="m">1000000</span><span class="p">,</span> <span class="n">col</span> <span class="o">=</span> <span class="nf">c</span><span class="p">(</span><span class="s">&quot;blue&quot;</span><span class="p">,</span> <span class="s">&quot;yellow&quot;</span><span class="p">,</span> <span class="s">&quot;red&quot;</span><span class="p">),</span> <span class="n">memo</span> <span class="o">=</span> <span class="n">memo</span><span class="p">,</span> <span class="n">file.type</span> <span class="o">=</span> <span class="s">&quot;jpg&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="m">300</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><img alt="Screenshot from 2022-04-12 14-34-01" src="https://user-images.githubusercontent.com/93121277/162963811-7fc215c6-ad65-4a01-b4b9-94aebed3e112.png" /></p>
+</section>
+<section id="id3">
+<h1>Export summary CSV<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h1>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="nf">getQTLTable</span><span class="p">(</span><span class="n">SNPset</span> <span class="o">=</span> <span class="n">df_filt2</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">=</span> <span class="m">0.01</span><span class="p">,</span> <span class="n">export</span> <span class="o">=</span> <span class="kc">TRUE</span><span class="p">,</span> <span class="n">fileName</span> <span class="o">=</span> <span class="s">&quot;my_BSA_QTL.csv&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="preview-the-qtl-summary">
+<h1>Preview the QTL Summary<a class="headerlink" href="#preview-the-qtl-summary" title="Permalink to this headline">¶</a></h1>
+<p><img alt="Screenshot from 2022-04-01 09-58-43" src="https://user-images.githubusercontent.com/93121277/161220947-979d5bbf-8438-4110-a950-a33224878a01.png" /></p>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1">#Use the function to plot allele frequencies per chromosome</span>
+<span class="nf">Obs_Allele_Freq</span><span class="p">(</span><span class="n">SNPSet</span> <span class="o">=</span> <span class="n">df_filt</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="looks-dense">
+<h1>Looks Dense<a class="headerlink" href="#looks-dense" title="Permalink to this headline">¶</a></h1>
+<p><img alt="LowB" src="https://user-images.githubusercontent.com/93121277/158788612-ebe92c64-ed0b-48f8-9ef6-f7e8d6f7bd2d.png" />
+<img alt="HighB" src="https://user-images.githubusercontent.com/93121277/158788656-ee153e0a-1a6a-4b28-86b8-f7f218bb1287.png" /></p>
+</section>
+<section id="filter-low-allelic-depth-frequencies">
+<h1>Filter Low Allelic Depth Frequencies<a class="headerlink" href="#filter-low-allelic-depth-frequencies" title="Permalink to this headline">¶</a></h1>
+<div class="highlight-r notranslate"><div class="highlight"><pre><span></span><span class="c1">##Use the function to investigate chromosomal region of interest</span>
+<span class="nf">Obs_Allele_Freq2</span><span class="p">(</span><span class="n">SNPSet</span> <span class="o">=</span> <span class="n">df_filt</span><span class="p">,</span> <span class="n">ChromosomeValue</span> <span class="o">=</span> <span class="m">8</span><span class="p">,</span> <span class="n">threshold</span> <span class="o">=</span> <span class="n">.</span><span class="m">75</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="preview-the-plot-with-idenitfied-snp-positions">
+<h1>Preview the plot with idenitfied SNP positions<a class="headerlink" href="#preview-the-plot-with-idenitfied-snp-positions" title="Permalink to this headline">¶</a></h1>
+<p><img alt="LB3" src="https://user-images.githubusercontent.com/93121277/158788921-b35622eb-9926-4c0b-9b6b-fd06c71dc0c2.png" />
+<img alt="HB3" src="https://user-images.githubusercontent.com/93121277/158789001-69b463a5-56df-44f6-94a7-7d016c795833.png" /></p>
+</section>
+<section id="investigate-snp-pos-24525659">
+<h1>Investigate SNP&#64;POS 24525659<a class="headerlink" href="#investigate-snp-pos-24525659" title="Permalink to this headline">¶</a></h1>
+<p><img alt="header" src="https://user-images.githubusercontent.com/93121277/158789386-a163d764-607b-4a4c-8884-11ce4a9debb0.png" />
+<img alt="values" src="https://user-images.githubusercontent.com/93121277/158789420-806f5cfe-ed44-48b7-80fa-f738eaf7a5e8.png" /></p>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">QTL_BSA-Sorghum</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, Michael Hall.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.4.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/qtl.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
