@@ -96,7 +96,7 @@ QTLParser_1_MH<-
 
 #' @title runGprimeAnalysis_MH
 #' @description Runs a Gprime Analysis on Bulk segregants 
-#' @param SNPset An SNPset Please
+#' @param SNPset An SNPset
 #' @param windowSize Specify the WindowSize
 #' @param outlierFilter Specify the outlierFilter 
 #' @param filterThreshold Specify threshold filter value default is 0.1
@@ -107,19 +107,13 @@ runGprimeAnalysis_MH <-
             filterThreshold = 0.1, ...)
   {
     message("Counting SNPs in each window...")
-    SNPset <- SNPset %>% dplyr::group_by(CHROM) %>% dplyr::mutate(nSNPs = countSNPs_cpp(POS = POS,
-                                                                                        windowSize = windowSize))
+    SNPset <- SNPset %>% dplyr::group_by(CHROM) %>% dplyr::mutate(nSNPs = countSNPs_cpp(POS = POS,windowSize = windowSize))
     message("Calculating tricube smoothed delta SNP index...")
-    SNPset <- SNPset %>% dplyr::mutate(tricubeDeltaSNP = tricubeStat_MH(POS = POS,
-                                                                     Stat = deltaSNP, windowSize))
+    SNPset <- SNPset %>% dplyr::mutate(tricubeDeltaSNP = tricubeStat(POS = POS,Stat = deltaSNP, windowSize))
     message("Calculating G and G' statistics...")
-    SNPset <- SNPset %>% dplyr::mutate(G = getG_MH(LowRef = AD_REF.LOW,
-                                                   HighRef = AD_REF.HIGH, LowAlt = AD_ALT.LOW, HighAlt = AD_ALT.HIGH),
-                                       Gprime = tricubeStat_MH(POS = POS, Stat = G, windowSize = windowSize,
-                                                               ...)) %>% dplyr::ungroup() %>% dplyr::mutate(pvalue = getPvals_MH(Gprime = Gprime,
-                                                                                                                                 deltaSNP = deltaSNP, outlierFilter = outlierFilter, filterThreshold = filterThreshold),
-                                                                                                            negLog10Pval = -log10(pvalue), qvalue = p.adjust(p = pvalue,
-                                                                                                                                                             method = "BH"))
+    SNPset <- SNPset %>% dplyr::mutate(G = getG_MH(LowRef = AD_REF.LOW,HighRef = AD_REF.HIGH, LowAlt = AD_ALT.LOW, HighAlt = AD_ALT.HIGH),
+    Gprime = tricubeStat_MH(POS = POS, Stat = G, windowSize = windowSize,...)) %>% dplyr::ungroup() %>% dplyr::mutate(pvalue = getPvals_MH(Gprime = Gprime,
+    deltaSNP = deltaSNP, outlierFilter = outlierFilter, filterThreshold = filterThreshold),negLog10Pval = -log10(pvalue), qvalue = p.adjust(p = pvalue,method = "BH"))
     return(as.data.frame(SNPset))
   }
 
@@ -233,6 +227,7 @@ getPvals_MH <-
       message("Using deltaSNP-index to filter outlier regions with a threshold of ", filterThreshold)
       trimGprime <- Gprime[abs(deltaSNP) < abs(filterThreshold)]
       #The next line is what I edited from the original getPvals
+      #I added the next line to remove by some glitch values that were calculated to be NA's
       trimGprime <- trimGprime[!is.na(trimGprime)]
     } else {
       message("Using Hampel's rule to filter outlier regions")
@@ -300,6 +295,7 @@ runQTLseqAnalysis_MH <- function (SNPset, windowSize = 1e+06, popStruc = "F2", b
   else {
     stop("Convidence intervals ('intervals' paramater) should be supplied as two-sided percentiles. i.e. If intervals = '95' will return the two sided 95% confidence interval, 2.5% on each side.")
   }
+  #I added the next line of code due to the fact NA's were produced generating an unwanted error
   SNPset <- SNPset %>% drop_na()
   SNPset <- SNPset %>% dplyr::mutate(minDP = pmin(DP.LOW, DP.HIGH))
   SNPset <- SNPset %>% dplyr::group_by(CHROM) %>% dplyr::mutate(tricubeDP = floor(tricubeStat(POS,
@@ -527,202 +523,6 @@ obs_MH<- function(SNPSet, ChromosomeValue1,ChromosomeValue2,ChromosomeValue3,Chr
 }
 
 
-#' @title ChromQual
-#' @param vcf A vcf file 
-#' @param chromlist A vector specifying particular chromosomes
-#' @param windowSize Specify window size to calculate number of SNPs
-#' @param scalar Specify a scalar quantity > 0 to apply on Quality Scores
-#' @param ncol An Integer Value Specifying the number of columns in ggplot facet_grid which corresponds to exact number of chromosomes in chromlist
-#' @param HighLimQuality Set Upper Limit for Quality 
-#' @param bindwidth1 Specify binwidth for Quality score histogram plot
-#' @param bindwidth2 Specify binwidth for Number of SNPs histogram plot
-#' @param DPBINS Specify number of bins for p6 histogram
-#' @param p1 TRUE or FALSE to plot or not to plot
-#' @param p2 TRUE or FALSE to plot or not to plot
-#' @param p3 TRUE or FALSE to plot or not to plot
-#' @param p4 TRUE or FALSE to plot or not to plot
-#' @param p5 TRUE or FALSE to plot or not to plot
-#' @param p6 TRUE or FALSE Boolean Argument, to plot or not to plot that is the question
-#' @return Several ggplots
-#' @examples ChromQuality(vcf = "General.vcf", chromlist = c("Chr1", "Chr2")), windowSize = 1e+06, scalar = 0.1, ncol = 2,HighLimQuality = 6000,  binwidth1 = 100, binwidth2 =1, DPBINS=10, p1=TRUE, p2=FALSE, p3=TRUE, p4=TRUE, p5=FALSE, p6=TRUE)
-#' @export ChromQual
-
-
-ChromQual <- 
-  function (vcf, chromlist = NULL, windowSize = 1e+06, scalar = NULL, 
-            ncol = NULL, HighLimQuality = NULL, Chromname= NULL,binwidth1 = NULL, binwidth2 = NULL, 
-            DPBINS = 10, p1 = NULL, p2 = NULL, p3 = NULL, p4 = NULL, 
-            p5 = NULL, p6 = NULL) 
-  {
-    message("Reading vcf file in with read.vcfR")
-    vcf <- read.vcfR(file = vcf)
-    message("Converting vcf object to tidy data frame with vcfR2tidy")
-    vcf <- vcfR2tidy(vcf)
-    message("Extracting unique Chromosome or Contig names reverse compatible to VCF file")
-    print(unique(vcf$fix$CHROM))
-    SNPset <- vcf
-    SNPset <- Map(as.data.frame, SNPset)
-    SNPset <- rbindlist(SNPset, fill = TRUE)
-    if (!is.null(chromlist)) {
-      message("Preparing Data for Quality Control Plotting and removing the following Chromosomes/Contigs: ", 
-              paste(unique(SNPset$CHROM)[!unique(SNPset$CHROM) %in% 
-                                           chromlist], collapse = ", "))
-      SNPset <- SNPset[SNPset$CHROM %in% chromlist, ]
-      message("Finishing Chromosome Subset")
-    }
-    message("Factoring Chromosome Variable According to Unique Specification")
-    SNPset$CHROM <- factor(SNPset$CHROM, levels = gtools::mixedsort(unique(SNPset$CHROM)))
-    message("Selecting Variable Subset")
-    SNPset <- SNPset %>% select(CHROM, POS, QUAL, DP)
-    message("Mutating SNPS set creating nSNPs variable")
-    SNPset <- SNPset %>% dplyr::group_by(CHROM) %>% dplyr::mutate(nSNPs = countSNPs_cpp(POS = POS, 
-                                                                                        windowSize = windowSize)) %>% filter(QUAL <= HighLimQuality)
-    message("Plotting Quality Scores")
-    par(mfrow = c(1, 1))
-    p1 <- p1
-    if (p1 == TRUE) {
-      breaks <- seq(round(min(SNPset$QUAL) - 1, 0), round(max(SNPset$QUAL) + 
-                                                            100, 0), binwidth1)
-      jpeg(file="plot1.jpeg")
-      hist(x = SNPset$QUAL, breaks = breaks, col = "green", 
-           frequency = TRUE, xlab = "Quality Scores", main = "Histogram of SNP Quality Scores")
-      dev.off()
-    }
-    else if (p1 == FALSE) {
-      print("Do not plot Histogram of Quality Score")
-    }
-    message("Plotting Number of SNPs")
-    p2 <- p2
-    if (p2 == TRUE) {
-      breaks <- seq(round(min(SNPset$nSNPs) - 1, 0), round(max(SNPset$nSNPs) + 
-                                                             100, 0), binwidth2)
-      jpeg(file="plot2.jpeg")
-      hist(x = SNPset$nSNPs, breaks = breaks, col = "blue", 
-           frequency = TRUE, xlab = "Number of SNPs called in specified window size", 
-           main = paste0("Histogram of Number of SNPs called in", 
-                         windowSize, "window size"))
-      dev.off()
-    }
-    else if (p2 == FALSE) {
-      print("Do not plot Histogram of Number of SNPs")
-    }
-    message("Plotting Quality Scores with Superimposed loess smoothing curve")
-    p3 <- p3
-    if (p3 == TRUE) {
-      print("Do not plot Quality Scores with Loess Curve")
-      jpeg(file="plot3.jpeg")
-      SNPset <- as.data.frame(SNPset)
-      SNPset <- SNPset %>% filter(CHROM == Chromname)
-      loessMod10 <- loess(QUAL ~ index, data = SNPset, span=0.10)
-      loessMod25 <- loess(QUAL ~ index, data = SNPset, span=0.25)
-      loessMod50 <- loess(QUAL ~ index, data = SNPset, span=0.50)
-      smoothed10 <- predict(loessMod10)
-      smoothed25 <- predict(loessMod25)
-      smoothed50 <- predict(loessMod50)
-      plot(SNPset$index,SNPset$QUAL,type="l",main="Loess Smoothing and Prediction",xlab="SNPObs",ylab="Quality Score")
-      lines(SNPset$index,smoothed10,col="red")
-      lines(SNPset$index,smoothed25,col="green")
-      lines(SNPset$index,smoothed50,col="blue")
-      dev.off()
-      
-    }
-    else if (p3 == FALSE) {
-    
-    }
-    message("Plotting Number of SNPs per Chromosome with loess smoothing curve")
-    p4 <- p4
-    if (p4 == TRUE) {
-      message("Ploting histogram of SNPs per Chromosome")
-      jpeg(file="plot4.jpeg")
-      ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = nSNPs), color = "lightgreen") + facet_wrap(~CHROM, ncol = ncol) + geom_smooth(aes(y = scalar * QUAL)) + theme_bw() + labs(x = "Position on Chromosome", y = "Counts of nSNPs and Scaled Quality Scores", color = "Legend") + scale_color_manual(values = colors)
-      dev.off()
-    }
-    else if (p4 == FALSE) {
-      print("Do not plot Superpostion of Quality Scores and Number of SNPs")
-    }
-   
-    p5 <- p5
-    if (p5 == TRUE) {
-      jpeg(file="plot5.jpeg")
-      ggplot(data = SNPset, aes(x = nSNPs)) + geom_histogram(bins = 10, show.legend = TRUE) + facet_wrap(~CHROM, ncol = ncol) + theme_classic()
-      dev.off()
-    }
-    else if (p5 == FALSE) {
-      print("Do not plot Hisotogram of Number of SNPs per Chromosome")
-    }
-    p6 <- p6
-    if (p6 == TRUE) {
-      jpeg(file="plot6.jpeg")
-      ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y=DP),color = "lightblue") + facet_wrap(~CHROM, ncol = ncol) + theme_classic()
-      dev.off()
-    }
-    else if (p6 == FALSE) {
-      print("Do not plot Histogram of Depth Reads")
-    }
-    message("Returning completed Data frame as a SNPSet")
-    return(as.data.frame(SNPset))
-  }
-
-
-
-#' @title plotGprimeDist_Py_MH
-#' @param SNPset An SNPset generated from importFromTable function
-#' @param outlierFilter Choose outlier filter method either deltaSNP or Hampel
-#' @param filterThreshold Choose a filter threshold
-#' @param binwidth Choose binwidth size default is 0.5
-#' @return A Gprime Distribution Plot 
-#' @export plotGprimeDist_Py_MH
-
-
-
-
-
-plotGprimeDist_Py_MH <-
-function (SNPset, outlierFilter = c("deltaSNP", "Hampel"), filterThreshold = 0.1, 
-          binwidth = 0.5) 
-{
-  if (outlierFilter == "deltaSNP") {
-    trim_df <- SNPset[abs(SNPset$deltaSNP) < filterThreshold, 
-    ]
-    trimGprime <- trim_df$Gprime
-  }
-  else {
-    lnGprime <- log(SNPset$Gprime)
-    MAD <- median(abs(lnGprime[lnGprime <= median(lnGprime)] - 
-                        median(lnGprime)))
-    trim_df <- SNPset[lnGprime - median(lnGprime) <= 5.2 * 
-                        median(MAD), ]
-    trimGprime <- trim_df$Gprime
-  }
-  medianTrimGprime <- median(trimGprime)
-  modeTrimGprime <- modeest::mlv(x = trimGprime, bw = 0.5, 
-                                 method = "hsm")[[1]]
-  muE <- log(medianTrimGprime)
-  varE <- abs(muE - log(modeTrimGprime))
-  n <- length(trim_df$Gprime)
-  bw <- binwidth
-  p <- ggplot.ggplot(SNPset) + ggplot.xlim(0, 3 * mean(SNPset$Gprime)) + 
-    ggplot.xlab("G' value") + ggplot.geom_histogram(ggplot.aes(x = Gprime, 
-                                                               fill = "Raw Data"), binwidth = bw) + ggplot.geom_histogram(data = trim_df, 
-                                                                                                                          ggplot.aes(x = Gprime, fill = "After filtering"), binwidth = bw) + 
-    ggplot.stat_function(ggplot.aes(color = "black"), 
-                         size = 1, fun = function(x, mean, sd, n, bw) {
-                           dlnorm(x = x, mean = muE, sd = sqrt(varE)) * 
-                             n * bw
-                         }, args = c(mean = muE, sd = sqrt(varE), n = n, bw = bw)) + 
-    ggplot.scale_fill_discrete(name = "Distribution") + 
-    ggplot.scale_colour_manual(name = "Null distribution", 
-                               values = "black", labels = as.expression(bquote(~theta["G'"] ~ 
-                                                                                 " ~ lnN(" * .(round(muE, 2)) * "," * .(round(varE, 
-                                                                                                                              2)) * ")"))) + ggplot.guides(fill = ggplot.guide_legend(order = 1, 
-                                                                                                                                                                                      reverse = TRUE))
-  return(p)
-}
-
-
-
-
-
 
 
 #' Plots different paramaters for QTL identification
@@ -900,43 +700,6 @@ plotQTLStats_MH <-
     p
     
   }
-
-
-
-#' @title Obs_Allele_Freq3
-#' @description Returns a 4 column data filtering for specific Chromosome and High Bulk Observed Allele Frequencies
-#' @param SNPSet A SNPSet generated from the function importFromTable 
-#' @export Obs_Allele_Freq3
-
-
-Obs_Allele_Freq3 <- 
-  function (SNPSet) 
-  {
-    frame <- SNPSet %>% dplyr::mutate(LowRef = AD_REF.LOW, HighRef = AD_REF.HIGH, LowAlt = AD_ALT.LOW, HighAlt = AD_ALT.HIGH) %>% select(LowRef, HighRef, LowAlt, HighAlt)
-    p1 <- ((frame$LowAlt)/(frame$LowRef + frame$LowAlt))
-    p1 <- round(p1, 3)
-    p2 <- ((frame$HighAlt)/(frame$HighRef + frame$HighAlt))
-    p2 <- round(p2, 3)
-    diff <- p2 - p1
-    nSNPs <- SNPSet$nSNPs
-    Chrom <- SNPSet %>% select(CHROM)
-    POS <- SNPSet %>% select(POS)
-    AD_High1 <- data.frame(SNPSet$AD_ALT.HIGH, SNPSet$AD_REF.HIGH)
-    AD_High1$AD_High <- paste(AD_High1$SNPSet.AD_REF.HIGH, AD_High1$SNPSet.AD_ALT.HIGH, sep = ",")
-    AD_High <- subset(AD_High1, select = -c(SNPSet.AD_ALT.HIGH, SNPSet.AD_REF.HIGH))
-    AD_Low1 <- data.frame(SNPSet$AD_REF.LOW, SNPSet$AD_ALT.LOW)
-    AD_Low1$AD_Low <- paste(AD_Low1$SNPSet.AD_REF.LOW, AD_Low1$SNPSet.AD_ALT.LOW, sep = ",")
-    AD_Low <- subset(AD_Low1, select = -c(SNPSet.AD_REF.LOW, SNPSet.AD_ALT.LOW))
-    Gprime <- SNPSet %>% select(Gprime)
-    Gprime <- round(Gprime, 3)
-    data <- cbind(Chrom, POS, p1, p2, diff, nSNPs, AD_High, AD_Low, Gprime)
-    data <- as.data.frame(data)
-    return(data)
-  }
-
-
-
-
 
 
 
