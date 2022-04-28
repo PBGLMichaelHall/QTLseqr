@@ -321,7 +321,7 @@ runQTLseqAnalysis_MH <- function (SNPset, windowSize = 1e+06, popStruc = "F2", b
 Obs_Allele_Freq <- 
   function (SNPSet,size) 
   {
-    frame <- SNPSet %>% dplyr::mutate(LowRef = AD_REF.LOW, HighRef = AD_REF.HIGH, LowAlt = AD_ALT.LOW, HighAlt = AD_ALT.HIGH) %>% select(CHROM,POS,DP.LOW,DP.HIGH,LowRef, HighRef, LowAlt, HighAlt,nSNPs)
+    frame <- SNPSet %>% dplyr::mutate(LowRef = AD_REF.LOW, HighRef = AD_REF.HIGH, LowAlt = AD_ALT.LOW, HighAlt = AD_ALT.HIGH) %>% dplyr::select(CHROM,POS,DP.LOW,DP.HIGH,LowRef, HighRef, LowAlt, HighAlt,nSNPs)
     message("Graphing GGplot")
     e <- ggplot(frame, aes(x = POS)) + geom_line(aes(y = LowAlt/DP.LOW), color = "orange")  + geom_point(aes(y = LowAlt/DP.LOW), color = "orange", size = size*SNPSet$nSNPs) + geom_line(aes(y = HighAlt/DP.HIGH), color = "blue") + geom_point(aes(y = HighAlt/DP.HIGH), color = "blue", size = size*SNPSet$nSNPs) + facet_grid(rows = vars(CHROM))
     print(e)
@@ -348,8 +348,8 @@ Obs_Allele_Freq2 <-
     p2 <- ((frame$HighAlt)/(frame$HighRef + frame$HighAlt))
     p2 <- round(p2, 3)
     diff <- p2 - p1
-    Chrom <- SNPSet %>% select(CHROM)
-    POS <- SNPSet %>% select(POS)
+    Chrom <- SNPSet %>% dplyr::select(CHROM)
+    POS <- SNPSet %>% dplyr::select(POS)
     AD_High1 <- data.frame(SNPSet$AD_ALT.HIGH, SNPSet$AD_REF.HIGH)
     AD_High1$AD_High <- paste(AD_High1$SNPSet.AD_REF.HIGH, AD_High1$SNPSet.AD_ALT.HIGH, sep = ",")
     AD_High <- subset(AD_High1, select = -c(SNPSet.AD_ALT.HIGH, SNPSet.AD_REF.HIGH))
