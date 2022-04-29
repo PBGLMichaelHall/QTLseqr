@@ -59,18 +59,6 @@ Returns a subset of the data frame supplied which meets the filtering
 Use filtering paramaters to filter out high and low depth reads as well as
 low Genotype Quality as defined by GATK. All filters are optional but recommended.
 }
-\examples{
-df_filt <- FilterSNPs(
-    df,
-    refAlleleFreq = 0.3,
-    minTotalDepth = 40,
-    maxTotalDepth = 80,
-    minSampleDepth = 20,
-    minGQ = 99,
-    verbose = TRUE
-)
-
-}
 \seealso{
 See \code{\link[stats]{mad}} for explaination of calculation of
   median absolute deviation.

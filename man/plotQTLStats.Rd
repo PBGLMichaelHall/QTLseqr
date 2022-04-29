@@ -62,6 +62,3 @@ Plots a ggplot graph for all chromosomes or those requested in
 A wrapper for ggplot to plot genome wide distribution of parameters used to
 identify QTL.
 }
-\examples{
-p <- plotQTLstats(df_filt_6Mb, var = "Gprime", plotThreshold = TRUE, q = 0.01, subset = c("Chr3","Chr4"))
-}

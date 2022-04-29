@@ -43,12 +43,6 @@ bulk), the G statistic and returns a data frame. The required GATK fields
 fields are REF (Reference allele) and ALT (Alternative allele) Recommended
 Genotype feilds are PL (Phred-scaled likelihoods) and GQ  (Genotype Quality).
 }
-\examples{
-df <-  ImportFromGATK(filename = file.table,
-    highBulk = highBulkSampleName,
-    lowBulk = lowBulkSampleName,
-    chromList = c("Chr1","Chr4","Chr7"))
-}
 \seealso{
 \code{\link{getG}} for explaination of how G statistic is
   calculated.

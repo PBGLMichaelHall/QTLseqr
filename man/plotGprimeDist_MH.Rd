@@ -47,10 +47,6 @@ Modified by MH
 Plots a ggplot histogram of the distribution of Gprime with a log normal
 distribution overlay
 }
-\examples{
-plotGprimedist(df_filt_6Mb, outlierFilter = "deltaSNP")
-
-}
 \seealso{
 \code{\link{getPvals}} for how p-values are calculated.
 }

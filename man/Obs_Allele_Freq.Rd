@@ -8,6 +8,8 @@ Obs_Allele_Freq(SNPSet, size)
 }
 \arguments{
 \item{SNPSet}{A SNPSet generated from the function importFromTable}
+
+\item{size}{A scalar which optimal value depends on number of SNPs...}
 }
 \description{
 Returns a 4 column data frame with Chromosome, Position, and Observed allele frequencies from the High Parent for both bulks

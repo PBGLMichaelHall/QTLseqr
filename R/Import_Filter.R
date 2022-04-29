@@ -29,10 +29,6 @@
 #'   \href{http://gatkforums.broadinstitute.org/gatk/discussion/1268/what-is-a-vcf-and-how-should-i-interpret-it}{What
 #'   is a VCF and how should I interpret it?} for more information on GATK
 #'   Fields and Genotype Fields
-#' @examples df <-  ImportFromGATK(filename = file.table,
-#'     highBulk = highBulkSampleName,
-#'     lowBulk = lowBulkSampleName,
-#'     chromList = c("Chr1","Chr4","Chr7"))
 #' @export importFromGATK
 
 importFromGATK <- function(file,
@@ -270,6 +266,16 @@ importFromTable <-
         return(as.data.frame(SNPset))
     }
 
+#' @title importFromVCF
+#' @param file vcf file
+#' @param highBulk Highbulk name
+#' @param lowBulk LowBulk name
+#' @param chromList chromosome list
+#' @return Returns a data frame
+#' @export importFromVCF
+
+
+
 
 ## not exported still only works for GATK...
 importFromVCF <- function(file,
@@ -331,7 +337,7 @@ importFromVCF <- function(file,
         message("Removing the following chromosomes: ", paste(unique(SNPset$CHROM)[!unique(SNPset$CHROM) %in% chromList], collapse = ", "))
         SNPset <- SNPset[SNPset$CHROM %in% chromList, ]
     }
-    as.data.frame(SNPset)
+    return(as.data.frame(SNPset))
 }
 
 
@@ -373,17 +379,9 @@ importFromVCF <- function(file,
 #'   \href{http://gatkforums.broadinstitute.org/gatk/discussion/1268/what-is-a-vcf-and-how-should-i-interpret-it}{What
 #'   is a VCF and how should I interpret it?} for more information on GATK
 #'   Fields and Genotype Fields
-#' @examples df_filt <- FilterSNPs(
-#'     df,
-#'     refAlleleFreq = 0.3,
-#'     minTotalDepth = 40,
-#'     maxTotalDepth = 80,
-#'     minSampleDepth = 20,
-#'     minGQ = 99,
-#'     verbose = TRUE
-#' )
-#'
 #' @export filterSNPs
+
+
 
 filterSNPs <- function(SNPset,
     refAlleleFreq,

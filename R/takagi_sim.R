@@ -82,12 +82,6 @@ simulateSNPindex <-
 #' requested confidence intervals at the user set depths. 
 #' @export simulateConfInt
 #'
-#' @examples CI <-
-#' simulateConfInt(
-#'    popStruc = "F2",
-#'    bulkSize = 50,
-#'    depth = 1:100,
-#'    intervals = c(0.05, 0.95, 0.025, 0.975, 0.005, 0.995, 0.0025, 0.9975)
      
 simulateConfInt <- function(popStruc = "F2",
                             bulkSize,
@@ -229,15 +223,6 @@ simulateConfInt <- function(popStruc = "F2",
 #' requested confidence intervals matching the tricube smoothed depth at each SNP.
 #' @export runQTLseqAnalysis
 #'
-#' @examples df_filt <- runQTLseqAnalysis(
-#' SNPset = df_filt,
-#' bulkSize = c(25, 35)
-#' windowSize = 1e6,
-#' popStruc = "F2",
-#' replications = 10000,
-#' intervals = c(95, 99)
-#' )
-#' 
 
 runQTLseqAnalysis <- function(SNPset,
                               windowSize = 1e6,

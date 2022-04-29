@@ -8,3 +8,4 @@ QTLseqr.Rproj
 calculation tests.xlsx
 README.Rmd
 temp
+vignettes/*.pdf

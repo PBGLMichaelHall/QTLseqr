@@ -4,7 +4,7 @@
 \alias{tricube_Smooth}
 \title{tricube_Smooth}
 \usage{
-tricube_Smooth(POS, Stat, windowSize, deg, nn, h)
+tricube_Smooth(POS, Stat, windowSize, deg, nn)
 }
 \arguments{
 \item{POS}{THe Position vector of where the SNPs were called}

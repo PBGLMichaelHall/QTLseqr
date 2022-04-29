@@ -74,6 +74,3 @@ p-values are estimated from a log normal distribution. \cr \cr 4) Negative
 Log10- and Benjamini-Hochberg adjusted p-values are calculated using
 \code{\link[stats]{p.adjust}}
 }
-\examples{
-df_filt <- runGprimeAnalysis(df_filt,windowSize = 2e6,outlierFilter = "deltaSNP")
-}

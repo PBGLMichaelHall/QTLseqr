@@ -57,14 +57,3 @@ alternative allele frequency in each bulk is calculated at each depth used to si
 delta SNP-indeces, with a user defined number of bootstrapped replication.
 The requested confidence intervals are then calculated from the bootstraps.
 }
-\examples{
-df_filt <- runQTLseqAnalysis(
-SNPset = df_filt,
-bulkSize = c(25, 35)
-windowSize = 1e6,
-popStruc = "F2",
-replications = 10000,
-intervals = c(95, 99)
-)
-
-}

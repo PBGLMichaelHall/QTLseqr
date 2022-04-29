@@ -34,9 +34,8 @@
 #'   line. If you would like to plot a different line we suggest setting
 #'   "plotThreshold" to FALSE and manually adding a line using
 #'   ggplot2::geom_hline.
-#'
-#' @examples p <- plotQTLstats(df_filt_6Mb, var = "Gprime", plotThreshold = TRUE, q = 0.01, subset = c("Chr3","Chr4"))
 #' @export plotQTLStats
+
 
 plotQTLStats <-
     function(SNPset,
@@ -198,7 +197,6 @@ plotQTLStats <-
 #'   mean and variance of the set are estimated using the median and mode are
 #'   estimated and used to plot the log normal distribution.
 #'
-#' @examples plotGprimedist(df_filt_6Mb, outlierFilter = "deltaSNP")
 #'
 #' @seealso \code{\link{getPvals}} for how p-values are calculated.
 #' @export plotGprimeDist
@@ -310,12 +308,12 @@ plotGprimeDist <-
 #'
 #' @export plotSimulatedThresholds
 #'
-#' @examples plotSimulatedThresholds <- function(SNPset = NULL, popStruc = "F2", bulkSize = 25,   depth = 1:150, replications = 10000, filter = 0.3, intervals = c(95, 99))
+
 
 plotSimulatedThresholds <-
     function(SNPset = NULL,
              popStruc = "F2",
-             bulkSize,
+             bulkSize=NULL,
              depth = NULL,
              replications = 10000,
              filter = 0.3,
@@ -344,7 +342,8 @@ plotSimulatedThresholds <-
             quantiles <- (100 - intervals) / 200
         } else {
             stop(
-                "Convidence intervals ('intervals' paramater) should be supplied as two-sided percentiles. i.e. If intervals = '95' will return the two sided 95% confidence interval, 2.5% on each side."
+                "Convidence int#' @examples df_filt_4mb$Gprime <- tricubeStat(POS, Stat = GStat, WinSize = 4e6)
+ervals ('intervals' paramater) should be supplied as two-sided percentiles. i.e. If intervals = '95' will return the two sided 95% confidence interval, 2.5% on each side."
             )
         }
         

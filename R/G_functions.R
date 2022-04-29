@@ -24,7 +24,8 @@
 #'
 #' @seealso \href{https://doi.org/10.1371/journal.pcbi.1002255}{The Statistics
 #'   of Bulk Segregant Analysis Using Next Generation Sequencing}
-#'   \code{\link{tricubeStat}} for G prime calculation
+#'   \code{\link{tricubeStat}} for G prime calculation]
+#' @export getG
 
 getG <- function(LowRef, HighRef, LowAlt, HighAlt)
 {
@@ -57,23 +58,19 @@ getG <- function(LowRef, HighRef, LowAlt, HighAlt)
 #'
 #' @param POS A vector of genomic positions for each SNP
 #' @param Stat A vector of values for a given statistic for each SNP
-#' @param WinSize the window size (in base pairs) bracketing each SNP for which
+#' @param windowSize the window size (in base pairs) bracketing each SNP for which
 #'   to calculate the statitics. Magwene et. al recommend a window size of ~25
 #'   cM, but also recommend optionally trying several window sizes to test if
 #'   peaks are over- or undersmoothed.
-#' @param ... Other arguments passed to \code{\link[locfit]{locfit}} and
-#'   subsequently to \code{\link[locfit]{locfit.raw}}() (or the lfproc). Usefull
-#'   in cases where you get "out of vertex space warnings"; Set the maxk higher
-#'   than the default 100. See \code{\link[locfit]{locfit.raw}}().
-#' @examples df_filt_4mb$Gprime <- tricubeStat(POS, Stat = GStat, WinSize = 4e6)
 #' @seealso \code{\link{getG}} for G statistic calculation
 #' @seealso \code{\link[locfit]{locfit}} for local regression
+#' @export tricubeStat
 
-tricubeStat <- function(POS, Stat, windowSize = 2e6, ...)
+tricubeStat <- function(POS, Stat, windowSize = 2e6)
 {
     if (windowSize <= 0)
         stop("A positive smoothing window is required")
-    stats::predict(locfit::locfit(Stat ~ locfit::lp(POS, h = windowSize, deg = 0), ...), POS)
+    stats::predict(locfit::locfit(Stat ~ locfit::lp(POS, h = windowSize, deg = 0)), POS)
 }
 
 
@@ -233,7 +230,6 @@ getFDRThreshold <- function(pvalues, alpha = 0.01)
 #'
 #' @export runGprimeAnalysis
 #'
-#' @examples df_filt <- runGprimeAnalysis(df_filt,windowSize = 2e6,outlierFilter = "deltaSNP")
 #' @useDynLib QTLseqr
 #' @importFrom Rcpp sourceCpp
 

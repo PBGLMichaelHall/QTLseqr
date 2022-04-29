@@ -5,15 +5,17 @@
 \title{obs_MH}
 \usage{
 obs_MH(
-  SNPSet,
-  ChromosomeValue1,
-  ChromosomeValue2,
-  ChromosomeValue3,
-  ChromosomeValue4,
-  threshold
+  SNPset = NULL,
+  ChromosomeValue1 = NULL,
+  ChromosomeValue2 = NULL,
+  ChromosomeValue3 = NULL,
+  ChromosomeValue4 = NULL,
+  threshold = NULL
 )
 }
 \arguments{
+\item{SNPset}{a data frame with SNPs and genotype fields as imported by}
+
 \item{ChromosomeValue1}{Enter a Integer for a specific chromosome i.e. 1,2,..etc.}
 
 \item{ChromosomeValue2}{Enter a Integer for a specific chromosome i.e. 1,2,..etc.}
@@ -23,8 +25,6 @@ obs_MH(
 \item{ChromosomeValue4}{Enter a Integer for a specific chromosome i.e. 1,2,..etc.}
 
 \item{threshold}{Specify Alternate Allelic Frequency threshold}
-
-\item{SNPset}{a data frame with SNPs and genotype fields as imported by}
 }
 \value{
 Plots Alternate Allelic Frequency against GPrime value 
@@ -32,7 +32,4 @@ Plots Alternate Allelic Frequency against GPrime value
 }
 \description{
 obs_MH
-}
-\examples{
-obs_MH(SNPSet = df_filt, ChromosomeValue1 = 1, ChromosomeValue2 = 2, ChromosomeValue3 = 3, ChromosomeValue4 = 4, threshold = .30)
 }

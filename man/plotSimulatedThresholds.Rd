@@ -7,7 +7,7 @@
 plotSimulatedThresholds(
   SNPset = NULL,
   popStruc = "F2",
-  bulkSize,
+  bulkSize = NULL,
   depth = NULL,
   replications = 10000,
   filter = 0.3,
@@ -39,7 +39,4 @@ alternative allele frequency in each bulk is calculated at each depth used to si
 delta SNP-indeces, with a user defined number of bootstrapped replication.
 The requested confidence intervals are then calculated from the bootstraps.
 This function plots the simulated confidence intervals by the read depth.
-}
-\examples{
-plotSimulatedThresholds <- function(SNPset = NULL, popStruc = "F2", bulkSize = 25,   depth = 1:150, replications = 10000, filter = 0.3, intervals = c(95, 99))
 }

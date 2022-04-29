@@ -42,11 +42,3 @@ alternative allele frequency in each bulk is calculated at each depth used to si
 delta SNP-indeces, with a user defined number of bootstrapped replication.
 The requested confidence intervals are then calculated from the bootstraps.
 }
-\examples{
-CI <-
-simulateConfInt(
-   popStruc = "F2",
-   bulkSize = 50,
-   depth = 1:100,
-   intervals = c(0.05, 0.95, 0.025, 0.975, 0.005, 0.995, 0.0025, 0.9975)
-}

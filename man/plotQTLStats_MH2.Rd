@@ -33,14 +33,6 @@ Plotting points will take more time.}
 
 \item{...}{arguments to pass to ggplot2::geom_line or ggplot2::geom_point for
 changing colors etc.}
-
-\item{plotThreshold}{boolean. Should we plot the False Discovery Rate
-threshold (FDR). Only plots line if var is "Gprime" or "negLogPval".}
-
-\item{plotIntervals}{boolean. Whether or not to plot the two-sided Takagi confidence intervals in "deltaSNP" plots.}
-
-\item{q}{numeric. The q-value to use as the FDR threshold. If too low, no
-line will be drawn and a warning will be given.}
 }
 \value{
 Plots a ggplot graph for all chromosomes or those requested in
@@ -57,7 +49,4 @@ Plots a ggplot graph for all chromosomes or those requested in
 \description{
 A wrapper for ggplot to plot genome wide distribution of parameters used to
 identify QTL.
-}
-\examples{
-p <- plotQTLstats(SNPset = df_filt, var = "diff",subset = c("Chr3","Chr4"))
 }
