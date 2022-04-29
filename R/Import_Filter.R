@@ -304,8 +304,8 @@ importFromVCF <- function(file,
     tidy_gt <- extract_gt_tidy(vcf, format_fields = c("AD", "DP", "GQ"), gt_column_prepend = "", alleles = FALSE)
     
     SNPset <- tidy_gt %>%
-        filter(Indiv == lowBulk) %>% select(-Indiv) %>%
-        dplyr::left_join(select(filter(tidy_gt, Indiv == highBulk),-Indiv),
+        dplyr::filter(Indiv == lowBulk) %>% dplyr::select(-Indiv) %>%
+        dplyr::left_join(dplyr::select(dplyr::filter(tidy_gt, Indiv == highBulk),-Indiv),
                          by = "Key",
                          suffix = c(".LOW", ".HIGH")) %>%
         tidyr::separate(
