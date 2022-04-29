@@ -266,6 +266,7 @@ importFromTable <-
         return(as.data.frame(SNPset))
     }
 
+
 #' @title importFromVCF
 #' @param file vcf file
 #' @param highBulk Highbulk name
@@ -274,70 +275,32 @@ importFromTable <-
 #' @return Returns a data frame
 #' @export importFromVCF
 
-
-
-
 ## not exported still only works for GATK...
 importFromVCF <- function(file,
                           highBulk = character(),
                           lowBulk = character(),
                           chromList = NULL) {
     
-    vcf <- vcfR::read.vcfR(file = file)
-    message("Keeping SNPs that pass all filters")
-    vcf <- vcf[vcf@fix[, "FILTER"] == "PASS"] 
-    
-    fix <- dplyr::as_tibble(vcf@fix[, c("CHROM", "POS", "REF", "ALT")]) %>% mutate(Key = seq(1:nrow(.)))
-    
-    # if (!all(
-    #     c(
-    #         "CHROM", 
-    #         "POS", 
-    #         paste0(highBulk, ".AD"), 
-    #         paste0(lowBulk, ".AD"), 
-    #         paste0(highBulk, ".DP"), 
-    #         paste0(lowBulk, ".DP")
-    #     ) %in% names(SNPset))) {
-    #     stop("One of the required fields is missing. Check your VCF file.")
-    # }
-    
-    tidy_gt <- extract_gt_tidy(vcf, format_fields = c("AD", "DP", "GQ"), gt_column_prepend = "", alleles = FALSE)
-    
-    SNPset <- tidy_gt %>%
-        dplyr::filter(Indiv == lowBulk) %>% dplyr::select(-Indiv) %>%
-        dplyr::left_join(dplyr::select(dplyr::filter(tidy_gt, Indiv == highBulk),-Indiv),
-                         by = "Key",
-                         suffix = c(".LOW", ".HIGH")) %>%
-        tidyr::separate(
-            col = "AD.LOW",
-            into = c("AD_REF.LOW", "AD_ALT.LOW"),
-            sep = ",",
-            extra = "merge",
-            convert = TRUE
-        ) %>%
-        tidyr::separate(
-            col = "AD.HIGH",
-            into = c("AD_REF.HIGH", "AD_ALT.HIGH"),
-            sep = ",",
-            extra = "merge", 
-            convert = TRUE
-        ) %>%
-        dplyr::full_join(x = fix, by = "Key") %>%
-        dplyr::mutate(
-            AD_ALT.HIGH = DP.HIGH - AD_REF.HIGH,
-            AD_ALT.LOW = DP.LOW - AD_REF.LOW,
-            SNPindex.HIGH = AD_ALT.HIGH / DP.HIGH,
-            SNPindex.LOW = AD_ALT.LOW / DP.LOW,
-            REF_FRQ = (AD_REF.HIGH + AD_REF.LOW) / (DP.HIGH + DP.LOW),
-            deltaSNP = SNPindex.HIGH - SNPindex.LOW
-        ) %>%
-        select(-Key)
-    #Keep only wanted chromosomes
-    if (!is.null(chromList)) {
-        message("Removing the following chromosomes: ", paste(unique(SNPset$CHROM)[!unique(SNPset$CHROM) %in% chromList], collapse = ", "))
-        SNPset <- SNPset[SNPset$CHROM %in% chromList, ]
-    }
-    return(as.data.frame(SNPset))
+  vcf <- vcfR::read.vcfR(file = file)
+  message("Keeping SNPs that pass all filters")
+  
+  vcf <- vcf[vcf@fix[, "FILTER"] == "PASS"]
+  fix <- dplyr::as_tibble(vcf@fix[, c("CHROM", "POS", "REF", "ALT")]) %>% mutate(Key = seq(1:nrow(.)))
+  
+  tidy_gt <- extract_gt_tidy(vcf, format_fields = c("AD", "DP", "GQ"), gt_column_prepend = "", alleles = FALSE)
+  
+  SNPset <- tidy_gt %>% filter(Indiv == lowBulk) %>% select(-Indiv) %>% dplyr::left_join(select(filter(tidy_gt, Indiv == highBulk), -Indiv), by = "Key", suffix = c(".LOW", ".HIGH")) %>% tidyr::separate(col = "AD.LOW", into = c("AD_REF.LOW", "AD_ALT.LOW"), sep = ",", extra = "merge", convert = TRUE) %>% tidyr::separate(col = "AD.HIGH", into = c("AD_REF.HIGH", "AD_ALT.HIGH"), sep = ",", extra = "merge", convert = TRUE) 
+  SNPset <- SNPset %>% dplyr::full_join(x = fix, by = "Key") %>% dplyr::mutate(AD_ALT.HIGH = DP.HIGH - AD_REF.HIGH, AD_ALT.LOW = DP.LOW - AD_REF.LOW, SNPindex.HIGH = AD_ALT.HIGH/DP.HIGH, SNPindex.LOW = AD_ALT.LOW/DP.LOW, REF_FRQ = (AD_REF.HIGH + AD_REF.LOW)/(DP.HIGH + DP.LOW), deltaSNP = SNPindex.HIGH - SNPindex.LOW) %>% select(-Key)
+  names(SNPset)[5] <- paste0("AD_REF.",lowBulk)
+  names(SNPset)[6] <- paste0("AD_ALT.",lowBulk)
+  names(SNPset)[9] <- paste0("AD_REF.",highBulk)
+  names(SNPset)[10] <- paste0("AD_ALT.",highBulk)
+  if (!is.null(chromList)) {
+    message("Removing the following chromosomes: ", paste(unique(SNPset$CHROM)[!unique(SNPset$CHROM) %in% 
+                                                                                 chromList], collapse = ", "))
+    SNPset <- SNPset[SNPset$CHROM %in% chromList, ]
+  }
+  return(as.data.frame(SNPset))
 }
 
 
