@@ -290,7 +290,9 @@ importFromVCF <- function(file,
   
   tidy_gt <- extract_gt_tidy(vcf, format_fields = c("AD", "DP", "GQ"), gt_column_prepend = "", alleles = FALSE)
   
-  SNPset <- tidy_gt %>% dplyr::filter(Indiv == lowBulk) %>% select(-Indiv) %>% dplyr::left_join(select(filter(tidy_gt, Indiv == highBulk), -Indiv), by = "Key", suffix = c(".LOW", ".HIGH")) %>% tidyr::separate(col = "AD.LOW", into = c("AD_REF.LOW", "AD_ALT.LOW"), sep = ",", extra = "merge", convert = TRUE) %>% tidyr::separate(col = "AD.HIGH", into = c("AD_REF.HIGH", "AD_ALT.HIGH"), sep = ",", extra = "merge", convert = TRUE) 
+  SNPset <- tidy_gt %>% dplyr::filter(Indiv == lowBulk) %>% select(-Indiv) %>% dplyr::left_join(select(filter(tidy_gt, Indiv == highBulk), -Indiv), by = "Key", suffix = c(".LOW", ".HIGH")) 
+  SNPset <- SNPset %>% tidyr::separate(col = "AD.LOW", into = c("AD_REF.LOW", "AD_ALT.LOW"), sep = ",", extra = "merge", convert = TRUE) 
+  SNPset <- SNPset %>% tidyr::separate(col = "AD.HIGH", into = c("AD_REF.HIGH", "AD_ALT.HIGH"), sep = ",", extra = "merge", convert = TRUE) 
   SNPset <- SNPset %>% dplyr::full_join(x = fix, by = "Key") %>% dplyr::mutate(AD_ALT.HIGH = DP.HIGH - AD_REF.HIGH, AD_ALT.LOW = DP.LOW - AD_REF.LOW, SNPindex.HIGH = AD_ALT.HIGH/DP.HIGH, SNPindex.LOW = AD_ALT.LOW/DP.LOW, REF_FRQ = (AD_REF.HIGH + AD_REF.LOW)/(DP.HIGH + DP.LOW), deltaSNP = SNPindex.HIGH - SNPindex.LOW) %>% select(-Key)
   names(SNPset)[5] <- paste0("AD_REF.",lowBulk)
   names(SNPset)[6] <- paste0("AD_ALT.",lowBulk)
