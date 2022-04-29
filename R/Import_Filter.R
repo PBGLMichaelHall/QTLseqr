@@ -279,7 +279,8 @@ importFromTable <-
 importFromVCF <- function(file,
                           highBulk = character(),
                           lowBulk = character(),
-                          chromList = NULL) {
+                          chromList = NULL,
+                          filename = NULL) {
     
   vcf <- vcfR::read.vcfR(file = file)
   message("Keeping SNPs that pass all filters")
@@ -300,7 +301,9 @@ importFromVCF <- function(file,
                                                                                  chromList], collapse = ", "))
     SNPset <- SNPset[SNPset$CHROM %in% chromList, ]
   }
-  return(as.data.frame(SNPset))
+  SNPset <- as.data.frame(SNPset)
+  write.table(SNPset, file = paste0(filename,".csv"), row.names = FALSE, col.names = TRUE, sep = ",")
+  
 }
 
 
