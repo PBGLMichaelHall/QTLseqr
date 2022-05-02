@@ -14,11 +14,11 @@ globalVariables(c("read.vcfR","vcfR2tidy","rbindlist","select","CHROM","POS","DP
 #' @param vcf A vcf file that is as a tidy data frame
 #' @param HighBulk The name of the HighBulk sample
 #' @param LowBulk The name of the LowBulk sample
-#' @param filename Provide a partiular name to identify input CSV file 
+#' @param filename Provide a partiular name to identify input CSV file
 #' @export QTLParser_1_MH
 
 QTLParser_1_MH<-
-  function (vcf, HighBulk, LowBulk, filename) 
+  function (vcf, HighBulk, LowBulk, filename)
   {
     CHROM <- vcf$fix$CHROM
     POS <- vcf$fix$POS
@@ -45,9 +45,9 @@ QTLParser_1_MH<-
     Data <- Data[!rowSums(nchar(as.matrix(Data[4])) != 1), ]
     Data <- Data[(as.matrix(Data[6]) == HighBulk), ]
     Data <- Data[, -6]
-    write.table(Data, file = paste0(HighBulk, ".tsv"), row.names = FALSE, 
+    write.table(Data, file = paste0(HighBulk, ".tsv"), row.names = FALSE,
                 col.names = TRUE, sep = "\t", quote = FALSE)
-    write.table(Data, file = paste0(HighBulk, ".csv"), row.names = FALSE, 
+    write.table(Data, file = paste0(HighBulk, ".csv"), row.names = FALSE,
                 col.names = TRUE, sep = ",", quote = FALSE)
     CHROM <- vcf$fix$CHROM
     POS <- vcf$fix$POS
@@ -74,13 +74,13 @@ QTLParser_1_MH<-
     Data <- Data[!rowSums(nchar(as.matrix(Data[4])) != 1), ]
     Data <- Data[(as.matrix(Data[6]) == LowBulk), ]
     Data <- Data[, -6]
-    write.table(Data, file = paste0(LowBulk, ".tsv"), row.names = FALSE, 
+    write.table(Data, file = paste0(LowBulk, ".tsv"), row.names = FALSE,
                 col.names = TRUE, sep = "\t", quote = FALSE)
-    write.table(Data, file = paste0(LowBulk, ".csv"), row.names = FALSE, 
+    write.table(Data, file = paste0(LowBulk, ".csv"), row.names = FALSE,
                 col.names = TRUE, sep = ",", quote = FALSE)
     df1 <- read.csv(file = paste0(HighBulk, ".csv"), header = TRUE)
     df2 <- read.csv(file = paste0(LowBulk, ".csv"), header = TRUE)
-    df3 <- merge(df1, df2, by = c("CHROM", "POS", "REF", "ALT"), 
+    df3 <- merge(df1, df2, by = c("CHROM", "POS", "REF", "ALT"),
                  all.x = TRUE)
     names(df3)[5] <- paste0("DP.", HighBulk)
     names(df3)[6] <- paste0("AD_REF.", HighBulk)
@@ -93,11 +93,11 @@ QTLParser_1_MH<-
     names(df3)[8] <- paste0("DP.", LowBulk)
     names(df3)[9] <- paste0("AD_REF.", LowBulk)
     names(df3)[10] <- paste0("AD_ALT.", LowBulk)
-    df3 <- na.omit(df3, c(paste0("AD_REF.", HighBulk), paste0("AD_ALT.", 
-                                                              HighBulk), paste0("DP.", HighBulk), paste0("DP.", LowBulk), 
+    df3 <- na.omit(df3, c(paste0("AD_REF.", HighBulk), paste0("AD_ALT.",
+                                                              HighBulk), paste0("DP.", HighBulk), paste0("DP.", LowBulk),
                           paste0("AD_REF.", LowBulk), paste0("AD_ALT.", LowBulk)))
     write.table(df3, file = paste0(filename,".csv"), row.names = FALSE, col.names = TRUE, sep = ",")
-    
+
     return(unique(vcf$fix$CHROM))
 }
 
@@ -107,16 +107,16 @@ QTLParser_1_MH<-
 #' @description Runs a Gprime Analysis on Bulk segregants with additional smoothing parameters for G Prime Test Statistic
 #' @param SNPset An SNPset
 #' @param windowSize Specify the WindowSize
-#' @param outlierFilter Specify the outlierFilter 
+#' @param outlierFilter Specify the outlierFilter
 #' @param filterThreshold Specify threshold filter value default is 0.1
 #' @param deg Degree of Polynomial to use for LocFit Model
 #' @param nn Nearest Neighbor component of smoothing parameter. Default value is 0.7, unless h or adpen are provided, in which case the default is 0
 #' @export runGprimeAnalysis_GPrime_Smooth
 
 
-runGprimeAnalysis_GPrime_Smooth <- 
-  function (SNPset, windowSize = windowSize, outlierFilter = "deltaSNP", 
-            filterThreshold = 0.1, deg = deg, nn = nn) 
+runGprimeAnalysis_GPrime_Smooth <-
+  function (SNPset, windowSize = windowSize, outlierFilter = "deltaSNP",
+            filterThreshold = 0.1, deg = deg, nn = nn)
   {
     message("Counting SNPs in each window...")
     SNPset <- SNPset %>% dplyr::group_by(CHROM) %>% dplyr::mutate(nSNPs = countSNPs_cpp(POS = POS, windowSize = windowSize))
@@ -133,19 +133,19 @@ runGprimeAnalysis_GPrime_Smooth <-
 #' @param POS THe Position vector of where the SNPs were called
 #' @param Stat The G Statistic, however, it is the G~lp(x) for a local regression and likelihood model
 #' @param windowSize Specify the WindowSize
-#' @param deg Degree of Polynomial to use for LocFit Model 
+#' @param deg Degree of Polynomial to use for LocFit Model
 #' @param nn Nearest Neighbor component of smoothing parameter. Default value is 0.7, unless h or adpen are provided, in which case the default is 0
 #' @export tricube_Smooth
 
 
 
 
-tricube_Smooth <- 
-  function (POS, Stat, windowSize, deg, nn) 
+tricube_Smooth <-
+  function (POS, Stat, windowSize, deg, nn)
   {
-    if (windowSize <= 0) 
+    if (windowSize <= 0)
       stop("A positive smoothing window is required")
-    stats::predict(locfit::locfit(Stat ~ locfit::lp(POS, windowSize = windowSize, 
+    stats::predict(locfit::locfit(Stat ~ locfit::lp(POS, windowSize = windowSize,
                                                     deg = deg, nn = nn)), POS)
   }
 
@@ -156,7 +156,7 @@ tricube_Smooth <-
 #' @description Calculates/Returns pvalues
 #' @param Gprime G Prime Statistic
 #' @param deltaSNP Default is NULL
-#' @param outlierFilter Choose outlier filtering method Either deltaSNP or Hampel 
+#' @param outlierFilter Choose outlier filtering method Either deltaSNP or Hampel
 #' @param filterThreshold Choose filter threshold value should be less than 0.5
 #' @export getPvals_MH
 
@@ -166,13 +166,13 @@ getPvals_MH <-
            outlierFilter = c("deltaSNP", "Hampel"),
            filterThreshold)
   {
-    
+
     if (outlierFilter == "deltaSNP") {
-      
+
       if (abs(filterThreshold) >= 0.5) {
         stop("filterThreshold should be less than 0.5")
       }
-      
+
       message("Using deltaSNP-index to filter outlier regions with a threshold of ", filterThreshold)
       trimGprime <- Gprime[abs(deltaSNP) < abs(filterThreshold)]
       #The next line is what I edited from the original getPvals
@@ -181,25 +181,25 @@ getPvals_MH <-
     } else {
       message("Using Hampel's rule to filter outlier regions")
       lnGprime <- log(Gprime)
-      
+
       medianLogGprime <- median(lnGprime)
-      
+
       # calculate left median absolute deviation for the trimmed G' prime set
       MAD <-
         median(medianLogGprime - lnGprime[lnGprime <= medianLogGprime])
-      
+
       # Trim the G prime set to exclude outlier regions (i.e. QTL) using Hampel's rule
       trimGprime <-
         Gprime[lnGprime - median(lnGprime) <= 5.2 * MAD]
     }
-    
+
     medianTrimGprime <- median(trimGprime)
-    
+
     # estimate the mode of the trimmed G' prime set using the half-sample method
     message("Estimating the mode of a trimmed G prime set using the 'modeest' package...")
     modeTrimGprime <-
       modeest::mlv(x = trimGprime, bw = 0.5, method = "hsm")[1]
-    
+
     muE <- log(medianTrimGprime)
     varE <- abs(muE - log(modeTrimGprime))
     #use the log normal distribution to get pvals
@@ -208,19 +208,19 @@ getPvals_MH <-
       1 - plnorm(q = Gprime,
                  meanlog = muE,
                  sdlog = sqrt(varE))
-    
+
     return(pval)
 }
 
 
 #' @title Obs_Allele_Freq
 #' @description Returns a 4 column data frame with Chromosome, Position, and Observed allele frequencies from the High Parent for both bulks
-#' @param  SNPSet A SNPSet generated from the function importFromTable 
+#' @param  SNPSet A SNPSet generated from the function importFromTable
 #' @param size A scalar which optimal value depends on number of SNPs...
 #' @export Obs_Allele_Freq
 
-Obs_Allele_Freq <- 
-  function (SNPSet,size) 
+Obs_Allele_Freq <-
+  function (SNPSet,size)
   {
     frame <- SNPSet %>% dplyr::mutate(LowRef = AD_REF.LOW, HighRef = AD_REF.HIGH, LowAlt = AD_ALT.LOW, HighAlt = AD_ALT.HIGH) %>% dplyr::select(CHROM,POS,DP.LOW,DP.HIGH,LowRef, HighRef, LowAlt, HighAlt,nSNPs)
     message("Graphing GGplot")
@@ -234,13 +234,13 @@ Obs_Allele_Freq <-
 
 #' @title Obs_Allele_Freq2
 #' @description Returns a 4 column data filtering for specific Chromosome and High Bulk Observed Allele Frequencies
-#' @param SNPSet A SNPSet generated from the function importFromTable 
+#' @param SNPSet A SNPSet generated from the function importFromTable
 #' @param ChromosomeValue Input a Specific Chromosome Value
-#' @param threshold Input a Specific Allele Frequency Threshold value from the High Bulk High Parent 
+#' @param threshold Input a Specific Allele Frequency Threshold value from the High Bulk High Parent
 #' @export Obs_Allele_Freq2
 
-Obs_Allele_Freq2 <- 
-  function (SNPSet, ChromosomeValue, threshold) 
+Obs_Allele_Freq2 <-
+  function (SNPSet, ChromosomeValue, threshold)
   {
     frame <- SNPSet %>% dplyr::mutate(LowRef = AD_REF.LOW, HighRef = AD_REF.HIGH, LowAlt = AD_ALT.LOW, HighAlt = AD_ALT.HIGH) %>% select(CHROM,POS,LowRef,HighRef, LowAlt, HighAlt)
     Obs <- seq(from = 1, to = length(frame))
@@ -321,43 +321,43 @@ Obs_Allele_Freq2 <-
 
 
 plotGprimeDist_MH<-
-function (SNPset, outlierFilter = c("deltaSNP", "Hampel"), filterThreshold = 0.1, 
-          binwidth = 0.5) 
+function (SNPset, outlierFilter = c("deltaSNP", "Hampel"), filterThreshold = 0.1,
+          binwidth = 0.5)
 {
   if (outlierFilter == "deltaSNP") {
-    trim_df <- SNPset[abs(SNPset$deltaSNP) < filterThreshold, 
+    trim_df <- SNPset[abs(SNPset$deltaSNP) < filterThreshold,
     ]
     trimGprime <- trim_df$Gprime
   }
   else {
     lnGprime <- log(SNPset$Gprime)
-    MAD <- median(abs(lnGprime[lnGprime <= median(lnGprime)] - 
+    MAD <- median(abs(lnGprime[lnGprime <= median(lnGprime)] -
                         median(lnGprime)))
-    trim_df <- SNPset[lnGprime - median(lnGprime) <= 5.2 * 
+    trim_df <- SNPset[lnGprime - median(lnGprime) <= 5.2 *
                         median(MAD), ]
     trimGprime <- trim_df$Gprime
   }
   medianTrimGprime <- median(trimGprime)
-  modeTrimGprime <- modeest::mlv(x = trimGprime, bw = 0.5, 
+  modeTrimGprime <- modeest::mlv(x = trimGprime, bw = 0.5,
                                  method = "hsm")[[1]]
   muE <- log(medianTrimGprime)
   varE <- abs(muE - log(modeTrimGprime))
   n <- length(trim_df$Gprime)
   bw <- binwidth
-  p <- ggplot2::ggplot(SNPset) + ggplot2::xlim(0, 3*mean(SNPset$Gprime) 
-                                                 ) + ggplot2::xlab("G' value") + ggplot2::geom_histogram(ggplot2::aes(x = Gprime, 
-                                                                                                                       fill = "Raw Data"), binwidth = bw) + ggplot2::geom_histogram(data = trim_df, 
-                                                                                                                                                                                    ggplot2::aes(x = Gprime, fill = "After filtering"), binwidth = bw) + 
-    ggplot2::stat_function(ggplot2::aes(color = "black"), 
+  p <- ggplot2::ggplot(SNPset) + ggplot2::xlim(0, 3*mean(SNPset$Gprime)
+                                                 ) + ggplot2::xlab("G' value") + ggplot2::geom_histogram(ggplot2::aes(x = Gprime,
+                                                                                                                       fill = "Raw Data"), binwidth = bw) + ggplot2::geom_histogram(data = trim_df,
+                                                                                                                                                                                    ggplot2::aes(x = Gprime, fill = "After filtering"), binwidth = bw) +
+    ggplot2::stat_function(ggplot2::aes(color = "black"),
                            size = 1, fun = function(x, mean, sd, n, bw) {
-                             dlnorm(x = x, mean = muE, sd = sqrt(varE)) * 
+                             dlnorm(x = x, mean = muE, sd = sqrt(varE)) *
                                n * bw
-                           }, args = c(mean = muE, sd = sqrt(varE), n = n, bw = bw)) + 
-    ggplot2::scale_fill_discrete(name = "Distribution") + 
-    ggplot2::scale_colour_manual(name = "Null distribution", 
-                                 values = "black", labels = as.expression(bquote(~theta["G'"] ~ 
-                                                                                   " ~ lnN(" * .(round(muE, 2)) * "," * .(round(varE, 
-                                                                                                                                2)) * ")"))) + ggplot2::guides(fill = ggplot2::guide_legend(order = 1, 
+                           }, args = c(mean = muE, sd = sqrt(varE), n = n, bw = bw)) +
+    ggplot2::scale_fill_discrete(name = "Distribution") +
+    ggplot2::scale_colour_manual(name = "Null distribution",
+                                 values = "black", labels = as.expression(bquote(~theta["G'"] ~
+                                                                                   " ~ lnN(" * .(round(muE, 2)) * "," * .(round(varE,
+                                                                                                                                2)) * ")"))) + ggplot2::guides(fill = ggplot2::guide_legend(order = 1,
                                                                                                                                                                                             reverse = TRUE))
   return(p)
 }
@@ -374,7 +374,7 @@ function (SNPset, outlierFilter = c("deltaSNP", "Hampel"), filterThreshold = 0.1
 #' @param ChromosomeValue3 Enter a Integer for a specific chromosome i.e. 1,2,..etc.
 #' @param ChromosomeValue4 Enter a Integer for a specific chromosome i.e. 1,2,..etc.
 #' @param threshold Specify Alternate Allelic Frequency threshold
-#' @return Plots Alternate Allelic Frequency against GPrime value 
+#' @return Plots Alternate Allelic Frequency against GPrime value
 #'   \code{\link[modeest]{mlv}} function from the package modeest. Finally, the
 #' @export obs_MH
 
@@ -382,10 +382,10 @@ function (SNPset, outlierFilter = c("deltaSNP", "Hampel"), filterThreshold = 0.1
 
 
 
-obs_MH<- function(SNPset=NULL, ChromosomeValue1=NULL,ChromosomeValue2=NULL,ChromosomeValue3=NULL,ChromosomeValue4=NULL, threshold=NULL) 
+obs_MH<- function(SNPset=NULL, ChromosomeValue1=NULL,ChromosomeValue2=NULL,ChromosomeValue3=NULL,ChromosomeValue4=NULL, threshold=NULL)
 {
-  frame <- SNPset %>% dplyr::mutate(LowRef = AD_REF.LOW, HighRef = AD_REF.HIGH, 
-                                    LowAlt = AD_ALT.LOW, HighAlt = AD_ALT.HIGH) %>% select(LowRef, 
+  frame <- SNPset %>% dplyr::mutate(LowRef = AD_REF.LOW, HighRef = AD_REF.HIGH,
+                                    LowAlt = AD_ALT.LOW, HighAlt = AD_ALT.HIGH) %>% select(LowRef,
                                                                                            HighRef, LowAlt, HighAlt)
   p1 <- ((frame$LowAlt)/(frame$LowRef + frame$LowAlt))
   p1 <- round(p1, 3)
@@ -394,27 +394,27 @@ obs_MH<- function(SNPset=NULL, ChromosomeValue1=NULL,ChromosomeValue2=NULL,Chrom
   Chrom <- SNPset %>% select(CHROM)
   POS <- SNPset %>% select(POS)
   AD_High1 <- data.frame(SNPset$AD_ALT.HIGH, SNPset$AD_ALT.LOW)
-  AD_High1$AD_High <- paste(AD_High1$SNPset.AD_ALT.HIGH, AD_High1$SNPset.AD_ALT.LOW, 
+  AD_High1$AD_High <- paste(AD_High1$SNPset.AD_ALT.HIGH, AD_High1$SNPset.AD_ALT.LOW,
                             sep = ",")
-  AD_High <- subset(AD_High1, select = -c(SNPset.AD_ALT.HIGH, 
+  AD_High <- subset(AD_High1, select = -c(SNPset.AD_ALT.HIGH,
                                           SNPset.AD_ALT.LOW))
   AD_Low1 <- data.frame(SNPset$AD_REF.HIGH, SNPset$AD_REF.LOW)
-  AD_Low1$AD_Low <- paste(AD_Low1$SNPset.AD_REF.HIGH, AD_Low1$SNPset.AD_REF.LOW, 
+  AD_Low1$AD_Low <- paste(AD_Low1$SNPset.AD_REF.HIGH, AD_Low1$SNPset.AD_REF.LOW,
                           sep = ",")
-  AD_Low <- subset(AD_Low1, select = -c(SNPset.AD_REF.HIGH, 
+  AD_Low <- subset(AD_Low1, select = -c(SNPset.AD_REF.HIGH,
                                         SNPset.AD_REF.LOW))
   Gprime <- SNPset %>% select(Gprime)
   Gprime <- round(Gprime, 3)
   data <- cbind(Chrom, POS, p1, p2, AD_High, AD_Low, Gprime)
   data <- as.data.frame(data)
-  data <- data[(as.matrix(data[1]) == ChromosomeValue1) | (as.matrix(data[1]) == ChromosomeValue2) |  (as.matrix(data[1]) == ChromosomeValue3) |  (as.matrix(data[1]) == ChromosomeValue4), ]  
+  data <- data[(as.matrix(data[1]) == ChromosomeValue1) | (as.matrix(data[1]) == ChromosomeValue2) |  (as.matrix(data[1]) == ChromosomeValue3) |  (as.matrix(data[1]) == ChromosomeValue4), ]
   data <- data[(as.matrix(data[4]) > threshold), ]
   e3<-ggscatter(data, x="p2", y="Gprime",color="CHROM",palette = "npg",ellipse = TRUE,mean.point = TRUE,star.plot = TRUE,ggtheme = theme_minimal())
   e3 + stat_cor(method = "pearson",label.x = 1.2,label.y = -100)
   print(e3)
   e4 <- ggscatterhist(data, x = "p2", y = "Gprime",color = "CHROM", palette = c("#00AFBB","#E7B800","#FC4E07","#E79900"),margin.params = list(fill="CHROM",color = "black",size=0.2))
   print(e4)
-  e5 <- ggscatter(data, x = "p2", y = "Gprime", color = "CHROM", add = "reg.line",conf.int = TRUE,add.params = list(fill="CHROM"),ggtheme = theme_minimal()) 
+  e5 <- ggscatter(data, x = "p2", y = "Gprime", color = "CHROM", add = "reg.line",conf.int = TRUE,add.params = list(fill="CHROM"),ggtheme = theme_minimal())
   e5 <- e5 + stat_cor(method = "pearson",label.x = .5,label.y = 6)
   print(e5)
 }
@@ -434,14 +434,14 @@ obs_MH<- function(SNPset=NULL, ChromosomeValue1=NULL,ChromosomeValue2=NULL,Chrom
 #'   NULL and will plot all chromosomes in the SNPset
 #' @param var character. The paramater for plotting. Must be one of: "nSNPs",
 #'   "deltaSNP", "Gprime", "negLog10Pval" "diff"
-#' @param scaleChroms boolean. if TRUE (default) then chromosome facets will be 
+#' @param scaleChroms boolean. if TRUE (default) then chromosome facets will be
 #'   scaled to relative chromosome sizes. If FALSE all facets will be equal
-#'   sizes. This is basically a convenience argument for setting both scales and 
+#'   sizes. This is basically a convenience argument for setting both scales and
 #'   shape as "free_x" in ggplot2::facet_grid.
 #' @param line boolean. If TRUE will plot line graph. If FALSE will plot points.
 #'   Plotting points will take more time.
 #' @param plotThreshold boolean. Should we plot the False Discovery Rate
-#'   threshold (FDR). Only plots line if var is "Gprime" or "negLogPval". 
+#'   threshold (FDR). Only plots line if var is "Gprime" or "negLogPval".
 #' @param plotIntervals boolean. Whether or not to plot the two-sided Takagi confidence intervals in "deltaSNP" plots.
 #' @param q numeric. The q-value to use as the FDR threshold. If too low, no
 #'   line will be drawn and a warning will be given.
@@ -462,7 +462,7 @@ obs_MH<- function(SNPset=NULL, ChromosomeValue1=NULL,ChromosomeValue2=NULL,Chrom
 #' @export plotQTLStats_MH
 
 
-plotQTLStats_MH <- 
+plotQTLStats_MH <-
   function(SNPset,
            subset = NULL,
            var = "nSNPs",
@@ -472,21 +472,21 @@ plotQTLStats_MH <-
            plotIntervals = FALSE,
            q = 0.05,
            ...) {
-    
+
     #get fdr threshold by ordering snps by pval then getting the last pval
     #with a qval < q
-    
+
     if (!all(subset %in% unique(SNPset$CHROM))) {
       whichnot <-
         paste(subset[base::which(!subset %in% unique(SNPset$CHROM))], collapse = ', ')
       stop(paste0("The following are not true chromosome names: ", whichnot))
     }
-    
+
     if (!var %in% c("nSNPs", "deltaSNP", "Gprime", "negLog10Pval", "diff"))
       stop(
         "Please choose one of the following variables to plot: \"nSNPs\", \"deltaSNP\", \"Gprime\", \"negLog10Pval\", \"diff\""
       )
-    
+
     #don't plot threshold lines in deltaSNPprime or number of SNPs as they are not relevant
     if ((plotThreshold == TRUE &
          var == "deltaSNP") |
@@ -495,30 +495,30 @@ plotQTLStats_MH <-
       plotThreshold <- FALSE
     }
     #if you need to plot threshold get the FDR, but check if there are any values that pass fdr
-    
+
     GprimeT <- 0
     logFdrT <- 0
-    
+
     if (plotThreshold == TRUE) {
       fdrT <- getFDRThreshold(SNPset$pvalue, alpha = q)
-      
+
       if (is.na(fdrT)) {
         warning("The q threshold is too low. No threshold line will be drawn")
         plotThreshold <- FALSE
-        
+
       } else {
         logFdrT <- -log10(fdrT)
         GprimeT <- SNPset[which(SNPset$pvalue == fdrT), "Gprime"]
       }
     }
-    
+
     SNPset <-
       if (is.null(subset)) {
         SNPset
       } else {
         SNPset[SNPset$CHROM %in% subset,]
       }
-    
+
     p <- ggplot2::ggplot(data = SNPset) +
       ggplot2::scale_x_continuous(breaks = seq(from = 0,to = max(SNPset$POS), by = 10^(floor(log10(max(SNPset$POS))))), labels = format_genomic(), name = "Genomic Position (Mb)") +
       ggplot2::theme(plot.margin = ggplot2::margin(
@@ -527,22 +527,22 @@ plotQTLStats_MH <-
         r = 20,
         unit = "pt"
       ))
-    
+
     if (var == "Gprime") {
       threshold <- GprimeT
       p <- p + ggplot2::ylab("G' value")
     }
-    
+
     if (var == "negLog10Pval") {
       threshold <- logFdrT
       p <-
         p + ggplot2::ylab(expression("-" * log[10] * '(p-value)'))
     }
-    
+
     if (var == "nSNPs") {
       p <- p + ggplot2::ylab("Number of SNPs in window")
     }
-    
+
     if (var == "deltaSNP") {
       var <- "tricubeDeltaSNP"
       p <-
@@ -552,13 +552,13 @@ plotQTLStats_MH <-
                             color = "black",
                             alpha = 0.4)
       if (var == "diff"){
-        p <- p + ggplot2::ylab("Difference Between High and Low Bulk Allele Frequencies") 
+        p <- p + ggplot2::ylab("Difference Between High and Low Bulk Allele Frequencies")
       }
       if (plotIntervals == TRUE) {
-        
+
         ints_df <-
           dplyr::select(SNPset, CHROM, POS, dplyr::matches("CI_")) %>% tidyr::gather(key = "Interval", value = "value",-CHROM,-POS)
-        
+
         p <- p + ggplot2::geom_line(data = ints_df, ggplot2::aes(x = POS, y = value, color = Interval)) +
           ggplot2::geom_line(data = ints_df, ggplot2::aes(
             x = POS,
@@ -567,17 +567,17 @@ plotQTLStats_MH <-
           ))
       }
     }
-    
+
     if (line) {
       p <-
         p + ggplot2::geom_line(ggplot2::aes_string(x = "POS", y = var), ...)
     }
-    
+
     if (!line) {
       p <-
         p + ggplot2::geom_point(ggplot2::aes_string(x = "POS", y = var), ...)
     }
-    
+
     if (plotThreshold == TRUE)
       p <-
       p + ggplot2::geom_hline(
@@ -586,14 +586,14 @@ plotQTLStats_MH <-
         size = 1,
         alpha = 0.4
       )
-    
+
     if (scaleChroms == TRUE) {
       p <- p + ggplot2::facet_grid(~ CHROM, scales = "free_x", space = "free_x")
     } else {
-      p <- p + ggplot2::facet_grid(~ CHROM, scales = "free_x")    
+      p <- p + ggplot2::facet_grid(~ CHROM, scales = "free_x")
     }
     p
-    
+
   }
 
 
@@ -610,9 +610,9 @@ plotQTLStats_MH <-
 #'   chromosomes of interest. Defaults to
 #'   NULL and will plot all chromosomes in the SNPset
 #' @param var character. "diff"
-#' @param scaleChroms boolean. if TRUE (default) then chromosome facets will be 
+#' @param scaleChroms boolean. if TRUE (default) then chromosome facets will be
 #'   scaled to relative chromosome sizes. If FALSE all facets will be equal
-#'   sizes. This is basically a convenience argument for setting both scales and 
+#'   sizes. This is basically a convenience argument for setting both scales and
 #'   shape as "free_x" in ggplot2::facet_grid.
 #' @param line boolean. If TRUE will plot line graph. If FALSE will plot points.
 #'   Plotting points will take more time.
@@ -633,35 +633,35 @@ plotQTLStats_MH <-
 #' @export plotQTLStats_MH2
 
 
-plotQTLStats_MH2 <- 
+plotQTLStats_MH2 <-
   function(SNPset,
            subset = NULL,
            var = "diff",
            scaleChroms = TRUE,
            line = TRUE,
            ...) {
-    
+
     #get fdr threshold by ordering snps by pval then getting the last pval
     #with a qval < q
-    
+
     if (!all(subset %in% unique(SNPset$CHROM))) {
       whichnot <-
         paste(subset[base::which(!subset %in% unique(SNPset$CHROM))], collapse = ', ')
       stop(paste0("The following are not true chromosome names: ", whichnot))
     }
-    
+
     if (!var %in% c("diff"))
       stop(
         "Please choose one of the following variable to plot: \"diff\""
       )
-    
+
     SNPset <-
       if (is.null(subset)) {
         SNPset
       } else {
         SNPset[SNPset$CHROM %in% subset,]
       }
-    
+
     p <- ggplot2::ggplot(data = SNPset) +
       ggplot2::scale_x_continuous(breaks = seq(from = 0,to = max(SNPset$POS), by = 10^(floor(log10(max(SNPset$POS))))), labels = format_genomic(), name = "Genomic Position (Mb)") +
       ggplot2::theme(plot.margin = ggplot2::margin(
@@ -670,28 +670,28 @@ plotQTLStats_MH2 <-
         r = 20,
         unit = "pt"
       ))
-    
+
     if (var == "diff"){
-      p <- p + ggplot2::ylab("Difference Between High and Low Bulk Allele Frequencies") 
+      p <- p + ggplot2::ylab("Difference Between High and Low Bulk Allele Frequencies")
     }
-    
+
     if (line) {
       p <-
         p + ggplot2::geom_line(ggplot2::aes_string(x = "POS", y = var), ...)
     }
-    
+
     if (!line) {
       p <- p + ggplot2::geom_point(ggplot2::aes_string(x = "POS", y = var, size = "nSNPs"), ...)
       p
     }
-    
+
     if (scaleChroms == TRUE) {
       p <- p + ggplot2::facet_grid(~ CHROM, scales = "free_x", space = "free_x")
     } else {
-      p <- p + ggplot2::facet_grid(~ CHROM, scales = "free_x")    
+      p <- p + ggplot2::facet_grid(~ CHROM, scales = "free_x")
     }
     p
-    
+
   }
 
 
@@ -700,16 +700,16 @@ plotQTLStats_MH2 <-
 #' @description Returns a Correlation Matrix for info fields AC, DP, DPB, QA, RO, AO and most importantly QUAL
 #' @param vcffile A vcf file
 #' @param chromlist A vector of chromosomes/contigs as specified in VCF file
-#' @param p1 A boolean Value either TRUE or FALSE for plotting Correlation matrix and Correlation Tables 
-#' @param p2 A boolean Value either TRUE or FALSE for plotting Correlation matrix and Correlation Tables  
-#' @param p3 A boolean Value either TRUE or FALSE for plotting Correlation matrix and Correlation Tables 
-#' @param p4 A boolean Value either TRUE or FALSE for plotting Correlation matrix and Correlation Tables 
-#' @param p5 A boolean Value either TRUE or FALSE 
+#' @param p1 A boolean Value either TRUE or FALSE for plotting Correlation matrix and Correlation Tables
+#' @param p2 A boolean Value either TRUE or FALSE for plotting Correlation matrix and Correlation Tables
+#' @param p3 A boolean Value either TRUE or FALSE for plotting Correlation matrix and Correlation Tables
+#' @param p4 A boolean Value either TRUE or FALSE for plotting Correlation matrix and Correlation Tables
+#' @param p5 A boolean Value either TRUE or FALSE
 #' @export Correlation
 
 
-Correlation <- 
-  function (vcffile = NULL, chromlist = NULL,p1 = NULL, p2 = NULL, p3 = NULL, p4 = NULL,p5=TRUE) 
+Correlation <-
+  function (vcffile = NULL, chromlist = NULL,p1 = NULL, p2 = NULL, p3 = NULL, p4 = NULL,p5=TRUE)
   {
 vcf <- read.vcfR(file = file)
 vcf <- vcfR2tidy(vcf)
@@ -719,20 +719,20 @@ SNPset <- vcf
 SNPset <- Map(as.data.frame, SNPset)
 SNPset <- rbindlist(SNPset, fill = TRUE)
     if (!is.null(chromlist)) {
-      message("Preparing Data for Quality Control Plotting: ", 
-              paste(unique(SNPset$CHROM)[!unique(SNPset$CHROM) %in% 
+      message("Preparing Data for Quality Control Plotting: ",
+              paste(unique(SNPset$CHROM)[!unique(SNPset$CHROM) %in%
                                            chromlist], collapse = ", "))
       SNPset <- SNPset[SNPset$CHROM %in% chromlist,]
       message("Finishing Chromosome Subset")
 }
-    
+
 message("Factoring Chromosome Variable According to Unique Specification")
 SNPset$CHROM <- factor(SNPset$CHROM, levels = gtools::mixedsort(unique(SNPset$CHROM)))
-    
+
 message("Selecting Variable Subset")
 SNPset <- SNPset %>% select(QUAL,AC,DP,DPB,QA,RO,AO)
 SNPset <- as.data.frame(sapply(SNPset, as.numeric))
-message("Mutating SNPS set creating nSNPs variable")                                                                                     
+message("Mutating SNPS set creating nSNPs variable")
 p1 <- p1
   if (p1 == TRUE){
     t2 <- cor(SNPset)
@@ -740,7 +740,7 @@ p1 <- p1
 }else if (p1 == FALSE){
         print("Do not plot cor(SNPset)")
 }
-p2 <- p2 
+p2 <- p2
   if (p2 == TRUE){
     t3 <- rcorr(as.matrix(SNPset))
       print(t3)
@@ -767,11 +767,125 @@ p5 <- p5
      heatmap(t2,col=col,symm=TRUE)
 }else if (p5 == FALSE){
   print("Do not plot heatmap")
-}  
+}
     message("Returning completed Data frame as a SNPSet")
     return(as.data.frame(SNPset))
 }
 
 
+#' Plots Gprime distribution
+#'
+#' Plots a ggplot histogram of the distribution of Gprime with a log normal
+#' distribution overlay
+#'
+#' @param SNPset a data frame with SNPs and genotype fields as imported by
+#'   \code{ImportFromGATK} and after running \code{GetPrimeStats}
+#' @param outlierFilter one of either "deltaSNP" or "Hampel". Method for
+#'   filtering outlier (ie QTL) regions for p-value estimation
+#' @param filterThreshold The absolute delta SNP index to use to filter out
+#'   putative QTL (default = 0.1)
+#' @param binwidth The binwidth for the histogram. Recomended and default = 0.5
+#'
+#' @return Plots a ggplot histogram of the G' value distribution. The raw data
+#'   as well as the filtered G' values (excluding putatitve QTL) are plotted. It
+#'   will then overlay an estimated log normal distribution with the same mean
+#'   and variance as the null G' distribution. This will allow to verify if
+#'   after filtering your G' value appear to be close to log normally and thus
+#'   can be used to estimate p-values using the non-parametric estimation method
+#'   described in Magwene et al. (2011). Breifly, using the natural log of
+#'   Gprime a median absolute deviation (MAD) is calculated. The Gprime set is
+#'   trimmed to exclude outlier regions (i.e. QTL) based on Hampel's rule. An
+#'   estimation of the mode of the trimmed set is calculated using the
+#'   \code{\link[modeest]{mlv}} function from the package modeest. Finally, the
+#'   mean and variance of the set are estimated using the median and mode are
+#'   estimated and used to plot the log normal distribution.
+#'
+#'
+#' @seealso \code{\link{getPvals}} for how p-values are calculated.
+#' @export plotGprimeDist_MH
+
+
+plotGprimeDist_MH <-
+  function(SNPset,
+           outlierFilter = c("deltaSNP", "Hampel"),
+           filterThreshold = 0.1,
+           binwidth = 0.5)
+  {
+    if (outlierFilter == "deltaSNP") {
+      trim_df <- SNPset[abs(SNPset$deltaSNP) < filterThreshold, ]
+      trimGprime <- trim_df$Gprime
+    } else {
+      # Non-parametric estimation of the null distribution of G'
+
+      lnGprime <- log(SNPset$Gprime)
+
+      # calculate left median absolute deviation for the trimmed G' prime set
+      MAD <-
+        median(abs(lnGprime[lnGprime <= median(lnGprime)] - median(lnGprime)))
+
+      # Trim the G prime set to exclude outlier regions (i.e. QTL) using Hampel's rule
+      trim_df <-
+        SNPset[lnGprime - median(lnGprime) <= 5.2 * median(MAD),]
+      trimGprime <- trim_df$Gprime
+    }
+    medianTrimGprime <- median(trimGprime)
+
+    # estimate the mode of the trimmed G' prime set using the half-sample method
+    modeTrimGprime <-
+      modeest::mlv(x = trimGprime, bw = 0.5, method = "hsm")[[1]]
+
+    muE <- log(medianTrimGprime)
+    varE <- abs(muE - log(modeTrimGprime))
+
+    n <- length(trim_df$Gprime)
+    bw <- binwidth
+
+    #plot Gprime distrubtion
+    p <- ggplot2::ggplot(SNPset) +
+      ggplot2::xlim(0, 30) +
+      ggplot2::xlab("G' value") +
+      ggplot2::geom_histogram(ggplot2::aes(x = Gprime, fill = "Raw Data"), binwidth = bw) +
+      ggplot2::geom_histogram(data = trim_df,
+                              ggplot2::aes(x = Gprime, fill = "After filtering"),
+                              binwidth = bw) +
+      ggplot2::stat_function(
+        ggplot2::aes(color = "black"),
+        size = 1,
+        fun = function(x, mean, sd, n, bw) {
+          dlnorm(x = x,
+                 mean = muE,
+                 sd = sqrt(varE)) * n * bw
+        },
+        args = c(
+          mean = muE,
+          sd = sqrt(varE),
+          n = n,
+          bw = bw
+        )
+      ) +
+
+      # ggplot2::stat_function(
+      #     fun = dlnorm * n,
+      #     size = 1,
+      #     args = c(meanlog = muE, sdlog = sqrt(varE)),
+      # ggplot2::aes(
+      #     color = paste0(
+      #         "Null distribution \n G' ~ lnN(",
+      #         round(muE, 2),
+      #         ",",
+      #         round(varE, 2),
+    #         ")"
+    #     )
+    #     )
+    # ) +
+    ggplot2::scale_fill_discrete(name = "Distribution") +
+      ggplot2::scale_colour_manual(name = "Null distribution" , values = "black", labels = as.expression(bquote(~theta["G'"]~" ~ lnN("*.(round(muE, 2))*","*.(round(varE, 2))*")")))  +
+      ggplot2::guides(fill = ggplot2::guide_legend(order = 1, reverse = TRUE))
+
+    #ggplot2::annotate(x = 10, y = 0.325, geom="text",
+    #    label = paste0("G' ~ lnN(", round(muE, 2), ",",round(varE, 2), ")"),
+    #    color = "blue")
+    return(p)
+  }
 
 
