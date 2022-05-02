@@ -287,11 +287,11 @@ importFromVCF <- function(file,
   vcf <- vcfR::read.vcfR(file = file)
 
 
-  message("Keeping SNPs that pass all filters Either PASS or .")
+  message("Keeping SNPs that pass all filters Either PASS or No Filter")
   if (filter == TRUE){
   vcf <- vcf[vcf@fix[, "FILTER"] == "PASS"]
   } else if (filter == FALSE) {
-  vcf <- vcf[vcf@fix[, "FILTER"] == "."]
+  vcf <- vcf
   }
 
   fix <- dplyr::as_tibble(vcf@fix[, c("CHROM", "POS", "REF", "ALT")]) %>% mutate(Key = seq(1:nrow(.)))
