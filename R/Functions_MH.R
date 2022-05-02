@@ -888,17 +888,16 @@ plotGprimeDist_MH <-
     return(p)
   }
 
-#' @title importFromVCF_MH
+#' @title ImportFromVCF_MH
 #' @param file vcf file
 #' @param highBulk Highbulk name
 #' @param lowBulk LowBulk name
 #' @param chromList chromosome list
 #' @param filename Provide prefix to file name always ends in .CSV
 #' @return Returns a data frame
-#' @export importFromVCF_MH
+#' @export ImportFromVCF_MH
 
-## not exported still only works for GATK...
-importFromVCF_MH <- function(file,
+ImportFromVCF_MH <- function(file,
                           highBulk = character(),
                           lowBulk = character(),
                           chromList = NULL,
