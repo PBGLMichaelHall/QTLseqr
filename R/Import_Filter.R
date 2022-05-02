@@ -281,12 +281,19 @@ importFromVCF <- function(file,
                           highBulk = character(),
                           lowBulk = character(),
                           chromList = NULL,
-                          filename = NULL) {
+                          filename = NULL,
+                          filter = NULL) {
 
   vcf <- vcfR::read.vcfR(file = file)
-  message("Keeping SNPs that pass all filters Either PASS or .")
 
+
+  message("Keeping SNPs that pass all filters Either PASS or .")
+  if (filter == TRUE){
   vcf <- vcf[vcf@fix[, "FILTER"] == "PASS"]
+  } else {
+  vcf <- vcf[vcf@fix[, "FILTER"] == "."]
+  }
+
   fix <- dplyr::as_tibble(vcf@fix[, c("CHROM", "POS", "REF", "ALT")]) %>% mutate(Key = seq(1:nrow(.)))
 
   tidy_gt <- extract_gt_tidy(vcf, format_fields = c("AD", "DP", "GQ"), gt_column_prepend = "", alleles = FALSE)
@@ -502,3 +509,6 @@ filterSNPs <- function(SNPset,
     }
     return(as.data.frame(SNPset))
 }
+
+
+
