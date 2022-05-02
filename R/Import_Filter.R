@@ -284,9 +284,10 @@ importFromVCF <- function(file,
                           filename = NULL) {
 
   vcf <- vcfR::read.vcfR(file = file)
-  message("Keeping SNPs that pass all filters")
+  message("Keeping SNPs that pass all filters Either PASS or .")
 
   vcf <- vcf[vcf@fix[, "FILTER"] == "PASS"]
+  vcf <- vcf[vcf@fix[, "FILTER"] == "."]
   fix <- dplyr::as_tibble(vcf@fix[, c("CHROM", "POS", "REF", "ALT")]) %>% mutate(Key = seq(1:nrow(.)))
 
   tidy_gt <- extract_gt_tidy(vcf, format_fields = c("AD", "DP", "GQ"), gt_column_prepend = "", alleles = FALSE)
