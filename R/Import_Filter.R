@@ -272,6 +272,7 @@ importFromTable <-
 #' @param highBulk Highbulk name
 #' @param lowBulk LowBulk name
 #' @param chromList chromosome list
+#' @param filter Boolean Value True or False. TRUE if you want to filter by "PASS", FALSE you want no filter
 #' @param filename Provide prefix to file name always ends in .CSV
 #' @return Returns a data frame
 #' @export importFromVCF
