@@ -9,3 +9,5 @@ calculation tests.xlsx
 README.Rmd
 temp
 vignettes/*.pdf
+freebayes_D2_filtered.vcf
+HALLTN9.csv

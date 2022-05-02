@@ -511,5 +511,5 @@ filterSNPs <- function(SNPset,
     return(as.data.frame(SNPset))
 }
 
-
-
+install.packages("kableExtra")
+library(kableExtra)
