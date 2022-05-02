@@ -888,7 +888,7 @@ plotGprimeDist_MH <-
     return(p)
   }
 
-#' @title importFromVCF
+#' @title importFromVCF_MH
 #' @param file vcf file
 #' @param highBulk Highbulk name
 #' @param lowBulk LowBulk name
