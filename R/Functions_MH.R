@@ -895,7 +895,7 @@ plotGprimeDist_MH <-
 #' @param chromList chromosome list
 #' @param filename Provide prefix to file name always ends in .CSV
 #' @return Returns a data frame
-#' @export importFromVCF
+#' @export importFromVCF_MH
 
 ## not exported still only works for GATK...
 importFromVCF_MH <- function(file,
