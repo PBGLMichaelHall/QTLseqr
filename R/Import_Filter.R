@@ -290,7 +290,7 @@ importFromVCF <- function(file,
   message("Keeping SNPs that pass all filters Either PASS or .")
   if (filter == TRUE){
   vcf <- vcf[vcf@fix[, "FILTER"] == "PASS"]
-  } else {
+  } else if (filter == FALSE) {
   vcf <- vcf[vcf@fix[, "FILTER"] == "."]
   }
 
