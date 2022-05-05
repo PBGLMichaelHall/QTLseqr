@@ -35,60 +35,60 @@ importFromGATK <- function(file,
     highBulk = character(),
     lowBulk = character(),
     chromList = NULL) {
-    
+
     # first read one line to help define col types
     colheader <- read.delim(file, nrows=1, check.names=FALSE)
-    
+
     # identify the sample name specific int and chr columns
     int_matches <- grep('DP|GQ', names(colheader), value=TRUE)
     chr_matches <- grep('\\.AD', names(colheader), value=TRUE)
-    
+
     # create cols_spec class definitions
     int_cols <- do.call(readr::cols, setNames(
-        rep(list(readr::col_integer()), length(int_matches)), 
+        rep(list(readr::col_integer()), length(int_matches)),
         int_matches))$cols
-    
+
     chr_cols <- do.call(readr::cols, setNames(
-        rep(list(readr::col_character()), length(chr_matches)), 
+        rep(list(readr::col_character()), length(chr_matches)),
         chr_matches))$cols
-    
+
     col_defs <- readr::cols(CHROM = "c", POS = "i")
     col_defs$cols <- c(readr::cols(CHROM = "c", POS = "i")$cols,
                        int_cols,
                        chr_cols
     )
-    
-    SNPset <- readr::read_tsv(file = file, 
-                              col_names = TRUE, 
+
+    SNPset <- readr::read_tsv(file = file,
+                              col_names = TRUE,
                               guess_max = 10000,
                               col_types = col_defs)
-    
+
     if (!all(
         c(
-        "CHROM", 
-        "POS", 
-        paste0(highBulk, ".AD"), 
-        paste0(lowBulk, ".AD"), 
-        paste0(highBulk, ".DP"), 
+        "CHROM",
+        "POS",
+        paste0(highBulk, ".AD"),
+        paste0(lowBulk, ".AD"),
+        paste0(highBulk, ".DP"),
         paste0(lowBulk, ".DP")
         ) %in% names(SNPset))) {
         stop("One of the required fields is missing. Check your table file.")
     }
-    
+
 # rename columns based on bulk names and flip headers (ie HIGH.AD -> AD.HIGH to match the rest of the functions
-    colnames(SNPset)[!colnames(SNPset) %in% c("CHROM", "POS", "REF", "ALT")] <- 
-        gsub(pattern = highBulk, 
-             replacement = "HIGH", 
+    colnames(SNPset)[!colnames(SNPset) %in% c("CHROM", "POS", "REF", "ALT")] <-
+        gsub(pattern = highBulk,
+             replacement = "HIGH",
              x = colnames(SNPset)[!colnames(SNPset) %in% c("CHROM", "POS", "REF", "ALT")])
-    colnames(SNPset)[!colnames(SNPset) %in% c("CHROM", "POS", "REF", "ALT")] <- 
-        gsub(pattern = lowBulk, 
-             replacement = "LOW", 
+    colnames(SNPset)[!colnames(SNPset) %in% c("CHROM", "POS", "REF", "ALT")] <-
+        gsub(pattern = lowBulk,
+             replacement = "LOW",
              x = colnames(SNPset)[!colnames(SNPset) %in% c("CHROM", "POS", "REF", "ALT")])
-    
+
     colnames(SNPset) <-
         sapply(strsplit(colnames(SNPset), "[.]"),
             function(x) {paste0(rev(x),collapse = '.')})
-    
+
     #Keep only wanted chromosomes
     if (!is.null(chromList)) {
         message("Removing the following chromosomes: ", paste(unique(SNPset$CHROM)[!unique(SNPset$CHROM) %in% chromList], collapse = ", "))
@@ -97,7 +97,7 @@ importFromGATK <- function(file,
     #arrange the chromosomes by natural order sort, eg Chr1, Chr10, Chr2 >>> Chr1, Chr2, Chr10
     SNPset$CHROM <-
         factor(SNPset$CHROM, levels = gtools::mixedsort(unique(SNPset$CHROM)))
-    
+
     SNPset <- SNPset %>%
         tidyr::separate(
             col = AD.LOW,
@@ -131,7 +131,7 @@ importFromGATK <- function(file,
             dplyr::contains("HIGH"),
             dplyr::everything()
         )
-    
+
     return(as.data.frame(SNPset))
 }
 
@@ -189,36 +189,36 @@ importFromTable <-
         if (!"CHROM" %in% names(SNPset)) {
             stop("No 'CHROM' coloumn found.")
         }
-        
+
         # check POS
         if (!"POS" %in% names(SNPset)) {
             stop("No 'POS' coloumn found.")
         }
-        
+
         # check AD_REF.HIGH
         if (!paste0("AD_REF.", highBulk) %in% names(SNPset)) {
             stop(
                 "No High Bulk AD_REF coloumn found. Column should be named 'AD_REF.highBulkName'."
             )
         }
-        
+
         # check AD_REF.LOW
         if (!paste0("AD_REF.", lowBulk) %in% names(SNPset)) {
             stop("No Low Bulk AD_REF coloumn found. Column should be named 'AD_REF.lowBulkName'.")
         }
-        
+
         #check AD_ALT.HIGH
         if (!paste0("AD_ALT.", highBulk) %in% names(SNPset)) {
             stop(
                 "No High Bulk AD_REF coloumn found. Column should be named 'AD_ALT.highBulkName'."
             )
         }
-        
+
         # check AD_ALT.LOW
         if (!paste0("AD_ALT.", lowBulk) %in% names(SNPset)) {
             stop("No Low Bulk AD_ALT coloumn found. Column should be named 'AD_ALT.lowBulkName'.")
         }
-        
+
         # Keep only wanted chromosomes
         if (!is.null(chromList)) {
             message("Removing the following chromosomes: ",
@@ -228,7 +228,7 @@ importFromTable <-
         # arrange the chromosomes by natural order sort, eg Chr1, Chr10, Chr2 >>> Chr1, Chr2, Chr10
         SNPset$CHROM <-
             factor(SNPset$CHROM, levels = gtools::mixedsort(unique(SNPset$CHROM)))
-        
+
         # Rename columns
         message("Renaming the following columns: ",
                 paste(colnames(SNPset)[!colnames(SNPset) %in% c("CHROM", "POS", "REF", "ALT")][grep(highBulk, x = colnames(SNPset)[!colnames(SNPset) %in% c("CHROM", "POS", "REF", "ALT")])], collapse = ", "))
@@ -236,14 +236,14 @@ importFromTable <-
             gsub(pattern = highBulk,
                  replacement = "HIGH",
                  x = colnames(SNPset)[!colnames(SNPset) %in% c("CHROM", "POS", "REF", "ALT")])
-        
+
         message("Renaming the following columns: ",
                 paste(colnames(SNPset)[!colnames(SNPset) %in% c("CHROM", "POS", "REF", "ALT")][grep(lowBulk, x = colnames(SNPset)[!colnames(SNPset) %in% c("CHROM", "POS", "REF", "ALT")])], collapse = ", "))
         colnames(SNPset)[!colnames(SNPset) %in% c("CHROM", "POS", "REF", "ALT")] <-
             gsub(pattern = lowBulk,
                  replacement = "LOW",
                  x = colnames(SNPset)[!colnames(SNPset) %in% c("CHROM", "POS", "REF", "ALT")])
-        
+
         # calculate DPs
         SNPset <- SNPset %>%
             dplyr::mutate(
@@ -262,7 +262,7 @@ importFromTable <-
                 dplyr::contains("HIGH"),
                 dplyr::everything()
             )
-        
+
         return(as.data.frame(SNPset))
     }
 
@@ -272,6 +272,8 @@ importFromTable <-
 #' @param highBulk Highbulk name
 #' @param lowBulk LowBulk name
 #' @param chromList chromosome list
+#' @param filter Boolean Value True or False. TRUE if you want to filter by "PASS", FALSE you want no filter
+#' @param filename Provide prefix to file name always ends in .CSV
 #' @return Returns a data frame
 #' @export importFromVCF
 
@@ -280,31 +282,38 @@ importFromVCF <- function(file,
                           highBulk = character(),
                           lowBulk = character(),
                           chromList = NULL,
-                          filename = NULL) {
-    
+                          filename = NULL,
+                          filter = NULL) {
+
   vcf <- vcfR::read.vcfR(file = file)
-  message("Keeping SNPs that pass all filters")
-  
+
+
+  message("Keeping SNPs that pass all filters Either PASS or No Filter")
+  if (filter == TRUE){
   vcf <- vcf[vcf@fix[, "FILTER"] == "PASS"]
+  } else if (filter == FALSE) {
+  vcf <- vcf
+  }
+
   fix <- dplyr::as_tibble(vcf@fix[, c("CHROM", "POS", "REF", "ALT")]) %>% mutate(Key = seq(1:nrow(.)))
-  
+
   tidy_gt <- extract_gt_tidy(vcf, format_fields = c("AD", "DP", "GQ"), gt_column_prepend = "", alleles = FALSE)
-  
-  SNPset <- tidy_gt %>% dplyr::filter(Indiv == lowBulk) %>% select(-Indiv) %>% dplyr::left_join(dplyr::select(dplyr::filter(tidy_gt, Indiv == highBulk), -Indiv), by = "Key", suffix = c(".LOW", ".HIGH")) 
-  SNPset <- SNPset %>% tidyr::separate(col = "AD.LOW", into = c("AD_REF.LOW", "AD_ALT.LOW"), sep = ",", extra = "merge", convert = TRUE) 
-  SNPset <- SNPset %>% tidyr::separate(col = "AD.HIGH", into = c("AD_REF.HIGH", "AD_ALT.HIGH"), sep = ",", extra = "merge", convert = TRUE) 
+
+  SNPset <- tidy_gt %>% dplyr::filter(Indiv == lowBulk) %>% select(-Indiv) %>% dplyr::left_join(dplyr::select(dplyr::filter(tidy_gt, Indiv == highBulk), -Indiv), by = "Key", suffix = c(".LOW", ".HIGH"))
+  SNPset <- SNPset %>% tidyr::separate(col = "AD.LOW", into = c("AD_REF.LOW", "AD_ALT.LOW"), sep = ",", extra = "merge", convert = TRUE)
+  SNPset <- SNPset %>% tidyr::separate(col = "AD.HIGH", into = c("AD_REF.HIGH", "AD_ALT.HIGH"), sep = ",", extra = "merge", convert = TRUE)
   SNPset <- SNPset %>% dplyr::full_join(x = fix, by = "Key") %>% dplyr::mutate(AD_ALT.HIGH = DP.HIGH - AD_REF.HIGH, AD_ALT.LOW = DP.LOW - AD_REF.LOW, SNPindex.HIGH = AD_ALT.HIGH/DP.HIGH, SNPindex.LOW = AD_ALT.LOW/DP.LOW, REF_FRQ = (AD_REF.HIGH + AD_REF.LOW)/(DP.HIGH + DP.LOW), deltaSNP = SNPindex.HIGH - SNPindex.LOW) %>% select(-Key)
   names(SNPset)[5] <- paste0("AD_REF.",lowBulk)
   names(SNPset)[6] <- paste0("AD_ALT.",lowBulk)
   names(SNPset)[9] <- paste0("AD_REF.",highBulk)
   names(SNPset)[10] <- paste0("AD_ALT.",highBulk)
   if (!is.null(chromList)) {
-    message("Removing the following chromosomes: ", paste(unique(SNPset$CHROM)[!unique(SNPset$CHROM) %in% 
+    message("Removing the following chromosomes: ", paste(unique(SNPset$CHROM)[!unique(SNPset$CHROM) %in%
                                                                                  chromList], collapse = ", "))
     SNPset <- SNPset[SNPset$CHROM %in% chromList, ]
   }
   write.table(SNPset, file = paste0(filename,".csv"), row.names = FALSE, col.names = TRUE, sep = ",")
-  
+
 }
 
 
@@ -359,10 +368,10 @@ filterSNPs <- function(SNPset,
     depthDifference,
     minGQ,
     verbose = TRUE) {
-    
+
     org_count <- nrow(SNPset)
     count <- nrow(SNPset)
-    
+
     # Filter by total reference allele frequency
     if (!missing(refAlleleFreq)) {
         if (verbose) {
@@ -380,9 +389,9 @@ filterSNPs <- function(SNPset,
         }
         count <- nrow(SNPset)
     }
-    
+
     #Total read depth filtering
-    
+
     if (!missing(filterAroundMedianDepth)) {
         # filter by Read depth for each SNP FilterByMAD MADs around the median
         madDP <-
@@ -404,9 +413,9 @@ filterSNPs <- function(SNPset,
             " MADs arround the median: ", minDP, " <= Total DP <= ", maxDP)
             message("...Filtered ", count - nrow(SNPset), " SNPs")}
         count <- nrow(SNPset)
-        
+
     }
-    
+
     if (!missing(minTotalDepth)) {
         # Filter by minimum total SNP depth
         if (verbose) {
@@ -421,7 +430,7 @@ filterSNPs <- function(SNPset,
         }
         count <- nrow(SNPset)
     }
-    
+
     if (!missing(maxTotalDepth)) {
         # Filter by maximum total SNP depth
         if (verbose) {
@@ -435,8 +444,8 @@ filterSNPs <- function(SNPset,
         }
         count <- nrow(SNPset)
     }
-    
-    
+
+
     # Filter by min read depth in either sample
     if (!missing(minSampleDepth)) {
         if (verbose) {
@@ -451,7 +460,7 @@ filterSNPs <- function(SNPset,
         }
         count <- nrow(SNPset)
     }
-    
+
     # Filter by Genotype Quality
     if (!missing(minGQ)) {
         if (all(c("GQ.LOW", "GQ.HIGH") %in% names(SNPset))) {
@@ -463,12 +472,12 @@ filterSNPs <- function(SNPset,
         if (verbose) {
             message("...Filtered ", count - nrow(SNPset), " SNPs")
         }
-        count <- nrow(SNPset)} 
+        count <- nrow(SNPset)}
         else {
             message("GQ columns not found. Skipping...")
         }
     }
-    
+
     # Filter by difference between high and low bulks
     if (!missing(depthDifference)) {
         if (verbose) {
@@ -482,7 +491,7 @@ filterSNPs <- function(SNPset,
         }
         count <- nrow(SNPset)
     }
-    
+
     # #Filter SNP Clusters
     # if (!is.null(SNPsInCluster) & !is.null(ClusterWin)) {
     #     tmp <- which(diff(SNPset$POS, SNPsInCluster-1) < ClusterWin)
@@ -501,3 +510,6 @@ filterSNPs <- function(SNPset,
     }
     return(as.data.frame(SNPset))
 }
+
+install.packages("kableExtra")
+library(kableExtra)
