@@ -8,7 +8,8 @@ importFromVCF(
   file,
   highBulk = character(),
   lowBulk = character(),
-  chromList = NULL
+  chromList = NULL,
+  filename = NULL
 )
 }
 \arguments{

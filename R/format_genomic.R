@@ -1,3 +1,8 @@
+#' @name format_geonomic
+#' @title format_genomic
+#' @description You need this
+#' @export format_genomic
+
 format_genomic <- function(...) {
       # Format a vector of numeric values according
       # to the International System of Units.
