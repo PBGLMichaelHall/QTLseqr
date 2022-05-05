@@ -888,5 +888,48 @@ plotGprimeDist_MH <-
     return(p)
   }
 
+#' @title Facet_Allelic_Chrom
+#' @description Provides a plot of allelic depths from Low and High Bulk
+#' @param SNPset A vcf file that has been imported and filtered and processed through GPrimeAnalysis
+#' @param subset A subset of chromosomes
+#' @param var1 AD_ALT.LOW
+#' @param var2 AD_ALT.HIGH
+#' @param scaleChroms Do you want a facet grid plot per chromosome
+#' @param line True or False do you want a line or point plot
+#' @export Facet_Allelic_Chrom
 
-
+Facet_Allelic_Chrom <- function(SNPset, subset = NULL, var1 = "AD_ALT.LOW",var2="AD_ALT.HIGH", scaleChroms = TRUE, line = TRUE) {
+  if (!all(subset %in% unique(SNPset$CHROM))) {
+    whichnot <- paste(subset[base::which(!subset %in% unique(SNPset$CHROM))], 
+                      collapse = ", ")
+    stop(paste0("The following are not true chromosome names: ", whichnot))
+  }
+  if (!var1 %in% c("AD_ALT.LOW"))
+    stop("Please choose one of the following variables to plot: \"AD_ALT.LOW\"")
+  if(!var2 %in% c("AD_ALT.HIGH"))
+    stop("Please choose one of the following variables to plot: \"AD_ALT.HIGH\"")
+  
+  SNPset <- if (is.null(subset)) {
+    SNPset
+  }
+  else {
+    SNPset[SNPset$CHROM %in% subset, ]
+  }
+  p <- ggplot2::ggplot(data = SNPset) + ggplot2::scale_x_continuous(breaks = seq(from = 0, to = max(SNPset$POS), by = 10^(floor(log10(max(SNPset$POS))))), labels = format_genomic(), name = "Genomic Position (Mb)") + ggplot2::theme(plot.margin = ggplot2::margin(b = 10,l = 20, r = 20, unit = "pt"))
+  
+  p <- p + ggplot2::ylab("High and Low Allelic Depths")
+  
+  if (line) {
+    p <- p + ggplot2::geom_line(ggplot2::aes_string(x = "POS", y ="AD_ALT.LOW"),color="pink") + ggplot2::geom_line(ggplot2::aes_string(x = "POS", y = "AD_ALT.HIGH"),color="blue")
+  }
+  if (!line) {
+    p <- p + ggplot2::geom_point(ggplot2::aes_string(x = "POS", y ="AD_ALT.LOW"),color="pink") + ggplot2::geom_point(ggplot2::aes_string(x = "POS", y = "AD_ALT.HIGH"),color="blue") 
+  }
+  if (scaleChroms == TRUE) {
+    p <- p + ggplot2::facet_grid(~CHROM, scales = "free_x", space = "free_x")
+  }
+  else {
+    p <- p + ggplot2::facet_grid(~CHROM, scales = "free_x")
+  }
+  p
+}
