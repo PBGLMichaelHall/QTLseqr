@@ -27,7 +27,7 @@ obs_MH(
 \item{threshold}{Specify Alternate Allelic Frequency threshold}
 }
 \value{
-Plots Alternate Allelic Frequency against GPrime value 
+Plots Alternate Allelic Frequency against GPrime value
   \code{\link[modeest]{mlv}} function from the package modeest. Finally, the
 }
 \description{

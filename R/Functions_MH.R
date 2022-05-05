@@ -888,14 +888,21 @@ plotGprimeDist_MH <-
     return(p)
   }
 
+
+
+
+
+
+
+
 #' @title Facet_Allelic_Chrom
-#' @description Provides a plot of allelic depths from Low and High Bulk
-#' @param SNPset A vcf file that has been imported and filtered and processed through GPrimeAnalysis
-#' @param subset A subset of chromosomes
-#' @param var1 AD_ALT.LOW
-#' @param var2 AD_ALT.HIGH
-#' @param scaleChroms Do you want a facet grid plot per chromosome
-#' @param line True or False do you want a line or point plot
+#' @description Provides plot of Alterante allelic depths for High and Low Bulk, sorry no sliding window.
+#' @param SNPset A vcf file that has been imported by ImportVCF, filtered by SNPfilter, and run
+#' @param subset A Chromosome subset
+#' @param var1 This is a variable that you cannot change, it must be AD_ALT.LOW
+#' @param var2 This is a variable that you cannot change, it must be AD_ALT.HIGH
+#' @param scaleChroms TRUE or FASLE do you want plots on each Chromosome or NOT
+#' @param line TRUE or FALSE do you want a line graph or just points
 #' @export Facet_Allelic_Chrom
 
 Facet_Allelic_Chrom <- function(SNPset, subset = NULL, var1 = "AD_ALT.LOW",var2="AD_ALT.HIGH", scaleChroms = TRUE, line = TRUE) {
@@ -933,3 +940,4 @@ Facet_Allelic_Chrom <- function(SNPset, subset = NULL, var1 = "AD_ALT.LOW",var2=
   }
   p
 }
+
