@@ -941,6 +941,7 @@ Facet_Allelic_Chrom <- function(SNPset, subset = NULL, var1 = "AD_ALT.LOW",var2=
   print(p)
   data <- SNPset %>% dplyr::select(CHROM, POS, AD_ALT.LOW, AD_ALT.HIGH)
   data <- as.data.frame(data)
+  data <- data[order(data$AD_ALT.HIGH,decreasing = T),]
   return(data)
 }
 
