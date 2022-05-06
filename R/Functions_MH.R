@@ -928,19 +928,23 @@ Facet_Allelic_Chrom <- function(SNPset, subset = NULL, var = "Allelicfreq", scal
   SNPset <- as.data.frame(SNPset)
   SNPset <- SNPset[(as.matrix(SNPset[5]) > threshold), ]
   
-  SNPset %>% dplyr::mutate(LowRef = AD_REF.LOW, HighRef = AD_REF.HIGH, LowAlt = AD_ALT.LOW, HighAlt = AD_ALT.HIGH) %>% dplyr::select(CHROM, POS, DP.LOW, DP.HIGH, LowRef, HighRef, LowAlt, HighAlt, nSNPs)
+  # Mutate Snpset
   
+  SNPset <- SNPset %>% dplyr::mutate(LowRef = AD_REF.LOW, HighRef = AD_REF.HIGH, LowAlt = AD_ALT.LOW, HighAlt = AD_ALT.HIGH) %>% dplyr::select(CHROM, POS, DP.LOW, DP.HIGH, LowRef, HighRef, LowAlt, HighAlt, nSNPs)
+  SNPset <- SNPset %>% mutate(LowAlt = as.numeric(LowAlt), DP.LOW = as.numeric(DP.LOW),HighAlt = as.numeric(HighAlt), DP.HIGH = as.numeric(DP.HIGH))
+  SNPset <- SNPset %>% mutate(LowFreq = LowAlt/DP.LOW, HighFreq = HighAlt/DP.HIGH)
   
+  # Plotting
   
   p <- ggplot2::ggplot(data = SNPset) + ggplot2::scale_x_continuous(breaks = seq(from = 0, to = max(SNPset$POS), by = 10^(floor(log10(max(SNPset$POS))))), labels = format_genomic(), name = "Genomic Position (Mb)") + ggplot2::theme(plot.margin = ggplot2::margin(b = 10,l = 20, r = 20, unit = "pt"))
   
   p <- p + ggplot2::ylab("High and Low Bulk Allelic Frequencies")
   
   if (line) {
-    p <- p + ggplot2::geom_line(ggplot2::aes_string(x = "POS", y = "LowAlt"/"DP.LOW"), color="orange") + ggplot2::geom_line(ggplot2::aes_string(x = "POS", y = "HighAlt"/"DP.HIGH" ),color="blue") 
+    p <- p + ggplot2::geom_line(ggplot2::aes_string(x = "POS", y = "LowFreq"), color="orange") + ggplot2::geom_line(ggplot2::aes_string(x = "POS", y = "HighFreq" ),color="blue") 
   }
   if (!line) {
-    p <- p + ggplot2::geom_point(ggplot2::aes_string(x = "POS", y = "LowAlt"/"DP.LOW"), color="orange") + ggplot2::geom_smooth(ggplot2::aes_string(x = "POS", y = "HighAlt"/"DP.HIGH"),se = T, method = 'loess', show.legend = TRUE) + ggplot2::geom_point(ggplot2::aes_string(x = "POS", y = "LowAlt"/"DP.LOW" ),color="blue") + ggplot2::geom_smooth(ggplot2::aes_string(x = "POS", y = "LowAlt"/"DP.LOW"),se = T, method = 'loess', show.legend = TRUE)
+    p <- p + ggplot2::geom_point(ggplot2::aes_string(x = "POS", y = "LowFreq"), color="orange") + ggplot2::geom_smooth(ggplot2::aes_string(x = "POS", y = "LowFreq"),se = T, method = 'loess', show.legend = TRUE) + ggplot2::geom_point(ggplot2::aes_string(x = "POS", y = "HighFreq"),color="blue") + ggplot2::geom_smooth(ggplot2::aes_string(x = "POS", y = "HighFreq"),se = T, method = 'loess', show.legend = TRUE)
   }
   if (scaleChroms == TRUE) {
     p <- p + ggplot2::facet_grid(~CHROM, scales = "free_x", space = "free_x")
