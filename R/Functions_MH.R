@@ -924,7 +924,7 @@ Facet_Allelic_Chrom <- function(SNPset, subset = NULL, var = "Allelicfreq", scal
   
   # FIlter for high G' values
   
-  SNPset <- SNPset %>% dplyr::select(CHROM, POS, AD_ALT.LOW, AD_ALT.HIGH,Gprime)
+  SNPset <- SNPset %>% dplyr::select(CHROM, POS, AD_ALT.LOW, AD_ALT.HIGH,Gprime,AD_REF.LOW,AD_REF.HIGH,DP.LOW,DP.HIGH,nSNPs)
   SNPset <- as.data.frame(SNPset)
   SNPset <- SNPset[order(SNPset$AD_ALT.HIGH,decreasing = T),]
   SNPset <- SNPset[(as.matrix(SNPset[5]) > threshold), ]
