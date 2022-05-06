@@ -903,7 +903,8 @@ plotGprimeDist_MH <-
 #' @param var This is a variable that you cannot change, it must be defined as Allelicfreq
 #' @param scaleChroms TRUE or FASLE do you want plots on each Chromosome or NOT
 #' @param line TRUE or FALSE do you want a line graph or just points
-#' @param threshold Gprime Statistic cut off value
+#' @param thresholdGprime Gprime Statistic cut off value
+#' @param thresholdHighAlternateFrequency High Bulk Alternative Allele Frequency
 #' @export Facet_Allelic_Chrom
 
 Facet_Allelic_Chrom <- function(SNPset, subset = NULL, var = "Allelicfreq", scaleChroms = TRUE, line = TRUE, threshold = NULL) {
@@ -926,13 +927,15 @@ Facet_Allelic_Chrom <- function(SNPset, subset = NULL, var = "Allelicfreq", scal
   
   SNPset <- SNPset %>% dplyr::select(CHROM, POS, AD_ALT.LOW, AD_ALT.HIGH,Gprime,AD_REF.LOW,AD_REF.HIGH,DP.LOW,DP.HIGH,nSNPs)
   SNPset <- as.data.frame(SNPset)
-  SNPset <- SNPset[(as.matrix(SNPset[5]) > threshold), ]
+  SNPset <- SNPset[(as.matrix(SNPset[5]) > thresholdGprime), ]
+
   
   # Mutate Snpset
   
   SNPset <- SNPset %>% dplyr::mutate(LowRef = AD_REF.LOW, HighRef = AD_REF.HIGH, LowAlt = AD_ALT.LOW, HighAlt = AD_ALT.HIGH) %>% dplyr::select(CHROM, POS, DP.LOW, DP.HIGH, LowRef, HighRef, LowAlt, HighAlt, nSNPs)
   SNPset <- SNPset %>% mutate(LowAlt = as.numeric(LowAlt), DP.LOW = as.numeric(DP.LOW),HighAlt = as.numeric(HighAlt), DP.HIGH = as.numeric(DP.HIGH))
   SNPset <- SNPset %>% mutate(LowFreq = LowAlt/DP.LOW, HighFreq = HighAlt/DP.HIGH)
+  SNPset <- SNPset[(as.matrix(SNPset[11]) > thresholdHighAlternateFrequency), ]
   
   # Plotting
   
