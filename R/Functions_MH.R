@@ -907,7 +907,7 @@ plotGprimeDist_MH <-
 #' @param thresholdHighAlternateFrequency High Bulk Alternative Allele Frequency
 #' @export Facet_Allelic_Chrom
 
-Facet_Allelic_Chrom <- function(SNPset, subset = NULL, var = "Allelicfreq", scaleChroms = TRUE, line = TRUE, threshold = NULL) {
+Facet_Allelic_Chrom <- function(SNPset, subset = NULL, var = "Allelicfreq", scaleChroms = TRUE, line = TRUE, thresholdGprime = NULL, thresholdHighAlternateFrequency = NULL) {
   if (!all(subset %in% unique(SNPset$CHROM))) {
     whichnot <- paste(subset[base::which(!subset %in% unique(SNPset$CHROM))], 
                       collapse = ", ")
