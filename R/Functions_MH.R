@@ -926,7 +926,7 @@ Facet_Allelic_Chrom <- function(SNPset, subset = NULL, var = "Allelicfreq", scal
   
   SNPset <- SNPset %>% dplyr::select(CHROM, POS, AD_ALT.LOW, AD_ALT.HIGH,Gprime)
   SNPset <- as.data.frame(SNPset)
-  SNPset <- SNPset[order(data$AD_ALT.HIGH,decreasing = T),]
+  SNPset <- SNPset[order(SNPset$AD_ALT.HIGH,decreasing = T),]
   SNPset <- SNPset[(as.matrix(SNPset[5]) > threshold), ]
   
   SNPSet %>% dplyr::mutate(LowRef = AD_REF.LOW, HighRef = AD_REF.HIGH, LowAlt = AD_ALT.LOW, HighAlt = AD_ALT.HIGH) %>% dplyr::select(CHROM, POS, DP.LOW, DP.HIGH, LowRef, HighRef, LowAlt, HighAlt, nSNPs)
