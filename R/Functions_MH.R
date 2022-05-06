@@ -926,7 +926,6 @@ Facet_Allelic_Chrom <- function(SNPset, subset = NULL, var = "Allelicfreq", scal
   
   SNPset <- SNPset %>% dplyr::select(CHROM, POS, AD_ALT.LOW, AD_ALT.HIGH,Gprime,AD_REF.LOW,AD_REF.HIGH,DP.LOW,DP.HIGH,nSNPs)
   SNPset <- as.data.frame(SNPset)
-  SNPset <- SNPset[order(SNPset$AD_ALT.HIGH,decreasing = T),]
   SNPset <- SNPset[(as.matrix(SNPset[5]) > threshold), ]
   
   SNPset %>% dplyr::mutate(LowRef = AD_REF.LOW, HighRef = AD_REF.HIGH, LowAlt = AD_ALT.LOW, HighAlt = AD_ALT.HIGH) %>% dplyr::select(CHROM, POS, DP.LOW, DP.HIGH, LowRef, HighRef, LowAlt, HighAlt, nSNPs)
@@ -938,10 +937,10 @@ Facet_Allelic_Chrom <- function(SNPset, subset = NULL, var = "Allelicfreq", scal
   p <- p + ggplot2::ylab("High and Low Bulk Allelic Frequencies")
   
   if (line) {
-    p <- p + ggplot2::geom_line(ggplot2::aes_string(x = "POS", y = LowAlt/DP.LOW), color="orange") + ggplot2::geom_line(ggplot2::aes_string(x = "POS", y = HighAlt/DP.HIGH ),color="blue") 
+    p <- p + ggplot2::geom_line(ggplot2::aes_string(x = "POS", y = "LowAlt"/"DP.LOW"), color="orange") + ggplot2::geom_line(ggplot2::aes_string(x = "POS", y = "HighAlt"/"DP.HIGH" ),color="blue") 
   }
   if (!line) {
-    p <- p + ggplot2::geom_point(ggplot2::aes_string(x = "POS", y = LowAlt/DP.LOW), color="orange") + ggplot2::geom_smooth(ggplot2::aes_string(x = "POS", y = HighAlt/DP.HIGH),se = T, method = 'loess', show.legend = TRUE) + ggplot2::geom_point(ggplot2::aes_string(x = "POS", y =LowAlt/DP.LOW ),color="blue") + ggplot2::geom_smooth(ggplot2::aes_string(x = "POS", y = LowAlt/DP.LOW),se = T, method = 'loess', show.legend = TRUE)
+    p <- p + ggplot2::geom_point(ggplot2::aes_string(x = "POS", y = "LowAlt"/"DP.LOW"), color="orange") + ggplot2::geom_smooth(ggplot2::aes_string(x = "POS", y = "HighAlt"/"DP.HIGH"),se = T, method = 'loess', show.legend = TRUE) + ggplot2::geom_point(ggplot2::aes_string(x = "POS", y = "LowAlt"/"DP.LOW" ),color="blue") + ggplot2::geom_smooth(ggplot2::aes_string(x = "POS", y = "LowAlt"/"DP.LOW"),se = T, method = 'loess', show.legend = TRUE)
   }
   if (scaleChroms == TRUE) {
     p <- p + ggplot2::facet_grid(~CHROM, scales = "free_x", space = "free_x")
