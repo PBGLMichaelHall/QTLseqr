@@ -279,6 +279,7 @@ Obs_Allele_Freq2 <-
     e1 <- ggplot(data = data, aes(x = SNP_Observations, y = p2)) + geom_point(aes(color = factor(CHROM))) + ggrepel::geom_label_repel(aes(label = as.character(POS))) + theme_bw() + labs(x = "SNP", y = "Allele Frequency", title = "High Bulk Observed High Parent Allele Frequency")
     print(e1)
     return(data)
+    
   }
 
 
@@ -899,22 +900,20 @@ plotGprimeDist_MH <-
 #' @description Provides plot of Alterante allelic depths for High and Low Bulk, sorry no sliding window.
 #' @param SNPset A vcf file that has been imported by ImportVCF, filtered by SNPfilter, and run
 #' @param subset A Chromosome subset
-#' @param var1 This is a variable that you cannot change, it must be AD_ALT.LOW
-#' @param var2 This is a variable that you cannot change, it must be AD_ALT.HIGH
+#' @param var This is a variable that you cannot change, it must be defined as Allelicfreq
 #' @param scaleChroms TRUE or FASLE do you want plots on each Chromosome or NOT
 #' @param line TRUE or FALSE do you want a line graph or just points
+#' @param threshold Gprime Statistic cut off value
 #' @export Facet_Allelic_Chrom
 
-Facet_Allelic_Chrom <- function(SNPset, subset = NULL, var1 = "AD_ALT.LOW",var2="AD_ALT.HIGH", scaleChroms = TRUE, line = TRUE) {
+Facet_Allelic_Chrom <- function(SNPset, subset = NULL, var = "Allelicfreq", scaleChroms = TRUE, line = TRUE, threshold = NULL) {
   if (!all(subset %in% unique(SNPset$CHROM))) {
     whichnot <- paste(subset[base::which(!subset %in% unique(SNPset$CHROM))], 
                       collapse = ", ")
     stop(paste0("The following are not true chromosome names: ", whichnot))
   }
-  if (!var1 %in% c("AD_ALT.LOW"))
-    stop("Please choose one of the following variables to plot: \"AD_ALT.LOW\"")
-  if(!var2 %in% c("AD_ALT.HIGH"))
-    stop("Please choose one of the following variables to plot: \"AD_ALT.HIGH\"")
+  if (!var %in% c("Allelicfreq"))
+    stop("Please choose one of the following variables to plot: \"Allelicfreq\"")
   
   SNPset <- if (is.null(subset)) {
     SNPset
@@ -922,15 +921,27 @@ Facet_Allelic_Chrom <- function(SNPset, subset = NULL, var1 = "AD_ALT.LOW",var2=
   else {
     SNPset[SNPset$CHROM %in% subset, ]
   }
+  
+  # FIlter for high G' values
+  
+  SNPset <- SNPset %>% dplyr::select(CHROM, POS, AD_ALT.LOW, AD_ALT.HIGH,Gprime)
+  SNPset <- as.data.frame(data)
+  SNPset <- data[order(data$AD_ALT.HIGH,decreasing = T),]
+  SNPset <- data[(as.matrix(data[5]) > threshold), ]
+  
+  SNPSet %>% dplyr::mutate(LowRef = AD_REF.LOW, HighRef = AD_REF.HIGH, LowAlt = AD_ALT.LOW, HighAlt = AD_ALT.HIGH) %>% dplyr::select(CHROM, POS, DP.LOW, DP.HIGH, LowRef, HighRef, LowAlt, HighAlt, nSNPs)
+  
+  
+  
   p <- ggplot2::ggplot(data = SNPset) + ggplot2::scale_x_continuous(breaks = seq(from = 0, to = max(SNPset$POS), by = 10^(floor(log10(max(SNPset$POS))))), labels = format_genomic(), name = "Genomic Position (Mb)") + ggplot2::theme(plot.margin = ggplot2::margin(b = 10,l = 20, r = 20, unit = "pt"))
   
-  p <- p + ggplot2::ylab("High and Low Allelic Depths")
+  p <- p + ggplot2::ylab("High and Low Bulk Allelic Frequencies")
   
   if (line) {
-    p <- p + ggplot2::geom_line(ggplot2::aes_string(x = "POS", y ="AD_ALT.LOW"),color="pink") + ggplot2::geom_line(ggplot2::aes_string(x = "POS", y = "AD_ALT.HIGH"),color="blue") 
+    p <- p + ggplot2::geom_line(ggplot2::aes_string(x = "POS", y = LowAlt/DP.LOW), color="orange") + ggplot2::geom_line(ggplot2::aes_string(x = "POS", y = HighAlt/DP.HIGH ),color="blue") 
   }
   if (!line) {
-    p <- p + ggplot2::geom_point(ggplot2::aes_string(x = "POS", y ="AD_ALT.LOW"),color="pink") + ggplot2::geom_smooth(ggplot2::aes_string(x = "POS", y = "AD_ALT.LOW"),se = T, method = 'loess', show.legend = TRUE) + ggplot2::geom_point(ggplot2::aes_string(x = "POS", y = "AD_ALT.HIGH"),color="blue") + ggplot2::geom_smooth(ggplot2::aes_string(x = "POS", y = "AD_ALT.HIGH"),se = T, method = 'loess', show.legend = TRUE)
+    p <- p + ggplot2::geom_point(ggplot2::aes_string(x = "POS", y = LowAlt/DP.LOW), color="orange") + ggplot2::geom_smooth(ggplot2::aes_string(x = "POS", y = HighAlt/DP.HIGH),se = T, method = 'loess', show.legend = TRUE) + ggplot2::geom_point(ggplot2::aes_string(x = "POS", y =LowAlt/DP.LOW ),color="blue") + ggplot2::geom_smooth(ggplot2::aes_string(x = "POS", y = LowAlt/DP.LOW),se = T, method = 'loess', show.legend = TRUE)
   }
   if (scaleChroms == TRUE) {
     p <- p + ggplot2::facet_grid(~CHROM, scales = "free_x", space = "free_x")
@@ -939,9 +950,7 @@ Facet_Allelic_Chrom <- function(SNPset, subset = NULL, var1 = "AD_ALT.LOW",var2=
     p <- p + ggplot2::facet_grid(~CHROM, scales = "free_x")
   }
   print(p)
-  data <- SNPset %>% dplyr::select(CHROM, POS, AD_ALT.LOW, AD_ALT.HIGH)
-  data <- as.data.frame(data)
-  data <- data[order(data$AD_ALT.HIGH,decreasing = T),]
-  return(data)
+  
+  return(SNPset)
 }
 
