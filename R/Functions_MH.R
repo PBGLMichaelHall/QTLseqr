@@ -927,7 +927,7 @@ Facet_Allelic_Chrom <- function(SNPset, subset = NULL, var1 = "AD_ALT.LOW",var2=
   p <- p + ggplot2::ylab("High and Low Allelic Depths")
   
   if (line) {
-    p <- p + ggplot2::geom_line(ggplot2::aes_string(x = "POS", y ="AD_ALT.LOW"),color="pink") + ggplot2::geom_line(ggplot2::aes_string(x = "POS", y = "AD_ALT.HIGH"),color="blue") + ggplot2::geom_smooth(se = T, method = 'loess', show.legend = TRUE)
+    p <- p + ggplot2::geom_line(ggplot2::aes_string(x = "POS", y ="AD_ALT.LOW"),color="pink") + ggplot2::geom_line(ggplot2::aes_string(x = "POS", y = "AD_ALT.HIGH"),color="blue") 
   }
   if (!line) {
     p <- p + ggplot2::geom_point(ggplot2::aes_string(x = "POS", y ="AD_ALT.LOW"),color="pink") + ggplot2::geom_smooth(ggplot2::aes_string(x = "POS", y = "AD_ALT.LOW"),se = T, method = 'loess', show.legend = TRUE) + ggplot2::geom_point(ggplot2::aes_string(x = "POS", y = "AD_ALT.HIGH"),color="blue") + ggplot2::geom_smooth(ggplot2::aes_string(x = "POS", y = "AD_ALT.HIGH"),se = T, method = 'loess', show.legend = TRUE)
