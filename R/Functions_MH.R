@@ -939,5 +939,8 @@ Facet_Allelic_Chrom <- function(SNPset, subset = NULL, var1 = "AD_ALT.LOW",var2=
     p <- p + ggplot2::facet_grid(~CHROM, scales = "free_x")
   }
   p
+  data <- SNPset %>% dplyr::select(CHROM, POS, AD_ALT.LOW, AD_ALT.HIGH)
+  data <- as.data.frame(data)
+  return(data)
 }
 
