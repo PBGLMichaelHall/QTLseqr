@@ -1103,6 +1103,7 @@ ChromQual <-
       message("Plotting Number of SNPs per Chromosome with loess smoothing curve")
       jpeg(file = "plot8.jpeg")
       hist(SNPset$nSNPs) 
+      dev.off() 
       p <- hist(SNPset$nSNPs, col = "blue")
       print(p)
     }
