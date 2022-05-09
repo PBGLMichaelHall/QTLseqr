@@ -981,10 +981,7 @@ Facet_Allelic_Chrom <- function(SNPset, subset = NULL, var = "Allelicfreq", scal
 
 
 ChromQual <- 
-  function (vcf, chromlist = NULL, windowSize = 1e+06, scalar = NULL, 
-            ncol = NULL, HighLimQuality = NULL, Chromname= NULL,binwidth1 = NULL, binwidth2 = NULL, 
-            DPBINS = 10, p1 = NULL, p2 = NULL, p3 = NULL, p4 = NULL, 
-            p5 = NULL, p6 = NULL) 
+  function (vcf, chromlist = NULL, windowSize = 1e+06, scalar = NULL, ncol = NULL, HighLimQuality = NULL, Chromname= NULL,binwidth1 = NULL, binwidth2 = NULL, p1 = NULL, p2 = NULL, p3 = NULL, p4 = NULL, p5 = NULL, p6 = NULL, p7 = NULL) 
   {
     message("Reading vcf file in with read.vcfR")
     vcf <- read.vcfR(file = vcf)
