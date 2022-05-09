@@ -975,13 +975,14 @@ Facet_Allelic_Chrom <- function(SNPset, subset = NULL, var = "Allelicfreq", scal
 #' @param p5 TRUE or FALSE to plot or not to plot
 #' @param p6 TRUE or FALSE Boolean Argument, to plot or not to plot that is the question
 #' @param p7 TRUE or FALSE to plot or not
+#' @param p8 TRUE or FALSE to plot or not
 #' @return Several ggplots
 #' @examples ChromQuality(vcf = "General.vcf", chromlist = c("Chr1", "Chr2")), windowSize = 1e+06, scalar = 0.1, ncol = 2,HighLimQuality = 6000,  binwidth1 = 100, binwidth2 =1, DPBINS=10, p1=TRUE, p2=FALSE, p3=TRUE, p4=TRUE, p5=FALSE, p6=TRUE)
 #' @export ChromQual
 
 
 ChromQual <- 
-  function (vcf, chromlist = NULL, windowSize = 1e+06, scalar = NULL, ncol = NULL, HighLimQuality = NULL, Chromname= NULL,binwidth1 = NULL, binwidth2 = NULL, p1 = NULL, p2 = NULL, p3 = NULL, p4 = NULL, p5 = NULL, p6 = NULL, p7 = NULL) 
+  function (vcf, chromlist = NULL, windowSize = 1e+06, scalar = NULL, ncol = NULL, HighLimQuality = NULL, Chromname= NULL,binwidth1 = NULL, binwidth2 = NULL, p1 = NULL, p2 = NULL, p3 = NULL, p4 = NULL, p5 = NULL, p6 = NULL, p7 = NULL, p8 = TRUE) 
   {
     message("Reading vcf file in with read.vcfR")
     vcf <- read.vcfR(file = vcf)
@@ -1082,7 +1083,7 @@ ChromQual <-
       print(p)
     }
     
-    SNPset <- SNPset %>% mutate(QUAL = scale(POS), DP = scale(DP))
+    SNPset <- SNPset %>% mutate(QUAL = scale(QUAL), DP = scale(DP))
     
     p7 <- p7
     if (p7 == TRUE) {
@@ -1097,7 +1098,7 @@ ChromQual <-
       print("Do not plot Superpostion of Quality Scores and Number of SNPs")
     }
     
-    p7 <- p8
+    p8 <- p8
     if (p8 == TRUE) {
       message("Plotting Number of SNPs per Chromosome with loess smoothing curve")
       jpeg(file = "plot8.jpeg")
