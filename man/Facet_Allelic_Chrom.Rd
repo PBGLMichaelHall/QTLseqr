@@ -7,10 +7,11 @@
 Facet_Allelic_Chrom(
   SNPset,
   subset = NULL,
-  var1 = "AD_ALT.LOW",
-  var2 = "AD_ALT.HIGH",
+  var = "Allelicfreq",
   scaleChroms = TRUE,
-  line = TRUE
+  line = TRUE,
+  thresholdGprime = NULL,
+  thresholdHighAlternateFrequency = NULL
 )
 }
 \arguments{
@@ -18,13 +19,15 @@ Facet_Allelic_Chrom(
 
 \item{subset}{A Chromosome subset}
 
-\item{var1}{This is a variable that you cannot change, it must be AD_ALT.LOW}
-
-\item{var2}{This is a variable that you cannot change, it must be AD_ALT.HIGH}
+\item{var}{This is a variable that you cannot change, it must be defined as Allelicfreq}
 
 \item{scaleChroms}{TRUE or FASLE do you want plots on each Chromosome or NOT}
 
 \item{line}{TRUE or FALSE do you want a line graph or just points}
+
+\item{thresholdGprime}{Gprime Statistic cut off value}
+
+\item{thresholdHighAlternateFrequency}{High Bulk Alternative Allele Frequency}
 }
 \description{
 Provides plot of Alterante allelic depths for High and Low Bulk, sorry no sliding window.
