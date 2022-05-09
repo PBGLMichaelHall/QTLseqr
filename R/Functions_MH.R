@@ -1016,8 +1016,8 @@ ChromQual <-
       message("Plotting Quality Scores")
       breaks <- seq(round(min(SNPset$QUAL) - 1, 0), round(max(SNPset$QUAL) + 100, 0), binwidth1)
       jpeg(file="plot1.jpeg")
-      hist(x = SNPset$QUAL, breaks = breaks, col = "green", xlab = "Quality Scores", main = "Histogram of SNP Quality Scores")
-      dev.off()
+      hist(x = SNPset$QUAL, breaks = breaks, col = "green",frequency = TRUE, xlab = "Quality Scores", main = "Histogram of SNP Quality Scores")
+      dev.off() 
     }
     else if (p1 == FALSE) {
       print("Do not plot Histogram of Quality Score")
@@ -1043,7 +1043,7 @@ ChromQual <-
       message("Plotting Quality Scores with Superimposed loess smoothing curve")
       jpeg(file="plot3.jpeg")
       SNPset <- as.data.frame(SNPset)
-      SNPset <- SNPset %>% filter(CHROM == Chromname)
+      SNPset <- SNPset %>% dplyr::filter(CHROM == Chromname)
       loessMod10 <- loess(QUAL ~ index, data = SNPset, span=0.10)
       loessMod25 <- loess(QUAL ~ index, data = SNPset, span=0.25)
       loessMod50 <- loess(QUAL ~ index, data = SNPset, span=0.50)
@@ -1093,5 +1093,4 @@ ChromQual <-
       print("Do not plot Histogram of Depth Reads")
     }
     message("Returning completed Data frame as a SNPSet")
-    return(as.data.frame(SNPset))
   }
