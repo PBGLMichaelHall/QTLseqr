@@ -1006,10 +1006,9 @@ ChromQual <-
     message("Factoring Chromosome Variable According to Unique Specification")
     SNPset$CHROM <- factor(SNPset$CHROM, levels = gtools::mixedsort(unique(SNPset$CHROM)))
     message("Selecting Variable Subset")
-    SNPset <- SNPset %>% select(CHROM, POS, QUAL, DP)
+    SNPset <- SNPset %>% dplyr::select(CHROM, POS, QUAL, DP)
     message("Mutating SNPS set creating nSNPs variable")
-    SNPset <- SNPset %>% dplyr::group_by(CHROM) %>% dplyr::mutate(nSNPs = countSNPs_cpp(POS = POS, 
-                                                                                        windowSize = windowSize)) %>% filter(QUAL >= HighLimQuality)
+    SNPset <- SNPset %>% dplyr::group_by(CHROM) %>% dplyr::mutate(nSNPs = countSNPs_cpp(POS = POS, windowSize = windowSize)) %>% dplyr::filter(QUAL >= HighLimQuality)
     
     par(mfrow = c(1, 1))
     p1 <- p1
