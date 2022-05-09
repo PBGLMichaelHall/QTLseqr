@@ -1082,6 +1082,8 @@ ChromQual <-
       print(p)
     }
     
+    SNPset <- SNPset %>% mutate(QUAL = scale(POS), DP = scale(DP))
+    
     p7 <- p7
     if (p7 == TRUE) {
       message("Plotting Number of SNPs per Chromosome with loess smoothing curve")
@@ -1092,6 +1094,18 @@ ChromQual <-
       print(p)
     }
     else if (p7 == FALSE) {
+      print("Do not plot Superpostion of Quality Scores and Number of SNPs")
+    }
+    
+    p7 <- p8
+    if (p8 == TRUE) {
+      message("Plotting Number of SNPs per Chromosome with loess smoothing curve")
+      jpeg(file = "plot8.jpeg")
+      hist(SNPset$nSNPs) 
+      p <- hist(SNPset$nSNPs, color = "blue")
+      print(p)
+    }
+    else if (p8 == FALSE) {
       print("Do not plot Superpostion of Quality Scores and Number of SNPs")
     }
   }
