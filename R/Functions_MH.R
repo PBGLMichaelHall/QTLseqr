@@ -1014,11 +1014,9 @@ ChromQual <-
     p1 <- p1
     if (p1 == TRUE) {
       message("Plotting Quality Scores")
-      breaks <- seq(round(min(SNPset$QUAL) - 1, 0), round(max(SNPset$QUAL) + 
-                                                            100, 0), binwidth1)
+      breaks <- seq(round(min(SNPset$QUAL) - 1, 0), round(max(SNPset$QUAL) + 100, 0), binwidth1)
       jpeg(file="plot1.jpeg")
-      hist(x = SNPset$QUAL, breaks = breaks, col = "green", 
-           frequency = TRUE, xlab = "Quality Scores", main = "Histogram of SNP Quality Scores")
+      hist(x = SNPset$QUAL, breaks = breaks, col = "green", xlab = "Quality Scores", main = "Histogram of SNP Quality Scores")
       dev.off()
     }
     else if (p1 == FALSE) {
