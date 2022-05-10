@@ -979,7 +979,7 @@ Facet_Allelic_Chrom <- function(SNPset, subset = NULL, var = "Allelicfreq", scal
 
 
 ChromQual <- 
-  function (vcf, chromlist = NULL, windowSize = 1e+06, scalar = NULL, ncol = NULL, HighLimQuality = NULL, Chromname= NULL,binwidth1 = NULL, binwidth2 = NULL, p1 = NULL, p2 = NULL, p3 = NULL, p4 = NULL, p5 = NULL, p6 = NULL, p7 = NULL, p8 = TRUE) 
+  function (vcf, chromlist = NULL, windowSize = 1e+06, scalar = NULL, ncol = NULL, HighLimQuality = NULL, Chromname= NULL,p1 = NULL, p2 = NULL, p3 = NULL, p4 = NULL, p5 = NULL, p6 = NULL, p7 = NULL) 
   {
     message("Reading vcf file in with read.vcfR")
     vcf <- read.vcfR(file = vcf)
@@ -1014,7 +1014,8 @@ ChromQual <-
       breaks <- pretty(range(SNPset$QUAL), n = nclass.Sturges(SNPset$QUAL), min.n = 1)
       p <- ggplot(SNPset, aes(QUAL)) + ggplot2::geom_histogram(color = 1, fill = "lightblue", breaks = breaks) + theme_classic() + ggtitle("Sturges Method Histogram of SNP Quality")
       print(p)
-      p1 <- ggplot(SNPset, aes(QUAL)) + ggplot2::geom_histogram(color = 1, fill = "lightblue", breaks = breaks) + ggplot2::facet_wrap(~CHROM, ncol = ncol) + theme_classic()
+      p1 <- ggplot(SNPset, aes(QUAL)) + ggplot2::geom_histogram(color = 1, fill = "lightblue", breaks = breaks) + ggplot2::facet_wrap(~CHROM, ncol = ncol) + theme_classic() + ggplot2::ggtitle("Quality Histogram")
+      print(p1)
     }
     else if (p1 == FALSE) {
       print("Do not plot Histogram of Quality Score")
@@ -1024,7 +1025,7 @@ ChromQual <-
     if (p2 == TRUE) {
       message("Plotting Number of SNPs per Chromosome with loess smoothing curve")
      
-      p<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = nSNPs), color = "lightblue") + facet_wrap(~CHROM, ncol = ncol) + theme_bw() + labs(x = "Position on Chromosome", y = "Counts of nSNPs and Scaled Quality Scores", color = "Legend") + scale_color_manual(values = colors)
+      p<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = nSNPs), color = "lightblue") + facet_wrap(~CHROM, ncol = ncol) + theme_bw() + labs(x = "Position on Chromosome", y = "nSNPs", color = "Legend")
       print(p)
     }
     else if (p2 == FALSE) {
@@ -1038,7 +1039,7 @@ ChromQual <-
       p3 <- ggplot(SNPset, aes(nSNPs)) + ggplot2::geom_histogram(color = 1, fill = "lightblue", breaks = breaks) + theme_classic() + ggtitle("Sturges Method Histogram of nSNPs")
       print(p3)
       
-      p<-ggplot(data = SNPset, aes(x = nSNPs)) + geom_histogram(color = 1 ,fill = "lightblue", breaks = breaks) + ggplot2::facet_wrap(~CHROM, ncol = ncol) + theme_classic()
+      p<-ggplot(data = SNPset, aes(x = nSNPs)) + geom_histogram(color = 1 ,fill = "lightblue", breaks = breaks) + ggplot2::facet_wrap(~CHROM, ncol = ncol) + theme_classic() + ggplot2::ggtitle("nSNPs")
       print(p)
     }
     else if (p3 == FALSE) {
@@ -1048,12 +1049,12 @@ ChromQual <-
     if (p4 == TRUE) {
       message("Plotting Depth")
       breaks <- pretty(range(SNPset$DP), n = nclass.Sturges(SNPset$DP), min.n = 1)
-      ggplot(data = SNPset, aes(x = DP)) + ggplot2::geom_histogram(color = 1, fill = "lightblue", breaks = breaks) + theme_classic() + ggtitle("Sturges Method Histogram of Depth")
-      
-      ggplot(data = SNPset, aes(x = DP)) + geom_histogram(color = 1, fill = "lightblue", breaks = breaks) + facet_wrap(~CHROM, ncol = ncol) + theme_classic()
-      
-      ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = DP), color = "lightblue") + facet_wrap(~CHROM, ncol = ncol) + theme_classic()
-      
+      p1<-ggplot(data = SNPset, aes(x = DP)) + ggplot2::geom_histogram(color = 1, fill = "lightblue", breaks = breaks) + theme_classic() + ggtitle("Sturges Method Histogram of Depth")
+      print(p1)
+      p2<-ggplot(data = SNPset, aes(x = DP)) + geom_histogram(color = 1, fill = "lightblue", breaks = breaks) + facet_wrap(~CHROM, ncol = ncol) + theme_classic() + ggtitle("DP")
+      print(p2)
+      p3<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = DP), color = "lightblue") + facet_wrap(~CHROM, ncol = ncol) + theme_classic() + ggtitle("DP")
+      print(p3)
     }
     else if (p4 == FALSE) {
       print("Do not plot Histogram of Depth Reads")
@@ -1072,11 +1073,15 @@ ChromQual <-
     p6 <- p6
     if (p6 == TRUE){
       message("Plotting ggridges object")
-      ggplot(data = SNPset, aes(x = QUAL, y = CHROM)) + ggridges::geom_density_ridges2() + theme_ridges() 
-      ggplot(data = SNPset, aes(x = POS, y = CHROM)) + ggridges::geom_density_ridges2() + theme_ridges() 
-      ggplot(data = SNPset, aes(x = DP, y = CHROM)) + ggridges::geom_density_ridges2() + theme_ridges() 
-      ggplot(data = SNPset, aes(x = nSNPs, y = CHROM)) + ggridges::geom_density_ridges2() + theme_ridges() 
-    }
+      p1<-ggplot(data = SNPset, aes(x = QUAL, y = CHROM)) + ggridges::geom_density_ridges2() + theme_ridges() 
+      print(p1)
+      p2<-ggplot(data = SNPset, aes(x = POS, y = CHROM)) + ggridges::geom_density_ridges2() + theme_ridges() 
+      print(p2)
+      p3<-ggplot(data = SNPset, aes(x = DP, y = CHROM)) + ggridges::geom_density_ridges2() + theme_ridges() 
+      print(p3)
+      p4<-ggplot(data = SNPset, aes(x = nSNPs, y = CHROM)) + ggridges::geom_density_ridges2() + theme_ridges() 
+      print(p4)
+      }
     else if ( p6 == FALSE){
       print("Do not plot ggridges")
     }
@@ -1088,8 +1093,8 @@ ChromQual <-
       message("Plotting Number of SNPs per Chromosome with loess smoothing curve")
       p<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = DP, size = nSNPs),color="pink") + geom_point(aes(y = QUAL),col="lightblue") + facet_wrap(~CHROM, ncol = ncol) + geom_smooth(aes(y = QUAL+DP)) + theme_bw() + labs(x = "Position on Chromosome", y = "Sum of Scaled Counts of nSNPs and Scaled Quality Scores", color = "Legend") + scale_color_manual(values = colors)
       print(p)
-      p<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = DP, size = nSNPs),color="pink") + geom_line(aes(y = QUAL),col="lightblue") + facet_wrap(~CHROM, ncol = ncol) + geom_smooth(aes(y = QUAL+DP)) + theme_bw() + labs(x = "Position on Chromosome", y = "Sum of Scaled Counts of nSNPs and Scaled Quality Scores", color = "Legend") + scale_color_manual(values = colors)
-      
+      p1<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = DP, size = nSNPs),color="pink") + geom_line(aes(y = QUAL),col="lightblue") + facet_wrap(~CHROM, ncol = ncol) + geom_smooth(aes(y = QUAL+DP)) + theme_bw() + labs(x = "Position on Chromosome", y = "Sum of Scaled Counts of nSNPs and Scaled Quality Scores", color = "Legend") + scale_color_manual(values = colors)
+      print(p1)
     }
     else if (p7 == FALSE) {
       print("Do not plot Mumber of SNPs per Chromosome with loess smoothing curve")
