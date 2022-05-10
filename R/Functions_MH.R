@@ -1014,10 +1014,11 @@ ChromQual <-
     p1 <- p1
     if (p1 == TRUE) {
       message("Plotting Quality Scores")
-      breaks <- seq(round(min(SNPset$QUAL) - 1, 0), round(max(SNPset$QUAL) + 100, 0), binwidth1)
       jpeg(file="plot1.jpeg")
-      hist(x = SNPset$QUAL, breaks = breaks, col = "green",frequency = TRUE, xlab = "Quality Scores", main = "Histogram of SNP Quality Scores")
+      ggplot(SNPset, aes(QUAL)) + ggplot2::geom_histogram(binwidth = binwidth1)
       dev.off() 
+      p <- ggplot(SNPset, aes(QUAL)) + ggplot2::geom_histogram(binwidth = binwidth1)
+      print(p)
     }
     else if (p1 == FALSE) {
       print("Do not plot Histogram of Quality Score")
@@ -1026,10 +1027,12 @@ ChromQual <-
     p2 <- p2
     if (p2 == TRUE) {
       message("Plotting Number of SNPs")
-      breaks <- seq(round(min(SNPset$nSNPs) - 1, 0), round(max(SNPset$nSNPs) + 100, 0), binwidth2)
       jpeg(file="plot2.jpeg")
-      hist(x = SNPset$nSNPs, breaks = breaks, col = "blue", frequency = TRUE, xlab = "Number of SNPs called in specified window size", main = paste0("Histogram of Number of SNPs called in", windowSize, "window size"))
+      ggplot(SNPset, aes(nSNPs)) + ggplot2::geom_histogram(binwidth = binwidth2)
       dev.off()
+      p <- ggplot(SNPset, aes(nSNPs)) + ggplot2::geom_histogram(binwidth = binwidth2)
+      print(p)
+      
     }
     else if (p2 == FALSE) {
       print("Do not plot Histogram of Number of SNPs")
@@ -1082,6 +1085,9 @@ ChromQual <-
       p<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = QUAL), color = "lightgreen") + facet_wrap(~CHROM, ncol = ncol) + geom_smooth(aes(y = QUAL)) + theme_bw() + labs(x = "Position on Chromosome", y = "Counts of nSNPs and Scaled Quality Scores", color = "Legend") + scale_color_manual(values = colors)
       print(p)
     }
+    else if (p6 == FALSE){
+      print("Do not print Number of SNPs per Chromosome with loess smoothing cureve")
+    }
     
     SNPset <- SNPset %>% mutate(QUAL = scale(QUAL), DP = scale(DP))
     
@@ -1095,7 +1101,7 @@ ChromQual <-
       print(p)
     }
     else if (p7 == FALSE) {
-      print("Do not plot Superpostion of Quality Scores and Number of SNPs")
+      print("Do not plot Mumber of SNPs per Chromosome with loess smoothing curve")
     }
     
     p8 <- p8
