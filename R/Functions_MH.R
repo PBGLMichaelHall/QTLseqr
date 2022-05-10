@@ -1012,9 +1012,9 @@ ChromQual <-
     if (p1 == TRUE) {
       message("Plotting Quality Scores")
       breaks <- pretty(range(SNPset$QUAL), n = nclass.Sturges(SNPset$QUAL), min.n = 1)
-      p <- ggplot(SNPset, aes(QUAL)) + ggplot2::geom_histogram(color = 1, fill = "white", breaks = breaks) + theme_classic() + ggtitle("Sturges Method Histogram of SNP Quality")
+      p <- ggplot(SNPset, aes(QUAL)) + ggplot2::geom_histogram(color = 1, fill = "lightblue", breaks = breaks) + theme_classic() + ggtitle("Sturges Method Histogram of SNP Quality")
       print(p)
-      p1 <- ggplot(SNPset, aes(QUAL)) + ggplot2::geom_histogram(bins = 10, show.legend = TRUE) + ggplot2::facet_wrap(~CHROM, ncol = ncol) + theme_classic()
+      p1 <- ggplot(SNPset, aes(QUAL)) + ggplot2::geom_histogram(color = 1, fill = "lightblue", breaks = breaks) + ggplot2::facet_wrap(~CHROM, ncol = ncol) + theme_classic()
     }
     else if (p1 == FALSE) {
       print("Do not plot Histogram of Quality Score")
@@ -1037,7 +1037,8 @@ ChromQual <-
       breaks <- pretty(range(SNPset$nSNPs), n = nclass.Sturges(SNPset$nSNPs), min.n = 1)
       p3 <- ggplot(SNPset, aes(nSNPs)) + ggplot2::geom_histogram(color = 1, fill = "lightblue", breaks = breaks) + theme_classic() + ggtitle("Sturges Method Histogram of nSNPs")
       print(p3)
-      p<-ggplot(data = SNPset, aes(x = nSNPs)) + geom_histogram(color =1 ,fill = "lightblue", breaks = breaks) + facet_wrap(~CHROM, ncol = ncol) + theme_classic()
+      
+      p<-ggplot(data = SNPset, aes(x = nSNPs)) + geom_histogram(color = 1 ,fill = "lightblue", breaks = breaks) + ggplot2::facet_wrap(~CHROM, ncol = ncol) + theme_classic()
       print(p)
     }
     else if (p3 == FALSE) {
