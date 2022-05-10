@@ -973,7 +973,6 @@ Facet_Allelic_Chrom <- function(SNPset, subset = NULL, var = "Allelicfreq", scal
 #' @param p5 TRUE or FALSE to plot or not to plot
 #' @param p6 TRUE or FALSE Boolean Argument, to plot or not to plot that is the question
 #' @param p7 TRUE or FALSE to plot or not
-#' @param p8 TRUE or FALSE to plot or not
 #' @return Several ggplots
 #' @examples ChromQuality(vcf = "General.vcf", chromlist = c("Chr1", "Chr2")), windowSize = 1e+06, scalar = 0.1, ncol = 2,HighLimQuality = 6000,  binwidth1 = 100, binwidth2 =1, DPBINS=10, p1=TRUE, p2=FALSE, p3=TRUE, p4=TRUE, p5=FALSE, p6=TRUE)
 #' @export ChromQual
@@ -1079,6 +1078,15 @@ ChromQual <-
     }
     else if (p6 == FALSE) {
       print("Do not plot Mumber of SNPs per Chromosome with loess smoothing curve")
+    }
+    
+    p7 <- p7
+    if (p7 == TRUE){
+      message("Plotting ggridges object")
+    ggplot(SNPset, aes(x = POS, y = QUAL, fill = CHROM)) + geom_density_ridges() + theme_ridges() + theme(legend.position = "none")
+    }
+    else if ( p7 == FALSE){
+      print("Do not plot ggridges")
     }
     
   }
