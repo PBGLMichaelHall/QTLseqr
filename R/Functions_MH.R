@@ -1024,7 +1024,7 @@ ChromQual <-
     if (p2 == TRUE) {
       message("Plotting Number of SNPs per Chromosome with loess smoothing curve")
      
-      p<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = nSNPs), color = "lightgreen") + facet_wrap(~CHROM, ncol = ncol) + theme_bw() + labs(x = "Position on Chromosome", y = "Counts of nSNPs and Scaled Quality Scores", color = "Legend") + scale_color_manual(values = colors)
+      p<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = nSNPs), color = "lightblue") + facet_wrap(~CHROM, ncol = ncol) + theme_bw() + labs(x = "Position on Chromosome", y = "Counts of nSNPs and Scaled Quality Scores", color = "Legend") + scale_color_manual(values = colors)
       print(p)
     }
     else if (p2 == FALSE) {
@@ -1035,9 +1035,9 @@ ChromQual <-
     if (p3 == TRUE) {
       message("Ploting histogram of SNPs per Chromosome")
       breaks <- pretty(range(SNPset$nSNPs), n = nclass.Sturges(SNPset$nSNPs), min.n = 1)
-      p3 <- ggplot(SNPset, aes(nSNPs)) + ggplot2::geom_histogram(color = 1, fill = "white", breaks = breaks) + theme_classic() + ggtitle("Sturges Method Histogram of nSNPs")
+      p3 <- ggplot(SNPset, aes(nSNPs)) + ggplot2::geom_histogram(color = 1, fill = "lightblue", breaks = breaks) + theme_classic() + ggtitle("Sturges Method Histogram of nSNPs")
       print(p3)
-      p<-ggplot(data = SNPset, aes(x = nSNPs)) + geom_histogram(color =1 ,fill = "white", breaks = breaks) + facet_wrap(~CHROM, ncol = ncol) + theme_classic()
+      p<-ggplot(data = SNPset, aes(x = nSNPs)) + geom_histogram(color =1 ,fill = "lightblue", breaks = breaks) + facet_wrap(~CHROM, ncol = ncol) + theme_classic()
       print(p)
     }
     else if (p3 == FALSE) {
@@ -1047,10 +1047,12 @@ ChromQual <-
     if (p4 == TRUE) {
       message("Plotting Depth")
       breaks <- pretty(range(SNPset$DP), n = nclass.Sturges(SNPset$DP), min.n = 1)
-      p1 <- ggplot(data = SNPset, aes(x = DP)) + ggplot2::geom_histogram(color = 1, fill = "white", breaks = breaks) + theme_classic() + ggtitle("Sturges Method Histogram of Depth")
+      p1 <- ggplot(data = SNPset, aes(x = DP)) + ggplot2::geom_histogram(color = 1, fill = "lightblue", breaks = breaks) + theme_classic() + ggtitle("Sturges Method Histogram of Depth")
       print(p1)
-      p<-ggplot(data = SNPset, aes(x = POS)) + geom_histogram(color = 1, fill = "white", breaks = breaks) + facet_wrap(~CHROM, ncol = ncol) + theme_classic()
+      p<-ggplot(data = SNPset, aes(x = DP)) + geom_hist(color = 1, fill = "lightblue", breaks = breaks) + facet_wrap(~CHROM, ncol = ncol) + theme_classic()
       print(p)
+      p2<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = DP), color = "lightblue") + facet_wrap(~CHROM, ncol = ncol) + theme_classic()
+      print(p2)
     }
     else if (p4 == FALSE) {
       print("Do not plot Histogram of Depth Reads")
@@ -1083,10 +1085,9 @@ ChromQual <-
     p7 <- p7
     if (p7 == TRUE){
       message("Plotting ggridges object")
-    ggplot(SNPset, aes(x = POS, y = QUAL, fill = CHROM)) + geom_density_ridges() + theme_ridges() + theme(legend.position = "none")
+    ggplot(data = SNPset, aes(x = POS)) + ggridges::geom_density_ridges(aes(y = QUAL, fill = CHROM)) + theme_ridges() + theme(legend.position = "none")
     }
     else if ( p7 == FALSE){
       print("Do not plot ggridges")
     }
-    
   }
