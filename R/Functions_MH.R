@@ -966,8 +966,6 @@ Facet_Allelic_Chrom <- function(SNPset, subset = NULL, var = "Allelicfreq", scal
 #' @param windowSize Specify window size to calculate number of SNPs
 #' @param ncol An Integer Value Specifying the number of columns in ggplot facet_grid which corresponds to exact number of chromosomes in chromlist
 #' @param HighLimQuality Set Upper Limit for Quality 
-#' @param bindwidth1 Specify binwidth for Quality score histogram plot
-#' @param bindwidth2 Specify binwidth for Number of SNPs histogram plot
 #' @param p1 TRUE or FALSE to plot or not to plot
 #' @param p2 TRUE or FALSE to plot or not to plot
 #' @param p3 TRUE or FALSE to plot or not to plot
@@ -1014,8 +1012,9 @@ ChromQual <-
     p1 <- p1
     if (p1 == TRUE) {
       message("Plotting Quality Scores")
-      p <- ggplot(SNPset, aes(QUAL)) + ggplot2::geom_histogram(binwidth = binwidth1) + theme_bw()
+      p <- ggplot(SNPset, aes(QUAL)) + ggplot2::geom_histogram(bins = 10, show.legend = TRUE) + theme_classic()
       print(p)
+      p1 <- ggplot(SNPset, aes(QUAL)) + ggplot2::geom_histogram(bins = 10, show.legend = TRUE) + ggplot2::facet_wrap(~CHROM, ncol = ncol) + theme_classic()
     }
     else if (p1 == FALSE) {
       print("Do not plot Histogram of Quality Score")
@@ -1023,63 +1022,58 @@ ChromQual <-
     
     p2 <- p2
     if (p2 == TRUE) {
-      message("Plotting Number of SNPs")
-      p <- ggplot(SNPset, aes(nSNPs)) + ggplot2::geom_histogram(binwidth = binwidth2) + theme_bw()
-      print(p)
-      
-    }
-    else if (p2 == FALSE) {
-      print("Do not plot Histogram of Number of SNPs")
-    }
-    
-    p3 <- p3
-    if (p3 == TRUE) {
       message("Plotting Number of SNPs per Chromosome with loess smoothing curve")
       p<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = nSNPs), color = "lightgreen") + facet_wrap(~CHROM, ncol = ncol) + theme_bw() + labs(x = "Position on Chromosome", y = "Counts of nSNPs and Scaled Quality Scores", color = "Legend") + scale_color_manual(values = colors)
       print(p)
     }
-    else if (p3 == FALSE) {
+    else if (p2 == FALSE) {
       print("Do not plot Superpostion of Quality Scores and Number of SNPs")
     }
     
-    p4 <- p4
-    if (p4 == TRUE) {
+    p3 <- p3
+    if (p3 == TRUE) {
       message("Ploting histogram of SNPs per Chromosome")
+      p3 <- ggplot(SNPset, aes(nSNPs)) + ggplot2::geom_histogram(bins = 10, show.legend = TRUE) + theme_bw()
+      print(p3)
       p<-ggplot(data = SNPset, aes(x = nSNPs)) + geom_histogram(bins = 10, show.legend = TRUE) + facet_wrap(~CHROM, ncol = ncol) + theme_classic()
       print(p)
     }
-    else if (p4 == FALSE) {
+    else if (p3 == FALSE) {
       print("Do not plot Hisotogram of Number of SNPs per Chromosome")
     }
-    p5 <- p5
-    if (p5 == TRUE) {
+    p4 <- p4
+    if (p4 == TRUE) {
       message("Plotting Depth")
+      p1 <- ggplot(data = SNPset, aes(x = DP)) + ggplot2::geom_histogram(bins = 10, show.legend = TRUE) + theme_classic()
+      print(p1)
       p<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y=DP),color = "lightblue") + facet_wrap(~CHROM, ncol = ncol) + theme_classic()
       print(p)
     }
-    else if (p5 == FALSE) {
+    else if (p4 == FALSE) {
       print("Do not plot Histogram of Depth Reads")
     }
     
-    p6 <- p6
-    if (p6 == TRUE) {
+    p5 <- p5
+    if (p5 == TRUE) {
       message("Plotting Number of SNPs per Chromosome with loess smoothing curve")
-      p<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = QUAL), color = "lightgreen") + facet_wrap(~CHROM, ncol = ncol) + geom_smooth(aes(y = QUAL)) + theme_bw() + labs(x = "Position on Chromosome", y = "Counts of nSNPs and Scaled Quality Scores", color = "Legend") + scale_color_manual(values = colors)
+      p<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = QUAL), color = "lightgreen") + facet_wrap(~CHROM, ncol = ncol) + geom_smooth(aes(y = QUAL)) + theme_bw() + labs(x = "Position on Chromosome", y = "Quality", color = "Legend") 
       print(p)
     }
-    else if (p6 == FALSE){
+    else if (p5 == FALSE){
       print("Do not print Number of SNPs per Chromosome with loess smoothing cureve")
     }
     
     SNPset <- SNPset %>% mutate(QUAL = scale(QUAL), DP = scale(DP))
     
-    p7 <- p7
-    if (p7 == TRUE) {
+    p6 <- p6
+    if (p6 == TRUE) {
       message("Plotting Number of SNPs per Chromosome with loess smoothing curve")
-      p<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = DP, size = nSNPs),color="pink") + geom_line(aes(y = QUAL),col="lightblue")+ facet_wrap(~CHROM, ncol = ncol) + geom_smooth(aes(y = QUAL+DP)) + theme_bw() + labs(x = "Position on Chromosome", y = "Counts of nSNPs and Scaled Quality Scores", color = "Legend") + scale_color_manual(values = colors)
+      p<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = DP, size = nSNPs),color="pink") + geom_point(aes(y = QUAL),col="lightblue") + facet_wrap(~CHROM, ncol = ncol) + geom_smooth(aes(y = QUAL+DP)) + theme_bw() + labs(x = "Position on Chromosome", y = "Sum of Scaled Counts of nSNPs and Scaled Quality Scores", color = "Legend") + scale_color_manual(values = colors)
       print(p)
+      p<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = DP, size = nSNPs),color="pink") + geom_line(aes(y = QUAL),col="lightblue") + facet_wrap(~CHROM, ncol = ncol) + geom_smooth(aes(y = QUAL+DP)) + theme_bw() + labs(x = "Position on Chromosome", y = "Sum of Scaled Counts of nSNPs and Scaled Quality Scores", color = "Legend") + scale_color_manual(values = colors)
+      
     }
-    else if (p7 == FALSE) {
+    else if (p6 == FALSE) {
       print("Do not plot Mumber of SNPs per Chromosome with loess smoothing curve")
     }
     
