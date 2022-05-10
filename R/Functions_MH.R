@@ -1050,7 +1050,7 @@ ChromQual <-
       breaks <- pretty(range(SNPset$DP), n = nclass.Sturges(SNPset$DP), min.n = 1)
       p1 <- ggplot(data = SNPset, aes(x = DP)) + ggplot2::geom_histogram(color = 1, fill = "lightblue", breaks = breaks) + theme_classic() + ggtitle("Sturges Method Histogram of Depth")
       print(p1)
-      p<-ggplot(data = SNPset, aes(x = DP)) + geom_hist(color = 1, fill = "lightblue", breaks = breaks) + facet_wrap(~CHROM, ncol = ncol) + theme_classic()
+      p<-ggplot(data = SNPset, aes(x = DP)) + geom_histogram(color = 1, fill = "lightblue", breaks = breaks) + facet_wrap(~CHROM, ncol = ncol) + theme_classic()
       print(p)
       p2<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = DP), color = "lightblue") + facet_wrap(~CHROM, ncol = ncol) + theme_classic()
       print(p2)
