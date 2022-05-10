@@ -1069,26 +1069,31 @@ ChromQual <-
       print("Do not print Number of SNPs per Chromosome with loess smoothing cureve")
     }
     
+    p7 <- p6
+    if (p6 == TRUE){
+      message("Plotting ggridges object")
+      ggplot(data = SNPset, aes(x = QUAL, y = CHROM)) + ggridges::geom_density_ridges2() + theme_ridges() 
+      ggplot(data = SNPset, aes(x = POS, y = CHROM)) + ggridges::geom_density_ridges2() + theme_ridges() 
+      ggplot(data = SNPset, aes(x = DP, y = CHROM)) + ggridges::geom_density_ridges2() + theme_ridges() 
+      ggplot(data = SNPset, aes(x = nSNPs, y = CHROM)) + ggridges::geom_density_ridges2() + theme_ridges() 
+    }
+    else if ( p6 == FALSE){
+      print("Do not plot ggridges")
+    }
+  
     SNPset <- SNPset %>% mutate(QUAL = scale(QUAL), DP = scale(DP))
     
-    p6 <- p6
-    if (p6 == TRUE) {
+    p7 <- p7
+    if (p7 == TRUE) {
       message("Plotting Number of SNPs per Chromosome with loess smoothing curve")
       p<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = DP, size = nSNPs),color="pink") + geom_point(aes(y = QUAL),col="lightblue") + facet_wrap(~CHROM, ncol = ncol) + geom_smooth(aes(y = QUAL+DP)) + theme_bw() + labs(x = "Position on Chromosome", y = "Sum of Scaled Counts of nSNPs and Scaled Quality Scores", color = "Legend") + scale_color_manual(values = colors)
       print(p)
       p<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = DP, size = nSNPs),color="pink") + geom_line(aes(y = QUAL),col="lightblue") + facet_wrap(~CHROM, ncol = ncol) + geom_smooth(aes(y = QUAL+DP)) + theme_bw() + labs(x = "Position on Chromosome", y = "Sum of Scaled Counts of nSNPs and Scaled Quality Scores", color = "Legend") + scale_color_manual(values = colors)
       
     }
-    else if (p6 == FALSE) {
+    else if (p7 == FALSE) {
       print("Do not plot Mumber of SNPs per Chromosome with loess smoothing curve")
     }
     
-    p7 <- p7
-    if (p7 == TRUE){
-      message("Plotting ggridges object")
-    ggplot(data = SNPset, aes(x = POS)) + ggridges::geom_density_ridges(aes(y = QUAL, fill = CHROM)) + theme_ridges() + theme(legend.position = "none")
-    }
-    else if ( p7 == FALSE){
-      print("Do not plot ggridges")
-    }
+  
   }
