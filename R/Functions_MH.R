@@ -1069,7 +1069,7 @@ ChromQual <-
       print("Do not print Number of SNPs per Chromosome with loess smoothing cureve")
     }
     
-    p7 <- p6
+    p6 <- p6
     if (p6 == TRUE){
       message("Plotting ggridges object")
       ggplot(data = SNPset, aes(x = QUAL, y = CHROM)) + ggridges::geom_density_ridges2() + theme_ridges() 
