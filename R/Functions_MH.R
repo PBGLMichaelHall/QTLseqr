@@ -966,6 +966,7 @@ Facet_Allelic_Chrom <- function(SNPset, subset = NULL, var = "Allelicfreq", scal
 #' @param windowSize Specify window size to calculate number of SNPs
 #' @param ncol An Integer Value Specifying the number of columns in ggplot facet_grid which corresponds to exact number of chromosomes in chromlist
 #' @param HighLimQuality Set Upper Limit for Quality 
+#' @param NumberofSamples Specify the number of Samples
 #' @param p1 TRUE or FALSE to plot or not to plot
 #' @param p2 TRUE or FALSE to plot or not to plot
 #' @param p3 TRUE or FALSE to plot or not to plot
@@ -979,7 +980,7 @@ Facet_Allelic_Chrom <- function(SNPset, subset = NULL, var = "Allelicfreq", scal
 
 
 ChromQual <- 
-  function (vcf, chromlist = NULL, windowSize = 1e+06, scalar = NULL, ncol = NULL, HighLimQuality = NULL, Chromname= NULL,p1 = NULL, p2 = NULL, p3 = NULL, p4 = NULL, p5 = NULL, p6 = NULL, p7 = NULL) 
+  function (vcf, chromlist = NULL, windowSize = NULL, scalar = NULL, ncol = NULL, HighLimQuality = NULL, NumberofSamples = NULL, Chromname= NULL,p1 = NULL, p2 = NULL, p3 = NULL, p4 = NULL, p5 = NULL, p6 = NULL, p7 = NULL, p8 = TRUE) 
   {
     message("Reading vcf file in with read.vcfR")
     vcf <- read.vcfR(file = vcf)
@@ -1000,11 +1001,11 @@ ChromQual <-
     message("Factoring Chromosome Variable According to Unique Specification")
     SNPset$CHROM <- factor(SNPset$CHROM, levels = gtools::mixedsort(unique(SNPset$CHROM)))
     message("Selecting Variable Subset")
-    SNPset <- SNPset %>% dplyr::select(CHROM, POS, QUAL, DP)
+    SNPset <- SNPset %>% dplyr::select(CHROM, POS, QUAL, DP, AN)
     message("Mutating SNPS set creating nSNPs variable")
     SNPset <- SNPset %>% dplyr::group_by(CHROM) %>% dplyr::mutate(nSNPs = countSNPs_cpp(POS = POS, windowSize = windowSize)) %>% dplyr::filter(QUAL >= HighLimQuality)
     SNPset <- as.data.frame(SNPset)
-    SNPset <- SNPset %>% mutate(POS = as.numeric(POS), DP = as.numeric(DP), nSNPs = as.numeric(nSNPs))
+    SNPset <- SNPset %>% mutate(POS = as.numeric(POS), DP = as.numeric(DP), nSNPs = as.numeric(nSNPs), AN = AN/2*NumberofSamples)
     
     
     par(mfrow = c(1, 1))
@@ -1085,20 +1086,38 @@ ChromQual <-
     else if ( p6 == FALSE){
       print("Do not plot ggridges")
     }
-  
-    SNPset <- SNPset %>% mutate(QUAL = scale(QUAL), DP = scale(DP))
+    
     
     p7 <- p7
     if (p7 == TRUE) {
+      message("Plotting Number of SNPs per Chromosome with loess smoothing curve")
+      
+      
+      p<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = AN),color="pink") + facet_wrap(~CHROM, ncol = ncol) + labs(x = "Position on Chromosome", y = "INFO=AN/2*NumberofSamples", color = "Legend") 
+      print(p)
+      breaks <- pretty(range(SNPset$AN), n = nclass.Sturges(SNPset$AN), min.n = 1)
+      p <- ggplot(SNPset, aes(AN)) + ggplot2::geom_histogram(color = 1, fill = "lightblue", breaks = breaks) + theme_classic() + ggtitle("Sturges Method Histogram of the ratio, INFO=AN/2*NumberofSamples")
+      print(p)
+     
+    }
+    else if (p7 == FALSE) {
+      print("Do not plot Mumber of SNPs per Chromosome with loess smoothing curve")
+    }
+    
+  
+    SNPset <- SNPset %>% mutate(QUAL = scale(QUAL), DP = scale(DP))
+    
+    p8 <- p8
+    if (p8 == TRUE) {
       message("Plotting Number of SNPs per Chromosome with loess smoothing curve")
       p<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = DP, size = nSNPs),color="pink") + geom_point(aes(y = QUAL),col="lightblue") + facet_wrap(~CHROM, ncol = ncol) + geom_smooth(aes(y = QUAL+DP)) + theme_bw() + labs(x = "Position on Chromosome", y = "Sum of Scaled Counts of nSNPs and Scaled Quality Scores", color = "Legend") + scale_color_manual(values = colors)
       print(p)
       p1<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = DP, size = nSNPs),color="pink") + geom_line(aes(y = QUAL),col="lightblue") + facet_wrap(~CHROM, ncol = ncol) + geom_smooth(aes(y = QUAL+DP)) + theme_bw() + labs(x = "Position on Chromosome", y = "Sum of Scaled Counts of nSNPs and Scaled Quality Scores", color = "Legend") + scale_color_manual(values = colors)
       print(p1)
     }
-    else if (p7 == FALSE) {
+    else if (p8 == FALSE) {
       print("Do not plot Mumber of SNPs per Chromosome with loess smoothing curve")
     }
-    
+   
   
   }
