@@ -1120,6 +1120,8 @@ AlleleFreqSlidingWindow <- function (vcf, chromList = NULL, windowSize = NULL, h
   
   
   QTLseqr::importFromVCF(file = "SNPS_ONLY.freebayes_D2.filtered.vcf.gz", highBulk = HighBulk, lowBulk = LowBulk, chromList = chromList, filter = FALSE,filename = "HALL99")
+  lowBulk = LowBulk
+  highBulk = highBulk
   
   df <-
     importFromTable(
