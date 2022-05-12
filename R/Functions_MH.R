@@ -1126,8 +1126,8 @@ AlleleFreqSlidingWindow <- function (vcf, chromList = NULL, windowSize = NULL, h
   df <-
     importFromTable(
       file = file,
-      highBulk = HighBulk,
-      lowBulk = LowBulk,
+      highBulk = highBulk,
+      lowBulk = lowBulk,
       chromList = chromList,
       sep = ","
     ) 
