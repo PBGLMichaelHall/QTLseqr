@@ -1119,7 +1119,7 @@ ChromQual <-
 AlleleFreqSlidingWindow <- function (vcf, chromList = NULL, windowSize = NULL, highBulk = NULL, lowBulk = NULL, filename = NULL) {
   
   
-  QTLseqr::importFromVCF(file = "SNPS_ONLY.freebayes_D2.filtered.vcf.gz", highBulk = HighBulk, lowBulk = LowBulk, chromList = chromList, filter = FALSE,filename = "HALL99")
+  QTLseqr::importFromVCF(file = "SNPS_ONLY.freebayes_D2.filtered.vcf.gz", highBulk = HighBulk, lowBulk = LowBulk, chromList = chromList, filter = FALSE,filename = filename)
   lowBulk = LowBulk
   highBulk = highBulk
   
