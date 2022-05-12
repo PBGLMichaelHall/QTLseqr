@@ -712,7 +712,7 @@ plotQTLStats_MH2 <-
 Correlation <-
   function (vcffile = NULL, chromlist = NULL,p1 = NULL, p2 = NULL, p3 = NULL, p4 = NULL,p5=TRUE)
   {
-vcf <- read.vcfR(file = file)
+vcf <- read.vcfR(file = vcffile)
 vcf <- vcfR2tidy(vcf)
 message("Extracting unique Chromosome or Contig names reverse compatible to VCF file")
 print(unique(vcf$fix$CHROM))
