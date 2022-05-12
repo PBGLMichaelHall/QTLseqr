@@ -1116,7 +1116,7 @@ ChromQual <-
 
 
 
-AlleleFreqSlidingWindow <- function (vcf, chromList = NULL, windowSize = NULL, highBulk = NULL, lowBulk = NULL, filename = NULL) {
+AlleleFreqSlidingWindow <- function (vcf = NULL, chromList = NULL, windowSize = NULL, highBulk = NULL, lowBulk = NULL, filename = NULL) {
   
   
   QTLseqr::importFromVCF(file = vcf, highBulk = highBulk, lowBulk = lowBulk, chromList = chromList, filter = FALSE,filename = filename)
@@ -1124,7 +1124,7 @@ AlleleFreqSlidingWindow <- function (vcf, chromList = NULL, windowSize = NULL, h
   
   df <-
     importFromTable(
-      file = file,
+      file = paste0(filename,".csv"),
       highBulk = highBulk,
       lowBulk = lowBulk,
       chromList = chromList,
