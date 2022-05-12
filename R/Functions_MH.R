@@ -1086,9 +1086,10 @@ ChromQual <-
       print("Do not plot ggridges")
     }
     
+    
     SNPset <- SNPset %>% mutate(QUAL = scale(QUAL), DP = scale(DP))
     
-    p7 <- p7
+    p8 <- p7
     if (p7 == TRUE) {
       message("Plotting Number of SNPs per Chromosome with loess smoothing curve")
       p<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = DP, size = nSNPs),color="pink") + geom_point(aes(y = QUAL),col="lightblue") + facet_wrap(~CHROM, ncol = ncol) + geom_smooth(aes(y = QUAL+DP)) + theme_bw() + labs(x = "Position on Chromosome", y = "Sum of Scaled Counts of nSNPs and Scaled Quality Scores", color = "Legend") + scale_color_manual(values = colors)
@@ -1099,6 +1100,65 @@ ChromQual <-
     else if (p7 == FALSE) {
       print("Do not plot Mumber of SNPs per Chromosome with loess smoothing curve")
     }
-   
-  
   }
+
+
+
+
+#' @title AlleleFreqSlidingWindow
+#' @param vcf A vcf file 
+#' @param chromlist A vector specifying particular chromosomes
+#' @param windowSize Specify window size to calculate number of SNPs and Tricube Stat Window Size
+#' @param highBulk Specify sample name from vcf of the high Bulk
+#' @param lowBulk Specify sample name from vcf of the lowBulk
+#' @param filename Specify the file name used in nested importFromVCF function
+#' @export AlleleFreqSlidingWindow
+
+
+
+AlleleFreqSlidingWindow <- function (vcf, chromList = NULL, windowSize = NULL, highBulk = NULL, lowBulk = NULL, filename = NULL) {
+  
+  
+  QTLseqr::importFromVCF(file = "SNPS_ONLY.freebayes_D2.filtered.vcf.gz", highBulk = HighBulk, lowBulk = LowBulk, chromList = chromList, filter = FALSE,filename = "HALL99")
+  
+  df <-
+    importFromTable(
+      file = file,
+      highBulk = HighBulk,
+      lowBulk = LowBulk,
+      chromList = chromList,
+      sep = ","
+    ) 
+  
+  SNPset <- df
+  if (!is.null(chromList)) {
+    message("Preparing Data for Quality Control Plotting and removing the following Chromosomes/Contigs: ", paste(unique(SNPset$CHROM)[!unique(SNPset$CHROM) %in% chromList], collapse = ", "))
+    SNPset <- SNPset[SNPset$CHROM %in% chromList, ]
+    message("Finishing Chromosome Subset")
+  }
+  
+  message("Factoring Chromosome Variable According to Unique Specification")
+  SNPset$CHROM <- factor(SNPset$CHROM, levels = gtools::mixedsort(unique(SNPset$CHROM)))
+  message("Selecting Variable Subset")
+  SNPset <- SNPset %>% dplyr::select(CHROM, POS, GQ.LOW, GQ.HIGH, DP.LOW, DP.HIGH, AD_ALT.LOW, AD_ALT.HIGH)
+  message("Mutating SNPS set creating nSNPs variable")
+  SNPset <- SNPset %>% dplyr::group_by(CHROM) %>% dplyr::mutate(nSNPs = countSNPs_cpp(POS = POS, windowSize = windowSize)) 
+  SNPset <- as.data.frame(SNPset)
+  SNPset <- SNPset %>% mutate(POS = as.numeric(POS), p1 = AD_ALT.LOW/DP.LOW, p2 = AD_ALT.HIGH/DP.HIGH)
+  SNPset <- SNPset %>% dplyr::mutate(p1_mean = tricubeStat(POS = POS, Stat = p1, windowSize))
+  SNPset <- SNPset %>% dplyr::mutate(p2_mean = tricubeStat(POS = POS, Stat = p2, windowSize))
+  
+  p<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = p1, size = nSNPs),color="pink") + geom_point(aes(y = p2, size = nSNPs)) + facet_wrap(~CHROM, ncol = 10) + theme_bw() + labs(x = "Position on Chromosome", y = "High Parent Allele Frequencies before Tricube Stat Transformation", color = "Legend") 
+  print(p)                                          
+  
+  p<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = p1, size = nSNPs),color="pink") + geom_line(aes(y = p1, size = nSNPs),color="pink") + geom_point(aes(y = p2, size = nSNPs),color="blue") + geom_line(aes(y = p2, size = nSNPs),color="blue") + facet_wrap(~CHROM, ncol = 10) + theme_bw() + labs(x = "Position on Chromosome", y = "High Parent Allele Frequencies before Tricube Stat Transormation", color = "Legend") 
+  print(p)
+  
+  p<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = p1_mean, size = nSNPs),color="pink") + geom_point(aes(y = p2_mean, size = nSNPs)) + facet_wrap(~CHROM, ncol = 10) + theme_bw() + labs(x = "Position on Chromosome", y = "High Parent Allele Frequencies After Tricube Stat Transformation", color = "Legend") 
+  print(p)                                          
+  
+  p<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = p1_mean, size = nSNPs),color="pink") + geom_line(aes(y = p1_mean, size = nSNPs),color="pink") + geom_point(aes(y = p2_mean, size = nSNPs),color="blue") + geom_line(aes(y = p2_mean, size = nSNPs),color="blue") + facet_wrap(~CHROM, ncol = 10) + theme_bw() + labs(x = "Position on Chromosome", y = "High Parent Allele Frequencies After Tricube Stat Transformation", color = "Legend") 
+  print(p)
+  
+}
+

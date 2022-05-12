@@ -7,20 +7,17 @@
 ChromQual(
   vcf,
   chromlist = NULL,
-  windowSize = 1e+06,
-  scalar = NULL,
+  windowSize = NULL,
   ncol = NULL,
   HighLimQuality = NULL,
   Chromname = NULL,
-  binwidth1 = NULL,
-  binwidth2 = NULL,
-  DPBINS = 10,
   p1 = NULL,
   p2 = NULL,
   p3 = NULL,
   p4 = NULL,
   p5 = NULL,
-  p6 = NULL
+  p6 = NULL,
+  p7 = NULL
 )
 }
 \arguments{
@@ -30,13 +27,9 @@ ChromQual(
 
 \item{windowSize}{Specify window size to calculate number of SNPs}
 
-\item{scalar}{Specify a scalar quantity > 0 to apply on Quality Scores}
-
 \item{ncol}{An Integer Value Specifying the number of columns in ggplot facet_grid which corresponds to exact number of chromosomes in chromlist}
 
 \item{HighLimQuality}{Set Upper Limit for Quality}
-
-\item{DPBINS}{Specify number of bins for p6 histogram}
 
 \item{p1}{TRUE or FALSE to plot or not to plot}
 
@@ -50,9 +43,7 @@ ChromQual(
 
 \item{p6}{TRUE or FALSE Boolean Argument, to plot or not to plot that is the question}
 
-\item{bindwidth1}{Specify binwidth for Quality score histogram plot}
-
-\item{bindwidth2}{Specify binwidth for Number of SNPs histogram plot}
+\item{p7}{TRUE or FALSE to plot or not}
 }
 \value{
 Several ggplots
