@@ -1112,11 +1112,12 @@ ChromQual <-
 #' @param highBulk Specify sample name from vcf of the high Bulk
 #' @param lowBulk Specify sample name from vcf of the lowBulk
 #' @param filename Specify the file name used in nested importFromVCF function
+#' @param threshold p2 -p1 > threshold, Difference between Alternate Allelic Frequency in High Bulk and Alternate Allelic Frequency in Low Bulk
 #' @export AlleleFreqSlidingWindow
 
 
 
-AlleleFreqSlidingWindow <- function (vcf = NULL, chromList = NULL, windowSize = NULL, highBulk = NULL, lowBulk = NULL, filename = NULL) {
+AlleleFreqSlidingWindow <- function (vcf = NULL, chromList = NULL, windowSize = NULL, highBulk = NULL, lowBulk = NULL, filename = NULL, threshold = NULL) {
   
   
   QTLseqr::importFromVCF(file = vcf, highBulk = highBulk, lowBulk = lowBulk, chromList = chromList, filter = FALSE,filename = filename)
@@ -1148,7 +1149,7 @@ AlleleFreqSlidingWindow <- function (vcf = NULL, chromList = NULL, windowSize = 
   SNPset <- SNPset %>% mutate(POS = as.numeric(POS), p1 = AD_ALT.LOW/DP.LOW, p2 = AD_ALT.HIGH/DP.HIGH)
   SNPset <- SNPset %>% dplyr::mutate(p1_mean = tricubeStat(POS = POS, Stat = p1, windowSize))
   SNPset <- SNPset %>% dplyr::mutate(p2_mean = tricubeStat(POS = POS, Stat = p2, windowSize))
-  
+  SNPset <- SNPset %>% dplyr::filter(p2 - p1 > threshold)
   p<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = p1, size = nSNPs),color="pink") + geom_point(aes(y = p2, size = nSNPs)) + facet_wrap(~CHROM, ncol = 10) + theme_bw() + labs(x = "Position on Chromosome", y = "High Parent Allele Frequencies before Tricube Stat Transformation", color = "Legend") 
   print(p)                                          
   
