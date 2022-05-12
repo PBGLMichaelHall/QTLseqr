@@ -1150,7 +1150,9 @@ AlleleFreqSlidingWindow <- function (vcf = NULL, chromList = NULL, windowSize = 
   SNPset <- SNPset %>% dplyr::mutate(p1_mean = tricubeStat(POS = POS, Stat = p1, windowSize))
   SNPset <- SNPset %>% dplyr::mutate(p2_mean = tricubeStat(POS = POS, Stat = p2, windowSize))
   SNPset <- SNPset %>% dplyr::filter(p2 - p1 > threshold)
-  p<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = p1, size = nSNPs),color="pink") + geom_point(aes(y = p2, size = nSNPs)) + facet_wrap(~CHROM, ncol = 10) + theme_bw() + labs(x = "Position on Chromosome", y = "High Parent Allele Frequencies before Tricube Stat Transformation", color = "Legend") 
+  
+  
+  p<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = p1, size = nSNPs),color="pink") + geom_point(aes(y = p2, size = nSNPs)) + facet_wrap(~CHROM, ncol = 10) + ggplot2::geom_text(aes(label = POS)) +  theme_bw() + labs(x = "Position on Chromosome", y = "High Parent Allele Frequencies before Tricube Stat Transformation", color = "Legend") 
   print(p)                                          
   
   p<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = p1, size = nSNPs),color="pink") + geom_line(aes(y = p1, size = nSNPs),color="pink") + geom_point(aes(y = p2, size = nSNPs),color="blue") + geom_line(aes(y = p2, size = nSNPs),color="blue") + facet_wrap(~CHROM, ncol = 10) + theme_bw() + labs(x = "Position on Chromosome", y = "High Parent Allele Frequencies before Tricube Stat Transormation", color = "Legend") 
@@ -1174,5 +1176,9 @@ AlleleFreqSlidingWindow <- function (vcf = NULL, chromList = NULL, windowSize = 
   p<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = p1_mean),color="pink") + geom_line(aes(y = p1_mean),color="pink") + geom_point(aes(y = p2_mean),color="blue") + geom_line(aes(y = p2_mean),color="blue") + facet_wrap(~CHROM, ncol = 10) + theme_bw() + labs(x = "Position on Chromosome", y = "High Parent Allele Frequencies After Tricube Stat Transformation", color = "Legend") 
   print(p)
   
+  return(SNPset)
+  
 }
+
+
 
