@@ -738,6 +738,7 @@ p1 <- p1
   if (p1 == TRUE){
     t2 <- cor(SNPset)
       round(t2,2)
+      print(t2)
 }else if (p1 == FALSE){
         print("Do not plot cor(SNPset)")
 }
