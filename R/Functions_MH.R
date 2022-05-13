@@ -483,9 +483,9 @@ plotQTLStats_MH <-
       stop(paste0("The following are not true chromosome names: ", whichnot))
     }
 
-    if (!var %in% c("nSNPs", "deltaSNP", "Gprime", "negLog10Pval", "diff"))
+    if (!var %in% c("nSNPs", "deltaSNP", "Gprime", "negLog10Pval"))
       stop(
-        "Please choose one of the following variables to plot: \"nSNPs\", \"deltaSNP\", \"Gprime\", \"negLog10Pval\", \"diff\""
+        "Please choose one of the following variables to plot: \"nSNPs\", \"deltaSNP\", \"Gprime\", \"negLog10Pval\""
       )
 
     #don't plot threshold lines in deltaSNPprime or number of SNPs as they are not relevant
@@ -502,6 +502,8 @@ plotQTLStats_MH <-
 
     if (plotThreshold == TRUE) {
       fdrT <- getFDRThreshold(SNPset$pvalue, alpha = q)
+      message("Printing False Discovery Rate")
+      print(fdrT)
 
       if (is.na(fdrT)) {
         warning("The q threshold is too low. No threshold line will be drawn")
@@ -509,6 +511,8 @@ plotQTLStats_MH <-
 
       } else {
         logFdrT <- -log10(fdrT)
+        message("Log Transformation of False Discovery Rate -log10(FalseDiscoveryRate)")
+        print(logFdrT)
         GprimeT <- SNPset[which(SNPset$pvalue == fdrT), "Gprime"]
       }
     }
@@ -552,9 +556,7 @@ plotQTLStats_MH <-
         ggplot2::geom_hline(yintercept = 0,
                             color = "black",
                             alpha = 0.4)
-      if (var == "diff"){
-        p <- p + ggplot2::ylab("Difference Between High and Low Bulk Allele Frequencies")
-      }
+    
       if (plotIntervals == TRUE) {
 
         ints_df <-
