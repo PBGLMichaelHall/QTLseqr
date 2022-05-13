@@ -1271,7 +1271,7 @@ plotQTLStats_MH <-
       } else {
         SNPset[SNPset$CHROM %in% subset,]
       }
-    SNPset <- dplyr::filter(Gprime > GprimeT)
+    SNPset <- SNPset %>% dplyr::filter(Gprime > GprimeT)
     
     p <- ggplot2::ggplot(data = SNPset) +
       ggplot2::scale_x_continuous(breaks = seq(from = 0,to = max(SNPset$POS), by = 10^(floor(log10(max(SNPset$POS))))), labels = format_genomic(), name = "Genomic Position (Mb)") +
