@@ -1301,7 +1301,8 @@ plotQTLStats_MH <-
       p <- p + ggplot2::geom_point(ggplot2::aes_string(x = "POS", y = var), ...)
       p + ggplot2::facet_grid(~CHROM, scales = "free_x", space = "free_x")
     }
-   
+    
+    write.csv(SNPset, file = "Significant_G_Prime.csv",sep = ",", row.names = FALSE)   
     p
     
   }
