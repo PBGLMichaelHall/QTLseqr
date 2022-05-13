@@ -766,7 +766,8 @@ p4 <- p4
 p5 <- p5
   if (p5 == TRUE){
     col <- colorRampPalette(c("blue","white","red","purple"))(20)
-     heatmap(t2,col=col,symm=TRUE)
+    t2 <- cor(SNPset)
+    heatmap(t2,col=col,symm=TRUE)
 }else if (p5 == FALSE){
   print("Do not plot heatmap")
 }
