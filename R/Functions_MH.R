@@ -535,6 +535,8 @@ plotQTLStats_MH <-
 
     if (var == "Gprime") {
       threshold <- GprimeT
+      message("Printing threshold")
+      print(threshold)
       p <- p + ggplot2::ylab("G' value")
     }
 
