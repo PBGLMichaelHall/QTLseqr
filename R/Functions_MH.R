@@ -1186,5 +1186,122 @@ AlleleFreqSlidingWindow <- function (vcf = NULL, chromList = NULL, windowSize = 
   
 }
 
+#' Plots different paramaters for QTL identification
+#'
+#' A wrapper for ggplot to plot genome wide distribution of parameters used to
+#' identify QTL.
+#'
+#' @param SNPset a data frame with SNPs and genotype fields as imported by
+#'   \code{ImportFromGATK} and after running \code{runGprimeAnalysis} or \code{runQTLseqAnalysis}
+#' @param subset a vector of chromosome names for use in quick plotting of
+#'   chromosomes of interest. Defaults to
+#'   NULL and will plot all chromosomes in the SNPset
+#' @param var character. The paramater for plotting. Must be one of: "nSNPs",
+#'   "deltaSNP", "Gprime", "negLog10Pval" "diff"
+#' @param line boolean. If TRUE will plot line graph. If FALSE will plot points.
+#'   Plotting points will take more time.
+#' @param plotThreshold boolean. Should we plot the False Discovery Rate
+#'   threshold (FDR). Only plots line if var is "Gprime" or "negLogPval".
+#' @param q numeric. The q-value to use as the FDR threshold. If too low, no
+#'   line will be drawn and a warning will be given.
+#' @param ... arguments to pass to ggplot2::geom_line or ggplot2::geom_point for
+#'   changing colors etc.
+#'
+#' @return Plots a ggplot graph for all chromosomes or those requested in
+#'   \code{subset}. By setting \code{var} to "nSNPs" the distribution of SNPs
+#'   used to calculate G' will be plotted. "deltaSNP" will plot a tri-cube
+#'   weighted delta SNP-index for each SNP. "Gprime" will plot the tri-cube
+#'   weighted G' value. Setting "negLogPval" will plot the -log10 of the p-value
+#'   at each SNP. In "Gprime" and "negLogPval" plots, a genome wide FDR threshold of
+#'   q can be drawn by setting "plotThreshold" to TRUE. The defualt is a red
+#'   line. If you would like to plot a different line we suggest setting
+#'   "plotThreshold" to FALSE and manually adding a line using
+#'   ggplot2::geom_hline.
+#'
+#' @export plotQTLStats_MH
 
+
+plotQTLStats_MH <-
+  function(SNPset,
+           subset = NULL,
+           var = "Gprime",
+           line = TRUE,
+           plotThreshold = FALSE,
+           q = 0.05,
+           ...) {
+    
+    #get fdr threshold by ordering snps by pval then getting the last pval
+    #with a qval < q
+    
+    if (!all(subset %in% unique(SNPset$CHROM))) {
+      whichnot <-
+        paste(subset[base::which(!subset %in% unique(SNPset$CHROM))], collapse = ', ')
+      stop(paste0("The following are not true chromosome names: ", whichnot))
+    }
+    
+    if (!var %in% c("Gprime"))
+      stop(
+        "Please choose one of the following variables to plot: \"Gprime\""
+      )
+   
+    
+    GprimeT <- 0
+    logFdrT <- 0
+    
+    if (plotThreshold == TRUE) {
+      fdrT <- getFDRThreshold(SNPset$pvalue, alpha = q)
+      message("Printing False Discovery Rate")
+      print(fdrT)
+      
+      if (is.na(fdrT)) {
+        warning("The q threshold is too low. No threshold line will be drawn")
+        plotThreshold <- FALSE
+        
+      } else {
+        logFdrT <- -log10(fdrT)
+        message("Log Transformation of False Discovery Rate -log10(FalseDiscoveryRate)")
+        print(logFdrT)
+        GprimeT <- SNPset[which(SNPset$pvalue == fdrT), "Gprime"]
+      }
+    }
+    
+    SNPset <-
+      if (is.null(subset)) {
+        SNPset
+      } else {
+        SNPset[SNPset$CHROM %in% subset,]
+      }
+    
+    p <- ggplot2::ggplot(data = SNPset) +
+      ggplot2::scale_x_continuous(breaks = seq(from = 0,to = max(SNPset$POS), by = 10^(floor(log10(max(SNPset$POS))))), labels = format_genomic(), name = "Genomic Position (Mb)") +
+      ggplot2::theme(plot.margin = ggplot2::margin(
+        b = 10,
+        l = 20,
+        r = 20,
+        unit = "pt"
+      ))
+    
+    if (var == "Gprime") {
+      threshold <- GprimeT
+      message("Printing threshold")
+      print(threshold)
+      p <- p + ggplot2::ylab("G' value")
+      SNPset <- dplyr::filter(Gprime > threshold)
+    }
+    
+    if (line) {
+      p <-
+      p <- p + ggplot2::geom_line(ggplot2::aes_string(x = "POS", y = var), ...)
+      p + ggplot2::facet_grid(~CHROM, scales = "free_x", space = "free_x")
+    }
+    
+    if (!line) {
+      p <-
+      p <- p + ggplot2::geom_point(ggplot2::aes_string(x = "POS", y = var), ...)
+      p + ggplot2::facet_grid(~CHROM, scales = "free_x", space = "free_x")
+    }
+   
+    p
+    
+  }
 
