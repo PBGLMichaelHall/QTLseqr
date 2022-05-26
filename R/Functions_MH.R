@@ -983,7 +983,7 @@ Facet_Allelic_Chrom <- function(SNPset, subset = NULL, var = "Allelicfreq", scal
   
   return(SNPset)
 }
-Rplot
+
 #' @title ChromQual
 #' @param vcf A vcf file 
 #' @param chromlist A vector specifying particular chromosomes
@@ -1004,7 +1004,7 @@ Rplot
 
 ChromQual <- 
   function (vcf, chromlist = NULL, windowSize = NULL, ncol = NULL, HighLimQuality = NULL, Chromname= NULL,p1 = NULL, p2 = NULL, p3 = NULL, p4 = NULL, p5 = NULL, p6 = NULL, p7 = NULL) 
-  {Rplot
+  {
     message("Reading vcf file in with read.vcfR")
     vcf <- read.vcfR(file = vcf)
     message("Converting vcf object to tidy data frame with vcfR2tidy")
