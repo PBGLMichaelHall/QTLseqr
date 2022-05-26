@@ -237,13 +237,15 @@ Obs_Allele_Freq <-
 #' @param SNPSet A SNPSet generated from the function importFromTable
 #' @param ChromosomeValue Input a Specific Chromosome Value
 #' @param threshold Input a Specific Allele Frequency Threshold value from the High Bulk High Parent
-#' @param pvalueThresh Input an upper bound for p-value like 0.5 alpha
+#' @param pvalueThresh Upper limit on pvalue for Gprime Statistic
 #' @export Obs_Allele_Freq2
 
 Obs_Allele_Freq2 <-
   function (SNPSet, ChromosomeValue, threshold, pvalueThresh) 
   {
-    frame <- SNPSet %>% dplyr::mutate(LowRef = AD_REF.LOW, HighRef = AD_REF.HIGH, LowAlt = AD_ALT.LOW, HighAlt = AD_ALT.HIGH) %>% select(CHROM, POS, LowRef, HighRef, LowAlt, HighAlt,pvalue)
+    frame <- SNPSet %>% dplyr::mutate(LowRef = AD_REF.LOW, HighRef = AD_REF.HIGH, 
+                                      LowAlt = AD_ALT.LOW, HighAlt = AD_ALT.HIGH) %>% select(CHROM, 
+                                                                                             POS, LowRef, HighRef, LowAlt, HighAlt, pvalue)
     Obs <- seq(from = 1, to = length(frame))
     p1 <- ((frame$LowAlt)/(frame$LowRef + frame$LowAlt))
     p1 <- round(p1, 3)
@@ -272,32 +274,31 @@ Obs_Allele_Freq2 <-
     data <- cbind(Chrom, POS, p1, p2, Subst, diff, AD_High, AD_Low, 
                   Gprime, SNP_Observations, pvalue)
     data <- as.data.frame(data)
-    data <- data %>% arrange(desc(Gprime), Chrom, POS, p1, p2, pvalue, 
-                             diff, AD_High, AD_Low)
+    data <- data %>% arrange(desc(Gprime), Chrom, POS, p1, p2, 
+                             pvalue, diff, AD_High, AD_Low)
     data <- data[(as.matrix(data[1]) %in% ChromosomeValue), ]
     data <- data[(as.matrix(data[4]) > threshold), ]
-    data <- data[(as.matrix(data[11]) < pvalueThresh),]
+    data <- data[(as.matrix(data[11]) < pvalueThresh), ]
     e <- ggplot(data = data, aes(x = SNP_Observations, y = p1)) + 
       geom_point(aes(color = factor(CHROM))) + theme_bw() + 
-      ggrepel::geom_label_repel(aes(label = as.character(POS))) + 
       labs(x = "SNP", y = "Allele Frequency", title = "Low Bulk Observed High Parent Allele Frequency")
     print(e)
     SNP_Observations <- seq(from = 1, to = length(p2), by = 1)
     data <- cbind(Chrom, POS, p1, p2, Subst, AD_High, AD_Low, 
                   Gprime, SNP_Observations, pvalue)
     data <- as.data.frame(data)
-    data <- data %>% arrange(desc(Gprime), Chrom, POS, p1, p2, pvalue, Subst, AD_High, AD_Low)
+    data <- data %>% arrange(desc(Gprime), Chrom, POS, p1, p2, 
+                             pvalue, Subst, AD_High, AD_Low)
     data <- data[(as.matrix(data[1]) %in% ChromosomeValue), ]
     data <- data[(as.matrix(data[4]) > threshold), ]
-    data <- data[(as.matrix(data[10]) < pvalueThresh),]
+    data <- data[(as.matrix(data[10]) < pvalueThresh), ]
     e1 <- ggplot(data = data, aes(x = SNP_Observations, y = p2)) + 
-      geom_point(aes(color = factor(CHROM))) + ggrepel::geom_label_repel(aes(label = as.character(POS))) + 
+      geom_point(aes(color = factor(CHROM))) + 
       theme_bw() + labs(x = "SNP", y = "Allele Frequency", 
                         title = "High Bulk Observed High Parent Allele Frequency")
     print(e1)
     return(data)
   }
-
 
 
 
@@ -982,7 +983,7 @@ Facet_Allelic_Chrom <- function(SNPset, subset = NULL, var = "Allelicfreq", scal
   
   return(SNPset)
 }
-
+Rplot
 #' @title ChromQual
 #' @param vcf A vcf file 
 #' @param chromlist A vector specifying particular chromosomes
@@ -1003,7 +1004,7 @@ Facet_Allelic_Chrom <- function(SNPset, subset = NULL, var = "Allelicfreq", scal
 
 ChromQual <- 
   function (vcf, chromlist = NULL, windowSize = NULL, ncol = NULL, HighLimQuality = NULL, Chromname= NULL,p1 = NULL, p2 = NULL, p3 = NULL, p4 = NULL, p5 = NULL, p6 = NULL, p7 = NULL) 
-  {
+  {Rplot
     message("Reading vcf file in with read.vcfR")
     vcf <- read.vcfR(file = vcf)
     message("Converting vcf object to tidy data frame with vcfR2tidy")
@@ -1200,7 +1201,7 @@ AlleleFreqSlidingWindow <- function (vcf = NULL, chromList = NULL, windowSize = 
   print(p)
   
   return(SNPset)
-  
+  m
 }
 
 #' Plots different paramaters for QTL identification
