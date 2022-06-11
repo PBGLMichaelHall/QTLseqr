@@ -210,7 +210,7 @@ plotGprimeDist <-
         filterThreshold = 0.1,
         binwidth = 0.5,
         k = 20000,
-        to = 3)
+        t0 = 3)
     {
         if (outlierFilter == "deltaSNP") {
             trim_df <- SNPset[abs(SNPset$deltaSNP) < filterThreshold, ]
