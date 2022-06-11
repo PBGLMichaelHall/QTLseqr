@@ -8,7 +8,9 @@ plotGprimeDist(
   SNPset,
   outlierFilter = c("deltaSNP", "Hampel"),
   filterThreshold = 0.1,
-  binwidth = 0.5
+  binwidth = 0.5,
+  k = 20000,
+  t0 = 3
 )
 }
 \arguments{
@@ -22,6 +24,10 @@ filtering outlier (ie QTL) regions for p-value estimation}
 putative QTL (default = 0.1)}
 
 \item{binwidth}{The binwidth for the histogram. Recomended and default = 0.5}
+
+\item{k}{Size of window used to calculate hampels outlier filter}
+
+\item{t0}{Threshold filter for 'median absolute deviation' computation for hampels filter. Default is 3, a high threshold makes the filter more forgiving. Uses hampel filter from pracma package.}
 }
 \value{
 Plots a ggplot histogram of the G' value distribution. The raw data

@@ -5,12 +5,13 @@
 \title{AlleleFreqSlidingWindow}
 \usage{
 AlleleFreqSlidingWindow(
-  vcf,
+  vcf = NULL,
   chromList = NULL,
   windowSize = NULL,
   highBulk = NULL,
   lowBulk = NULL,
-  filename = NULL
+  filename = NULL,
+  threshold = NULL
 )
 }
 \arguments{
@@ -23,6 +24,8 @@ AlleleFreqSlidingWindow(
 \item{lowBulk}{Specify sample name from vcf of the lowBulk}
 
 \item{filename}{Specify the file name used in nested importFromVCF function}
+
+\item{threshold}{p2 -p1 > threshold, Difference between Alternate Allelic Frequency in High Bulk and Alternate Allelic Frequency in Low Bulk}
 
 \item{chromlist}{A vector specifying particular chromosomes}
 }

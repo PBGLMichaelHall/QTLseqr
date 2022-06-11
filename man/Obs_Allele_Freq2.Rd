@@ -4,7 +4,7 @@
 \alias{Obs_Allele_Freq2}
 \title{Obs_Allele_Freq2}
 \usage{
-Obs_Allele_Freq2(SNPSet, ChromosomeValue, threshold)
+Obs_Allele_Freq2(SNPSet, ChromosomeValue, threshold, pvalueThresh)
 }
 \arguments{
 \item{SNPSet}{A SNPSet generated from the function importFromTable}
@@ -12,6 +12,8 @@ Obs_Allele_Freq2(SNPSet, ChromosomeValue, threshold)
 \item{ChromosomeValue}{Input a Specific Chromosome Value}
 
 \item{threshold}{Input a Specific Allele Frequency Threshold value from the High Bulk High Parent}
+
+\item{pvalueThresh}{Upper limit on pvalue for Gprime Statistic}
 }
 \description{
 Returns a 4 column data filtering for specific Chromosome and High Bulk Observed Allele Frequencies

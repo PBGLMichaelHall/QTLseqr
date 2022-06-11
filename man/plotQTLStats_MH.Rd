@@ -7,11 +7,19 @@
 plotQTLStats_MH(
   SNPset,
   subset = NULL,
-  var = "nSNPs",
-  scaleChroms = TRUE,
+  var = "Gprime",
   line = TRUE,
   plotThreshold = FALSE,
-  plotIntervals = FALSE,
+  q = 0.05,
+  ...
+)
+
+plotQTLStats_MH(
+  SNPset,
+  subset = NULL,
+  var = "Gprime",
+  line = TRUE,
+  plotThreshold = FALSE,
   q = 0.05,
   ...
 )
@@ -27,24 +35,24 @@ NULL and will plot all chromosomes in the SNPset}
 \item{var}{character. The paramater for plotting. Must be one of: "nSNPs",
 "deltaSNP", "Gprime", "negLog10Pval" "diff"}
 
-\item{scaleChroms}{boolean. if TRUE (default) then chromosome facets will be
-scaled to relative chromosome sizes. If FALSE all facets will be equal
-sizes. This is basically a convenience argument for setting both scales and
-shape as "free_x" in ggplot2::facet_grid.}
-
 \item{line}{boolean. If TRUE will plot line graph. If FALSE will plot points.
 Plotting points will take more time.}
 
 \item{plotThreshold}{boolean. Should we plot the False Discovery Rate
 threshold (FDR). Only plots line if var is "Gprime" or "negLogPval".}
 
-\item{plotIntervals}{boolean. Whether or not to plot the two-sided Takagi confidence intervals in "deltaSNP" plots.}
-
 \item{q}{numeric. The q-value to use as the FDR threshold. If too low, no
 line will be drawn and a warning will be given.}
 
 \item{...}{arguments to pass to ggplot2::geom_line or ggplot2::geom_point for
 changing colors etc.}
+
+\item{scaleChroms}{boolean. if TRUE (default) then chromosome facets will be
+scaled to relative chromosome sizes. If FALSE all facets will be equal
+sizes. This is basically a convenience argument for setting both scales and
+shape as "free_x" in ggplot2::facet_grid.}
+
+\item{plotIntervals}{boolean. Whether or not to plot the two-sided Takagi confidence intervals in "deltaSNP" plots.}
 }
 \value{
 Plots a ggplot graph for all chromosomes or those requested in
@@ -57,8 +65,22 @@ Plots a ggplot graph for all chromosomes or those requested in
   line. If you would like to plot a different line we suggest setting
   "plotThreshold" to FALSE and manually adding a line using
   ggplot2::geom_hline.
+
+Plots a ggplot graph for all chromosomes or those requested in
+  \code{subset}. By setting \code{var} to "nSNPs" the distribution of SNPs
+  used to calculate G' will be plotted. "deltaSNP" will plot a tri-cube
+  weighted delta SNP-index for each SNP. "Gprime" will plot the tri-cube
+  weighted G' value. Setting "negLogPval" will plot the -log10 of the p-value
+  at each SNP. In "Gprime" and "negLogPval" plots, a genome wide FDR threshold of
+  q can be drawn by setting "plotThreshold" to TRUE. The defualt is a red
+  line. If you would like to plot a different line we suggest setting
+  "plotThreshold" to FALSE and manually adding a line using
+  ggplot2::geom_hline.
 }
 \description{
+A wrapper for ggplot to plot genome wide distribution of parameters used to
+identify QTL.
+
 A wrapper for ggplot to plot genome wide distribution of parameters used to
 identify QTL.
 }
