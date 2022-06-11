@@ -3,7 +3,7 @@
 ##the object r
 local({
 r = getOption("repos")
-r["CRAN"] = "https://cloud.r-project.org"
+r["CRAN"] = "http://cran.us.r-project.org"
 options(repos = r)
 })
 
