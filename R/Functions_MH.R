@@ -237,12 +237,15 @@ Obs_Allele_Freq <-
 #' @param SNPSet A SNPSet generated from the function importFromTable
 #' @param ChromosomeValue Input a Specific Chromosome Value
 #' @param threshold Input a Specific Allele Frequency Threshold value from the High Bulk High Parent
+#' @param pvalueThresh Upper limit on pvalue for Gprime Statistic
 #' @export Obs_Allele_Freq2
 
 Obs_Allele_Freq2 <-
-  function (SNPSet, ChromosomeValue, threshold)
+  function (SNPSet, ChromosomeValue, threshold, pvalueThresh) 
   {
-    frame <- SNPSet %>% dplyr::mutate(LowRef = AD_REF.LOW, HighRef = AD_REF.HIGH, LowAlt = AD_ALT.LOW, HighAlt = AD_ALT.HIGH) %>% select(CHROM,POS,LowRef,HighRef, LowAlt, HighAlt)
+    frame <- SNPSet %>% dplyr::mutate(LowRef = AD_REF.LOW, HighRef = AD_REF.HIGH, 
+                                      LowAlt = AD_ALT.LOW, HighAlt = AD_ALT.HIGH) %>% select(CHROM, 
+                                                                                             POS, LowRef, HighRef, LowAlt, HighAlt, pvalue)
     Obs <- seq(from = 1, to = length(frame))
     p1 <- ((frame$LowAlt)/(frame$LowRef + frame$LowAlt))
     p1 <- round(p1, 3)
@@ -251,32 +254,48 @@ Obs_Allele_Freq2 <-
     diff <- p2 - p1
     Chrom <- SNPSet %>% dplyr::select(CHROM)
     POS <- SNPSet %>% dplyr::select(POS)
+    pvalue <- SNPSet %>% dplyr::select(pvalue)
     AD_High1 <- data.frame(SNPSet$AD_ALT.HIGH, SNPSet$AD_REF.HIGH)
-    AD_High1$AD_High <- paste(AD_High1$SNPSet.AD_REF.HIGH, AD_High1$SNPSet.AD_ALT.HIGH, sep = ",")
-    AD_High <- subset(AD_High1, select = -c(SNPSet.AD_ALT.HIGH, SNPSet.AD_REF.HIGH))
+    AD_High1$AD_High <- paste(AD_High1$SNPSet.AD_REF.HIGH, AD_High1$SNPSet.AD_ALT.HIGH, 
+                              sep = ",")
+    AD_High <- subset(AD_High1, select = -c(SNPSet.AD_ALT.HIGH, 
+                                            SNPSet.AD_REF.HIGH))
     AD_Low1 <- data.frame(SNPSet$AD_REF.LOW, SNPSet$AD_ALT.LOW)
-    AD_Low1$AD_Low <- paste(AD_Low1$SNPSet.AD_REF.LOW, AD_Low1$SNPSet.AD_ALT.LOW, sep = ",")
-    AD_Low <- subset(AD_Low1, select = -c(SNPSet.AD_REF.LOW, SNPSet.AD_ALT.LOW))
+    AD_Low1$AD_Low <- paste(AD_Low1$SNPSet.AD_REF.LOW, AD_Low1$SNPSet.AD_ALT.LOW, 
+                            sep = ",")
+    AD_Low <- subset(AD_Low1, select = -c(SNPSet.AD_REF.LOW, 
+                                          SNPSet.AD_ALT.LOW))
     Gprime <- SNPSet %>% select(Gprime)
     Gprime <- round(Gprime, 3)
     REF <- SNPSet$REF
     ALT <- SNPSet$ALT
-    Subst <- paste0(REF,"____>",ALT)
+    Subst <- paste0(REF, "____>", ALT)
     SNP_Observations <- seq(from = 1, to = length(p1), by = 1)
-    data <- cbind(Chrom, POS, p1, p2, Subst, diff, AD_High, AD_Low, Gprime,SNP_Observations)
+    data <- cbind(Chrom, POS, p1, p2, Subst, diff, AD_High, AD_Low, 
+                  Gprime, SNP_Observations, pvalue)
     data <- as.data.frame(data)
-    data <- data %>% arrange(desc(Gprime), Chrom, POS, p1,p2, diff, AD_High, AD_Low)
-    data <- data[(as.matrix(data[1]) == ChromosomeValue), ]
+    data <- data %>% arrange(desc(Gprime), Chrom, POS, p1, p2, 
+                             pvalue, diff, AD_High, AD_Low)
+    data <- data[(as.matrix(data[1]) %in% ChromosomeValue), ]
     data <- data[(as.matrix(data[4]) > threshold), ]
-    e <- ggplot(data = data, aes(x = SNP_Observations, y = p1)) + geom_point(aes(color = factor(CHROM))) + theme_bw() + ggrepel::geom_label_repel(aes(label = as.character(POS))) + labs(x = "SNP", y = "Allele Frequency", title = "Low Bulk Observed High Parent Allele Frequency")
+    data <- data[(as.matrix(data[11]) < pvalueThresh), ]
+    e <- ggplot(data = data, aes(x = SNP_Observations, y = p1)) + 
+      geom_point(aes(color = factor(CHROM))) + theme_bw() + 
+      labs(x = "SNP", y = "Allele Frequency", title = "Low Bulk Observed High Parent Allele Frequency")
     print(e)
     SNP_Observations <- seq(from = 1, to = length(p2), by = 1)
-    data <- cbind(Chrom, POS, p1, p2, Subst, AD_High, AD_Low, Gprime,SNP_Observations)
+    data <- cbind(Chrom, POS, p1, p2, Subst, AD_High, AD_Low, 
+                  Gprime, SNP_Observations, pvalue)
     data <- as.data.frame(data)
-    data <- data %>% arrange(desc(Gprime), Chrom, POS, p1, diff, Subst, AD_High, AD_Low)
-    data <- data[(as.matrix(data[1]) == ChromosomeValue), ]
+    data <- data %>% arrange(desc(Gprime), Chrom, POS, p1, p2, 
+                             pvalue, Subst, AD_High, AD_Low)
+    data <- data[(as.matrix(data[1]) %in% ChromosomeValue), ]
     data <- data[(as.matrix(data[4]) > threshold), ]
-    e1 <- ggplot(data = data, aes(x = SNP_Observations, y = p2)) + geom_point(aes(color = factor(CHROM))) + ggrepel::geom_label_repel(aes(label = as.character(POS))) + theme_bw() + labs(x = "SNP", y = "Allele Frequency", title = "High Bulk Observed High Parent Allele Frequency")
+    data <- data[(as.matrix(data[10]) < pvalueThresh), ]
+    e1 <- ggplot(data = data, aes(x = SNP_Observations, y = p2)) + 
+      geom_point(aes(color = factor(CHROM))) + 
+      theme_bw() + labs(x = "SNP", y = "Allele Frequency", 
+                        title = "High Bulk Observed High Parent Allele Frequency")
     print(e1)
     return(data)
   }
@@ -482,9 +501,9 @@ plotQTLStats_MH <-
       stop(paste0("The following are not true chromosome names: ", whichnot))
     }
 
-    if (!var %in% c("nSNPs", "deltaSNP", "Gprime", "negLog10Pval", "diff"))
+    if (!var %in% c("nSNPs", "deltaSNP", "Gprime", "negLog10Pval"))
       stop(
-        "Please choose one of the following variables to plot: \"nSNPs\", \"deltaSNP\", \"Gprime\", \"negLog10Pval\", \"diff\""
+        "Please choose one of the following variables to plot: \"nSNPs\", \"deltaSNP\", \"Gprime\", \"negLog10Pval\""
       )
 
     #don't plot threshold lines in deltaSNPprime or number of SNPs as they are not relevant
@@ -501,6 +520,8 @@ plotQTLStats_MH <-
 
     if (plotThreshold == TRUE) {
       fdrT <- getFDRThreshold(SNPset$pvalue, alpha = q)
+      message("Printing False Discovery Rate")
+      print(fdrT)
 
       if (is.na(fdrT)) {
         warning("The q threshold is too low. No threshold line will be drawn")
@@ -508,6 +529,8 @@ plotQTLStats_MH <-
 
       } else {
         logFdrT <- -log10(fdrT)
+        message("Log Transformation of False Discovery Rate -log10(FalseDiscoveryRate)")
+        print(logFdrT)
         GprimeT <- SNPset[which(SNPset$pvalue == fdrT), "Gprime"]
       }
     }
@@ -530,6 +553,8 @@ plotQTLStats_MH <-
 
     if (var == "Gprime") {
       threshold <- GprimeT
+      message("Printing threshold")
+      print(threshold)
       p <- p + ggplot2::ylab("G' value")
     }
 
@@ -551,9 +576,7 @@ plotQTLStats_MH <-
         ggplot2::geom_hline(yintercept = 0,
                             color = "black",
                             alpha = 0.4)
-      if (var == "diff"){
-        p <- p + ggplot2::ylab("Difference Between High and Low Bulk Allele Frequencies")
-      }
+    
       if (plotIntervals == TRUE) {
 
         ints_df <-
@@ -711,7 +734,7 @@ plotQTLStats_MH2 <-
 Correlation <-
   function (vcffile = NULL, chromlist = NULL,p1 = NULL, p2 = NULL, p3 = NULL, p4 = NULL,p5=TRUE)
   {
-vcf <- read.vcfR(file = file)
+vcf <- read.vcfR(file = vcffile)
 vcf <- vcfR2tidy(vcf)
 message("Extracting unique Chromosome or Contig names reverse compatible to VCF file")
 print(unique(vcf$fix$CHROM))
@@ -737,6 +760,7 @@ p1 <- p1
   if (p1 == TRUE){
     t2 <- cor(SNPset)
       round(t2,2)
+      print(t2)
 }else if (p1 == FALSE){
         print("Do not plot cor(SNPset)")
 }
@@ -764,7 +788,8 @@ p4 <- p4
 p5 <- p5
   if (p5 == TRUE){
     col <- colorRampPalette(c("blue","white","red","purple"))(20)
-     heatmap(t2,col=col,symm=TRUE)
+    t2 <- cor(SNPset)
+    heatmap(t2,col=col,symm=TRUE)
 }else if (p5 == FALSE){
   print("Do not plot heatmap")
 }
@@ -889,4 +914,414 @@ plotGprimeDist_MH <-
   }
 
 
+
+
+
+
+
+
+#' @title Facet_Allelic_Chrom
+#' @description Provides plot of Alterante allelic depths for High and Low Bulk, sorry no sliding window.
+#' @param SNPset A vcf file that has been imported by ImportVCF, filtered by SNPfilter, and run
+#' @param subset A Chromosome subset
+#' @param var This is a variable that you cannot change, it must be defined as Allelicfreq
+#' @param scaleChroms TRUE or FASLE do you want plots on each Chromosome or NOT
+#' @param line TRUE or FALSE do you want a line graph or just points
+#' @param thresholdGprime Gprime Statistic cut off value
+#' @param thresholdHighAlternateFrequency High Bulk Alternative Allele Frequency
+#' @export Facet_Allelic_Chrom
+
+Facet_Allelic_Chrom <- function(SNPset, subset = NULL, var = "Allelicfreq", scaleChroms = TRUE, line = TRUE, thresholdGprime = NULL, thresholdHighAlternateFrequency = NULL) {
+  if (!all(subset %in% unique(SNPset$CHROM))) {
+    whichnot <- paste(subset[base::which(!subset %in% unique(SNPset$CHROM))], 
+                      collapse = ", ")
+    stop(paste0("The following are not true chromosome names: ", whichnot))
+  }
+  if (!var %in% c("Allelicfreq"))
+    stop("Please choose one of the following variables to plot: \"Allelicfreq\"")
+  
+  SNPset <- if (is.null(subset)) {
+    SNPset
+  }
+  else {
+    SNPset[SNPset$CHROM %in% subset, ]
+  }
+  
+  # FIlter for high G' values
+  
+  SNPset <- SNPset %>% dplyr::select(CHROM, POS, AD_ALT.LOW, AD_ALT.HIGH,Gprime,AD_REF.LOW,AD_REF.HIGH,DP.LOW,DP.HIGH,nSNPs)
+  SNPset <- as.data.frame(SNPset)
+  SNPset <- SNPset[(as.matrix(SNPset[5]) > thresholdGprime), ]
+
+  
+  # Mutate Snpset
+  
+  SNPset <- SNPset %>% dplyr::mutate(LowRef = AD_REF.LOW, HighRef = AD_REF.HIGH, LowAlt = AD_ALT.LOW, HighAlt = AD_ALT.HIGH) %>% dplyr::select(CHROM, POS, DP.LOW, DP.HIGH, LowRef, HighRef, LowAlt, HighAlt, nSNPs)
+  SNPset <- SNPset %>% mutate(LowAlt = as.numeric(LowAlt), DP.LOW = as.numeric(DP.LOW),HighAlt = as.numeric(HighAlt), DP.HIGH = as.numeric(DP.HIGH))
+  SNPset <- SNPset %>% mutate(LowFreq = LowAlt/DP.LOW, HighFreq = HighAlt/DP.HIGH)
+  SNPset <- SNPset[(as.matrix(SNPset[11]) > thresholdHighAlternateFrequency), ]
+  
+  # Plotting
+  
+  p <- ggplot2::ggplot(data = SNPset) + ggplot2::scale_x_continuous(breaks = seq(from = 0, to = max(SNPset$POS), by = 10^(floor(log10(max(SNPset$POS))))), labels = format_genomic(), name = "Genomic Position (Mb)") + ggplot2::theme(plot.margin = ggplot2::margin(b = 10,l = 20, r = 20, unit = "pt"))
+  
+  p <- p + ggplot2::ylab("High and Low Bulk Allelic Frequencies")
+  
+  if (line) {
+    p <- p + ggplot2::geom_line(ggplot2::aes_string(x = "POS", y = "LowFreq"), color="orange") + ggplot2::geom_line(ggplot2::aes_string(x = "POS", y = "HighFreq" ),color="blue") 
+  }
+  if (!line) {
+    p <- p + ggplot2::geom_point(ggplot2::aes_string(x = "POS", y = "LowFreq"), color="orange") + ggplot2::geom_smooth(ggplot2::aes_string(x = "POS", y = "LowFreq"),se = T, method = 'loess', show.legend = TRUE) + ggplot2::geom_point(ggplot2::aes_string(x = "POS", y = "HighFreq"),color="blue") + ggplot2::geom_smooth(ggplot2::aes_string(x = "POS", y = "HighFreq"),se = T, method = 'loess', show.legend = TRUE)
+  }
+  if (scaleChroms == TRUE) {
+    p <- p + ggplot2::facet_grid(~CHROM, scales = "free_x", space = "free_x")
+  }
+  else {
+    p <- p + ggplot2::facet_grid(~CHROM, scales = "free_x")
+  }
+  print(p)
+  
+  return(SNPset)
+}
+
+#' @title ChromQual
+#' @param vcf A vcf file 
+#' @param chromlist A vector specifying particular chromosomes
+#' @param windowSize Specify window size to calculate number of SNPs
+#' @param ncol An Integer Value Specifying the number of columns in ggplot facet_grid which corresponds to exact number of chromosomes in chromlist
+#' @param HighLimQuality Set Upper Limit for Quality 
+#' @param p1 TRUE or FALSE to plot or not to plot
+#' @param p2 TRUE or FALSE to plot or not to plot
+#' @param p3 TRUE or FALSE to plot or not to plot
+#' @param p4 TRUE or FALSE to plot or not to plot
+#' @param p5 TRUE or FALSE to plot or not to plot
+#' @param p6 TRUE or FALSE Boolean Argument, to plot or not to plot that is the question
+#' @param p7 TRUE or FALSE to plot or not
+#' @return Several ggplots
+#' @examples ChromQuality(vcf = "General.vcf", chromlist = c("Chr1", "Chr2")), windowSize = 1e+06, scalar = 0.1, ncol = 2,HighLimQuality = 6000,  binwidth1 = 100, binwidth2 =1, DPBINS=10, p1=TRUE, p2=FALSE, p3=TRUE, p4=TRUE, p5=FALSE, p6=TRUE)
+#' @export ChromQual
+
+
+ChromQual <- 
+  function (vcf, chromlist = NULL, windowSize = NULL, ncol = NULL, HighLimQuality = NULL, Chromname= NULL,p1 = NULL, p2 = NULL, p3 = NULL, p4 = NULL, p5 = NULL, p6 = NULL, p7 = NULL) 
+  {
+    message("Reading vcf file in with read.vcfR")
+    vcf <- read.vcfR(file = vcf)
+    message("Converting vcf object to tidy data frame with vcfR2tidy")
+    vcf <- vcfR2tidy(vcf)
+    message("Extracting unique Chromosome or Contig names reverse compatible to VCF file")
+    print(unique(vcf$fix$CHROM))
+    SNPset <- vcf
+    SNPset <- Map(as.data.frame, SNPset)
+    SNPset <- rbindlist(SNPset, fill = TRUE)
+    if (!is.null(chromlist)) {
+      message("Preparing Data for Quality Control Plotting and removing the following Chromosomes/Contigs: ", 
+              paste(unique(SNPset$CHROM)[!unique(SNPset$CHROM) %in% 
+                                           chromlist], collapse = ", "))
+      SNPset <- SNPset[SNPset$CHROM %in% chromlist, ]
+      message("Finishing Chromosome Subset")
+    }
+    message("Factoring Chromosome Variable According to Unique Specification")
+    SNPset$CHROM <- factor(SNPset$CHROM, levels = gtools::mixedsort(unique(SNPset$CHROM)))
+    message("Selecting Variable Subset")
+    SNPset <- SNPset %>% dplyr::select(CHROM, POS, QUAL, DP)
+    message("Mutating SNPS set creating nSNPs variable")
+    SNPset <- SNPset %>% dplyr::group_by(CHROM) %>% dplyr::mutate(nSNPs = countSNPs_cpp(POS = POS, windowSize = windowSize)) %>% dplyr::filter(QUAL >= HighLimQuality)
+    SNPset <- as.data.frame(SNPset)
+    SNPset <- SNPset %>% mutate(POS = as.numeric(POS), DP = as.numeric(DP), nSNPs = as.numeric(nSNPs))
+    
+    
+    par(mfrow = c(1, 1))
+    p1 <- p1
+    if (p1 == TRUE) {
+      message("Plotting Quality Scores")
+      breaks <- pretty(range(SNPset$QUAL), n = nclass.Sturges(SNPset$QUAL), min.n = 1)
+      p <- ggplot(SNPset, aes(QUAL)) + ggplot2::geom_histogram(color = 1, fill = "lightblue", breaks = breaks) + theme_classic() + ggtitle("Sturges Method Histogram of SNP Quality")
+      print(p)
+      p1 <- ggplot(SNPset, aes(QUAL)) + ggplot2::geom_histogram(color = 1, fill = "lightblue", breaks = breaks) + ggplot2::facet_wrap(~CHROM, ncol = ncol) + theme_classic() + ggplot2::ggtitle("Quality Histogram")
+      print(p1)
+    }
+    else if (p1 == FALSE) {
+      print("Do not plot Histogram of Quality Score")
+    }
+    
+    p2 <- p2
+    if (p2 == TRUE) {
+      message("Plotting Number of SNPs per Chromosome with loess smoothing curve")
+     
+      p<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = nSNPs), color = "lightblue") + facet_wrap(~CHROM, ncol = ncol) + theme_bw() + labs(x = "Position on Chromosome", y = "nSNPs", color = "Legend")
+      print(p)
+    }
+    else if (p2 == FALSE) {
+      print("Do not plot Superpostion of Quality Scores and Number of SNPs")
+    }
+    
+    p3 <- p3
+    if (p3 == TRUE) {
+      message("Ploting histogram of SNPs per Chromosome")
+      breaks <- pretty(range(SNPset$nSNPs), n = nclass.Sturges(SNPset$nSNPs), min.n = 1)
+      p3 <- ggplot(SNPset, aes(nSNPs)) + ggplot2::geom_histogram(color = 1, fill = "lightblue", breaks = breaks) + theme_classic() + ggtitle("Sturges Method Histogram of nSNPs")
+      print(p3)
+      
+      p<-ggplot(data = SNPset, aes(x = nSNPs)) + geom_histogram(color = 1 ,fill = "lightblue", breaks = breaks) + ggplot2::facet_wrap(~CHROM, ncol = ncol) + theme_classic() + ggplot2::ggtitle("nSNPs")
+      print(p)
+    }
+    else if (p3 == FALSE) {
+      print("Do not plot Hisotogram of Number of SNPs per Chromosome")
+    }
+    p4 <- p4
+    if (p4 == TRUE) {
+      message("Plotting Depth")
+      breaks <- pretty(range(SNPset$DP), n = nclass.Sturges(SNPset$DP), min.n = 1)
+      p1<-ggplot(data = SNPset, aes(x = DP)) + ggplot2::geom_histogram(color = 1, fill = "lightblue", breaks = breaks) + theme_classic() + ggtitle("Sturges Method Histogram of Depth")
+      print(p1)
+      p2<-ggplot(data = SNPset, aes(x = DP)) + geom_histogram(color = 1, fill = "lightblue", breaks = breaks) + facet_wrap(~CHROM, ncol = ncol) + theme_classic() + ggtitle("DP")
+      print(p2)
+      p3<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = DP), color = "lightblue") + facet_wrap(~CHROM, ncol = ncol) + theme_classic() + ggtitle("DP")
+      print(p3)
+    }
+    else if (p4 == FALSE) {
+      print("Do not plot Histogram of Depth Reads")
+    }
+    
+    p5 <- p5
+    if (p5 == TRUE) {
+      message("Plotting Number of SNPs per Chromosome with loess smoothing curve")
+      p<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = QUAL), color = "lightgreen") + facet_wrap(~CHROM, ncol = ncol) + geom_smooth(aes(y = QUAL)) + theme_bw() + labs(x = "Position on Chromosome", y = "Quality", color = "Legend") 
+      print(p)
+    }
+    else if (p5 == FALSE){
+      print("Do not print Number of SNPs per Chromosome with loess smoothing cureve")
+    }
+    
+    p6 <- p6
+    if (p6 == TRUE){
+      message("Plotting ggridges object")
+      p1<-ggplot(data = SNPset, aes(x = QUAL, y = CHROM)) + ggridges::geom_density_ridges2() + theme_ridges() 
+      print(p1)
+      p2<-ggplot(data = SNPset, aes(x = POS, y = CHROM)) + ggridges::geom_density_ridges2() + theme_ridges() 
+      print(p2)
+      p3<-ggplot(data = SNPset, aes(x = DP, y = CHROM)) + ggridges::geom_density_ridges2() + theme_ridges() 
+      print(p3)
+      p4<-ggplot(data = SNPset, aes(x = nSNPs, y = CHROM)) + ggridges::geom_density_ridges2() + theme_ridges() 
+      print(p4)
+      }
+    else if ( p6 == FALSE){
+      print("Do not plot ggridges")
+    }
+    
+    
+    SNPset <- SNPset %>% mutate(QUAL = scale(QUAL), DP = scale(DP))
+    
+    p8 <- p7
+    if (p7 == TRUE) {
+      message("Plotting Number of SNPs per Chromosome with loess smoothing curve")
+      p<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = DP, size = nSNPs),color="pink") + geom_point(aes(y = QUAL),col="lightblue") + facet_wrap(~CHROM, ncol = ncol) + geom_smooth(aes(y = QUAL+DP)) + theme_bw() + labs(x = "Position on Chromosome", y = "Sum of Scaled Counts of nSNPs and Scaled Quality Scores", color = "Legend") + scale_color_manual(values = colors)
+      print(p)
+      p1<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = DP, size = nSNPs),color="pink") + geom_line(aes(y = QUAL),col="lightblue") + facet_wrap(~CHROM, ncol = ncol) + geom_smooth(aes(y = QUAL+DP)) + theme_bw() + labs(x = "Position on Chromosome", y = "Sum of Scaled Counts of nSNPs and Scaled Quality Scores", color = "Legend") + scale_color_manual(values = colors)
+      print(p1)
+    }
+    else if (p7 == FALSE) {
+      print("Do not plot Mumber of SNPs per Chromosome with loess smoothing curve")
+    }
+  }
+
+
+
+
+#' @title AlleleFreqSlidingWindow
+#' @param vcf A vcf file 
+#' @param chromlist A vector specifying particular chromosomes
+#' @param windowSize Specify window size to calculate number of SNPs and Tricube Stat Window Size
+#' @param highBulk Specify sample name from vcf of the high Bulk
+#' @param lowBulk Specify sample name from vcf of the lowBulk
+#' @param filename Specify the file name used in nested importFromVCF function
+#' @param threshold p2 -p1 > threshold, Difference between Alternate Allelic Frequency in High Bulk and Alternate Allelic Frequency in Low Bulk
+#' @export AlleleFreqSlidingWindow
+
+
+
+AlleleFreqSlidingWindow <- function (vcf = NULL, chromList = NULL, windowSize = NULL, highBulk = NULL, lowBulk = NULL, filename = NULL, threshold = NULL) {
+  
+  
+  QTLseqr::importFromVCF(file = vcf, highBulk = highBulk, lowBulk = lowBulk, chromList = chromList, filter = FALSE,filename = filename)
+ 
+  
+  df <-
+    importFromTable(
+      file = paste0(filename,".csv"),
+      highBulk = highBulk,
+      lowBulk = lowBulk,
+      chromList = chromList,
+      sep = ","
+    ) 
+  
+  SNPset <- df
+  if (!is.null(chromList)) {
+    message("Preparing Data for Quality Control Plotting and removing the following Chromosomes/Contigs: ", paste(unique(SNPset$CHROM)[!unique(SNPset$CHROM) %in% chromList], collapse = ", "))
+    SNPset <- SNPset[SNPset$CHROM %in% chromList, ]
+    message("Finishing Chromosome Subset")
+  }
+  
+  message("Factoring Chromosome Variable According to Unique Specification")
+  SNPset$CHROM <- factor(SNPset$CHROM, levels = gtools::mixedsort(unique(SNPset$CHROM)))
+  message("Selecting Variable Subset")
+  SNPset <- SNPset %>% dplyr::select(CHROM, POS, GQ.LOW, GQ.HIGH, DP.LOW, DP.HIGH, AD_ALT.LOW, AD_ALT.HIGH)
+  message("Mutating SNPS set creating nSNPs variable")
+  SNPset <- SNPset %>% dplyr::group_by(CHROM) %>% dplyr::mutate(nSNPs = countSNPs_cpp(POS = POS, windowSize = windowSize)) 
+  SNPset <- as.data.frame(SNPset)
+  SNPset <- SNPset %>% mutate(POS = as.numeric(POS), p1 = AD_ALT.LOW/DP.LOW, p2 = AD_ALT.HIGH/DP.HIGH)
+  SNPset <- SNPset %>% dplyr::mutate(p1_mean = tricubeStat(POS = POS, Stat = p1, windowSize))
+  SNPset <- SNPset %>% dplyr::mutate(p2_mean = tricubeStat(POS = POS, Stat = p2, windowSize))
+  SNPset <- SNPset %>% dplyr::filter(p2 - p1 > threshold)
+  
+  
+  p<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = p1, size = nSNPs),color="pink") + geom_point(aes(y = p2, size = nSNPs)) + facet_wrap(~CHROM, ncol = 10) + theme_bw() + labs(x = "Position on Chromosome", y = "High Parent Allele Frequencies before Tricube Stat Transformation", color = "Legend") 
+  print(p)                                          
+  
+  p<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = p1, size = nSNPs),color="pink") + geom_line(aes(y = p1, size = nSNPs),color="pink") + geom_point(aes(y = p2, size = nSNPs),color="blue") + geom_line(aes(y = p2, size = nSNPs),color="blue") + facet_wrap(~CHROM, ncol = 10) + theme_bw() + labs(x = "Position on Chromosome", y = "High Parent Allele Frequencies before Tricube Stat Transormation", color = "Legend") 
+  print(p)
+  
+  p<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = p1_mean, size = nSNPs),color="pink") + geom_point(aes(y = p2_mean, size = nSNPs)) + facet_wrap(~CHROM, ncol = 10) + theme_bw() + labs(x = "Position on Chromosome", y = "High Parent Allele Frequencies After Tricube Stat Transformation", color = "Legend") 
+  print(p)                                          
+  
+  p<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = p1_mean, size = nSNPs),color="pink") + geom_line(aes(y = p1_mean, size = nSNPs),color="pink") + geom_point(aes(y = p2_mean, size = nSNPs),color="blue") + geom_line(aes(y = p2_mean, size = nSNPs),color="blue") + facet_wrap(~CHROM, ncol = 10) + theme_bw() + labs(x = "Position on Chromosome", y = "High Parent Allele Frequencies After Tricube Stat Transformation", color = "Legend") 
+  print(p)
+  
+  p<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = p1),color="pink") + geom_point(aes(y = p2)) + facet_wrap(~CHROM, ncol = 10) + theme_bw() + labs(x = "Position on Chromosome", y = "High Parent Allele Frequencies before Tricube Stat Transformation", color = "Legend") 
+  print(p)                                          
+  
+  p<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = p1),color="pink") + geom_line(aes(y = p1),color="pink") + geom_point(aes(y = p2),color="blue") + geom_line(aes(y = p2),color="blue") + facet_wrap(~CHROM, ncol = 10) + theme_bw() + labs(x = "Position on Chromosome", y = "High Parent Allele Frequencies before Tricube Stat Transormation", color = "Legend") 
+  print(p)
+  
+  p<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = p1_mean),color="pink") + geom_point(aes(y = p2_mean)) + facet_wrap(~CHROM, ncol = 10) + theme_bw() + labs(x = "Position on Chromosome", y = "High Parent Allele Frequencies After Tricube Stat Transformation", color = "Legend") 
+  print(p)                                          
+  
+  p<-ggplot(data = SNPset, aes(x = POS)) + geom_point(aes(y = p1_mean),color="pink") + geom_line(aes(y = p1_mean),color="pink") + geom_point(aes(y = p2_mean),color="blue") + geom_line(aes(y = p2_mean),color="blue") + facet_wrap(~CHROM, ncol = 10) + theme_bw() + labs(x = "Position on Chromosome", y = "High Parent Allele Frequencies After Tricube Stat Transformation", color = "Legend") 
+  print(p)
+  
+  return(SNPset)
+  m
+}
+
+#' Plots different paramaters for QTL identification
+#'
+#' A wrapper for ggplot to plot genome wide distribution of parameters used to
+#' identify QTL.
+#'
+#' @param SNPset a data frame with SNPs and genotype fields as imported by
+#'   \code{ImportFromGATK} and after running \code{runGprimeAnalysis} or \code{runQTLseqAnalysis}
+#' @param subset a vector of chromosome names for use in quick plotting of
+#'   chromosomes of interest. Defaults to
+#'   NULL and will plot all chromosomes in the SNPset
+#' @param var character. The paramater for plotting. Must be one of: "nSNPs",
+#'   "deltaSNP", "Gprime", "negLog10Pval" "diff"
+#' @param line boolean. If TRUE will plot line graph. If FALSE will plot points.
+#'   Plotting points will take more time.
+#' @param plotThreshold boolean. Should we plot the False Discovery Rate
+#'   threshold (FDR). Only plots line if var is "Gprime" or "negLogPval".
+#' @param q numeric. The q-value to use as the FDR threshold. If too low, no
+#'   line will be drawn and a warning will be given.
+#' @param ... arguments to pass to ggplot2::geom_line or ggplot2::geom_point for
+#'   changing colors etc.
+#'
+#' @return Plots a ggplot graph for all chromosomes or those requested in
+#'   \code{subset}. By setting \code{var} to "nSNPs" the distribution of SNPs
+#'   used to calculate G' will be plotted. "deltaSNP" will plot a tri-cube
+#'   weighted delta SNP-index for each SNP. "Gprime" will plot the tri-cube
+#'   weighted G' value. Setting "negLogPval" will plot the -log10 of the p-value
+#'   at each SNP. In "Gprime" and "negLogPval" plots, a genome wide FDR threshold of
+#'   q can be drawn by setting "plotThreshold" to TRUE. The defualt is a red
+#'   line. If you would like to plot a different line we suggest setting
+#'   "plotThreshold" to FALSE and manually adding a line using
+#'   ggplot2::geom_hline.
+#'
+#' @export plotQTLStats_MH
+
+
+plotQTLStats_MH <-
+  function(SNPset,
+           subset = NULL,
+           var = "Gprime",
+           line = TRUE,
+           plotThreshold = FALSE,
+           q = 0.05,
+           ...) {
+    
+    #get fdr threshold by ordering snps by pval then getting the last pval
+    #with a qval < q
+    
+    if (!all(subset %in% unique(SNPset$CHROM))) {
+      whichnot <-
+        paste(subset[base::which(!subset %in% unique(SNPset$CHROM))], collapse = ', ')
+      stop(paste0("The following are not true chromosome names: ", whichnot))
+    }
+    
+    if (!var %in% c("Gprime"))
+      stop(
+        "Please choose one of the following variables to plot: \"Gprime\""
+      )
+   
+    
+    GprimeT <- 0
+    logFdrT <- 0
+    
+    if (plotThreshold == TRUE) {
+      fdrT <- getFDRThreshold(SNPset$pvalue, alpha = q)
+      message("Printing False Discovery Rate")
+      print(fdrT)
+      
+      if (is.na(fdrT)) {
+        warning("The q threshold is too low. No threshold line will be drawn")
+        plotThreshold <- FALSE
+        
+      } else {
+        logFdrT <- -log10(fdrT)
+        message("Log Transformation of False Discovery Rate -log10(FalseDiscoveryRate)")
+        print(logFdrT)
+        GprimeT <- SNPset[which(SNPset$pvalue == fdrT), "Gprime"]
+      }
+    }
+    
+    SNPset <-
+      if (is.null(subset)) {
+        SNPset
+      } else {
+        SNPset[SNPset$CHROM %in% subset,]
+      }
+    SNPset <- SNPset %>% dplyr::filter(Gprime > GprimeT)
+    
+    p <- ggplot2::ggplot(data = SNPset) +
+      ggplot2::scale_x_continuous(breaks = seq(from = 0,to = max(SNPset$POS), by = 10^(floor(log10(max(SNPset$POS))))), labels = format_genomic(), name = "Genomic Position (Mb)") +
+      ggplot2::theme(plot.margin = ggplot2::margin(
+        b = 10,
+        l = 20,
+        r = 20,
+        unit = "pt"
+      ))
+    
+    if (var == "Gprime") {
+      threshold <- GprimeT
+      message("Printing threshold")
+      print(threshold)
+      p <- p + ggplot2::ylab("G' value")
+      
+    }
+    
+    if (line) {
+      p <-
+      p <- p + ggplot2::geom_line(ggplot2::aes_string(x = "POS", y = var), ...)
+      p + ggplot2::facet_grid(~CHROM, scales = "free_x", space = "free_x")
+    }
+    
+    if (!line) {
+      p <-
+      p <- p + ggplot2::geom_point(ggplot2::aes_string(x = "POS", y = var), ...)
+      p + ggplot2::facet_grid(~CHROM, scales = "free_x", space = "free_x")
+    }
+    
+    write.csv(SNPset, file = "Significant_G_Prime.csv",sep = ",", row.names = FALSE)   
+    p
+    
+  }
 

@@ -8,7 +8,9 @@ importFromVCF(
   file,
   highBulk = character(),
   lowBulk = character(),
-  chromList = NULL
+  chromList = NULL,
+  filename = NULL,
+  filter = NULL
 )
 }
 \arguments{
@@ -19,6 +21,10 @@ importFromVCF(
 \item{lowBulk}{LowBulk name}
 
 \item{chromList}{chromosome list}
+
+\item{filename}{Provide prefix to file name always ends in .CSV}
+
+\item{filter}{Boolean Value True or False. TRUE if you want to filter by "PASS", FALSE you want no filter}
 }
 \value{
 Returns a data frame
