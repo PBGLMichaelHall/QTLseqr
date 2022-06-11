@@ -3,6 +3,6 @@
 ## the object r
 ## local({
 ##  r = getOption("repos")
-##  r["CRAN"] = "https://cloud.r-project.org/"
+##  r["CRAN"] = "https:://cran.wu.ac.at/"
 ##  options(repos = r)
 ## })

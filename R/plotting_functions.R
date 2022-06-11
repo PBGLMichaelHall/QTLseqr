@@ -10,14 +10,14 @@
 #'   NULL and will plot all chromosomes in the SNPset
 #' @param var character. The paramater for plotting. Must be one of: "nSNPs",
 #'   "deltaSNP", "Gprime", "negLog10Pval"
-#' @param scaleChroms boolean. if TRUE (default) then chromosome facets will be 
+#' @param scaleChroms boolean. if TRUE (default) then chromosome facets will be
 #'   scaled to relative chromosome sizes. If FALSE all facets will be equal
-#'   sizes. This is basically a convenience argument for setting both scales and 
+#'   sizes. This is basically a convenience argument for setting both scales and
 #'   shape as "free_x" in ggplot2::facet_grid.
 #' @param line boolean. If TRUE will plot line graph. If FALSE will plot points.
 #'   Plotting points will take more time.
 #' @param plotThreshold boolean. Should we plot the False Discovery Rate
-#'   threshold (FDR). Only plots line if var is "Gprime" or "negLogPval". 
+#'   threshold (FDR). Only plots line if var is "Gprime" or "negLogPval".
 #' @param plotIntervals boolean. Whether or not to plot the two-sided Takagi confidence intervals in "deltaSNP" plots.
 #' @param q numeric. The q-value to use as the FDR threshold. If too low, no
 #'   line will be drawn and a warning will be given.
@@ -47,21 +47,21 @@ plotQTLStats <-
         plotIntervals = FALSE,
         q = 0.05,
         ...) {
-        
+
         #get fdr threshold by ordering snps by pval then getting the last pval
         #with a qval < q
-        
+
         if (!all(subset %in% unique(SNPset$CHROM))) {
             whichnot <-
                 paste(subset[base::which(!subset %in% unique(SNPset$CHROM))], collapse = ', ')
             stop(paste0("The following are not true chromosome names: ", whichnot))
         }
-        
+
         if (!var %in% c("nSNPs", "deltaSNP", "Gprime", "negLog10Pval"))
             stop(
                 "Please choose one of the following variables to plot: \"nSNPs\", \"deltaSNP\", \"Gprime\", \"negLog10Pval\""
             )
-        
+
         #don't plot threshold lines in deltaSNPprime or number of SNPs as they are not relevant
         if ((plotThreshold == TRUE &
                 var == "deltaSNP") |
@@ -70,30 +70,30 @@ plotQTLStats <-
             plotThreshold <- FALSE
         }
         #if you need to plot threshold get the FDR, but check if there are any values that pass fdr
-        
+
         GprimeT <- 0
         logFdrT <- 0
-        
+
         if (plotThreshold == TRUE) {
             fdrT <- getFDRThreshold(SNPset$pvalue, alpha = q)
-            
+
             if (is.na(fdrT)) {
                 warning("The q threshold is too low. No threshold line will be drawn")
                 plotThreshold <- FALSE
-                
+
             } else {
                 logFdrT <- -log10(fdrT)
                 GprimeT <- SNPset[which(SNPset$pvalue == fdrT), "Gprime"]
             }
         }
-        
+
         SNPset <-
             if (is.null(subset)) {
                 SNPset
             } else {
                 SNPset[SNPset$CHROM %in% subset,]
             }
-        
+
         p <- ggplot2::ggplot(data = SNPset) +
             ggplot2::scale_x_continuous(breaks = seq(from = 0,to = max(SNPset$POS), by = 10^(floor(log10(max(SNPset$POS))))), labels = format_genomic(), name = "Genomic Position (Mb)") +
             ggplot2::theme(plot.margin = ggplot2::margin(
@@ -102,22 +102,22 @@ plotQTLStats <-
                 r = 20,
                 unit = "pt"
             ))
-        
+
         if (var == "Gprime") {
             threshold <- GprimeT
             p <- p + ggplot2::ylab("G' value")
         }
-        
+
         if (var == "negLog10Pval") {
             threshold <- logFdrT
             p <-
                 p + ggplot2::ylab(expression("-" * log[10] * '(p-value)'))
         }
-        
+
         if (var == "nSNPs") {
             p <- p + ggplot2::ylab("Number of SNPs in window")
         }
-        
+
         if (var == "deltaSNP") {
             var <- "tricubeDeltaSNP"
             p <-
@@ -127,10 +127,10 @@ plotQTLStats <-
                     color = "black",
                     alpha = 0.4)
             if (plotIntervals == TRUE) {
-                
+
                 ints_df <-
                      dplyr::select(SNPset, CHROM, POS, dplyr::matches("CI_")) %>% tidyr::gather(key = "Interval", value = "value",-CHROM,-POS)
-                
+
                 p <- p + ggplot2::geom_line(data = ints_df, ggplot2::aes(x = POS, y = value, color = Interval)) +
                     ggplot2::geom_line(data = ints_df, ggplot2::aes(
                         x = POS,
@@ -139,17 +139,17 @@ plotQTLStats <-
                     ))
             }
         }
-        
+
         if (line) {
             p <-
                 p + ggplot2::geom_line(ggplot2::aes_string(x = "POS", y = var), ...)
         }
-        
+
         if (!line) {
             p <-
                 p + ggplot2::geom_point(ggplot2::aes_string(x = "POS", y = var), ...)
         }
-        
+
         if (plotThreshold == TRUE)
             p <-
             p + ggplot2::geom_hline(
@@ -158,15 +158,15 @@ plotQTLStats <-
                 size = 1,
                 alpha = 0.4
             )
-        
+
         if (scaleChroms == TRUE) {
            p <- p + ggplot2::facet_grid(~ CHROM, scales = "free_x", space = "free_x")
         } else {
-           p <- p + ggplot2::facet_grid(~ CHROM, scales = "free_x")    
+           p <- p + ggplot2::facet_grid(~ CHROM, scales = "free_x")
         }
-        
+
         p
-        
+
     }
 
 
@@ -182,6 +182,8 @@ plotQTLStats <-
 #' @param filterThreshold The absolute delta SNP index to use to filter out
 #'   putative QTL (default = 0.1)
 #' @param binwidth The binwidth for the histogram. Recomended and default = 0.5
+#' @param k Size of window used to calculate hampels outlier filter
+#' @param t0 Threshold filter for 'median absolute deviation' computation for hampels filter. Default is 3, a high threshold makes the filter more forgiving. Uses hampel filter from pracma package.
 #'
 #' @return Plots a ggplot histogram of the G' value distribution. The raw data
 #'   as well as the filtered G' values (excluding putatitve QTL) are plotted. It
@@ -206,37 +208,33 @@ plotGprimeDist <-
     function(SNPset,
         outlierFilter = c("deltaSNP", "Hampel"),
         filterThreshold = 0.1,
-        binwidth = 0.5)
+        binwidth = 0.5,
+        k = 20000,
+        to = 3)
     {
         if (outlierFilter == "deltaSNP") {
             trim_df <- SNPset[abs(SNPset$deltaSNP) < filterThreshold, ]
             trimGprime <- trim_df$Gprime
         } else {
             # Non-parametric estimation of the null distribution of G'
-            
-            lnGprime <- log(SNPset$Gprime)
-            
-            # calculate left median absolute deviation for the trimmed G' prime set
-            MAD <-
-                median(abs(lnGprime[lnGprime <= median(lnGprime)] - median(lnGprime)))
-            
-            # Trim the G prime set to exclude outlier regions (i.e. QTL) using Hampel's rule
-            trim_df <-
-                SNPset[lnGprime - median(lnGprime) <= 5.2 * median(MAD),]
+            message("calculating hampel G prime trimed values")
+            omad <- hampel(x = SNPset$Gprime, k = k , t0 = t0)
+            SNPset <- trim_df
+            trim_df$Gprime <- omad$y
             trimGprime <- trim_df$Gprime
         }
         medianTrimGprime <- median(trimGprime)
-        
+
         # estimate the mode of the trimmed G' prime set using the half-sample method
         modeTrimGprime <-
             modeest::mlv(x = trimGprime, bw = 0.5, method = "hsm")[[1]]
-        
+
         muE <- log(medianTrimGprime)
         varE <- abs(muE - log(modeTrimGprime))
-        
+
         n <- length(trim_df$Gprime)
         bw <- binwidth
-        
+
         #plot Gprime distrubtion
         p <- ggplot2::ggplot(SNPset) +
             ggplot2::xlim(0, max(SNPset$Gprime) + 1) +
@@ -260,7 +258,7 @@ plotGprimeDist <-
                     bw = bw
                 )
             ) +
-            
+
             # ggplot2::stat_function(
             #     fun = dlnorm * n,
             #     size = 1,
@@ -278,7 +276,7 @@ plotGprimeDist <-
         ggplot2::scale_fill_discrete(name = "Distribution") +
             ggplot2::scale_colour_manual(name = "Null distribution" , values = "black", labels = as.expression(bquote(~theta["G'"]~" ~ lnN("*.(round(muE, 2))*","*.(round(varE, 2))*")")))  +
             ggplot2::guides(fill = ggplot2::guide_legend(order = 1, reverse = TRUE))
-        
+
         #ggplot2::annotate(x = 10, y = 0.325, geom="text",
         #    label = paste0("G' ~ lnN(", round(muE, 2), ",",round(varE, 2), ")"),
         #    color = "blue")
@@ -318,7 +316,7 @@ plotSimulatedThresholds <-
              replications = 10000,
              filter = 0.3,
              intervals = c(95, 99)) {
-        
+
         if (is.null(depth)) {
             if (!is.null(SNPset)) {
                 message(
@@ -332,7 +330,7 @@ plotSimulatedThresholds <-
                 stop("No SNPset or depth supplied")
             }
         }
-        
+
         #convert intervals to quantiles
         if (all(intervals >= 1)) {
             message(
@@ -346,7 +344,7 @@ plotSimulatedThresholds <-
 ervals ('intervals' paramater) should be supplied as two-sided percentiles. i.e. If intervals = '95' will return the two sided 95% confidence interval, 2.5% on each side."
             )
         }
-        
+
         CI <-
             simulateConfInt(
                 popStruc = popStruc,
@@ -356,11 +354,11 @@ ervals ('intervals' paramater) should be supplied as two-sided percentiles. i.e.
                 filter = filter,
                 intervals = quantiles
             )
-        
+
         CI <-
             tidyr::gather(CI, key = "Interval", value = "deltaSNP",-depth)
-        
-        ggplot2::ggplot(data = CI) + 
+
+        ggplot2::ggplot(data = CI) +
             ggplot2::geom_line(ggplot2::aes(x = depth, y = deltaSNP, color = Interval)) +
             ggplot2::geom_line(ggplot2::aes(x = depth, y = -deltaSNP,color = Interval))
-    }    
+    }
